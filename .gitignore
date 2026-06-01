@@ -1,0 +1,38 @@
+# Flutter and Dart tooling
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+.packages
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Platform outputs
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+ios/Flutter/.last_build_id
+
+# Local tooling
+.tooling/
+
+# Release signing — NEVER commit these
+android/key.properties
+*.jks
+*.keystore
+
+# Release outputs — upload these to Play, never commit
+*.aab
+*.apk
+
+# Flutter logs
+flutter_*.log
+
+# Project-specific
+project_prompt.md
+

@@ -1,0 +1,61 @@
+name: almas
+description: Design-forward B2B spices storefront for Almas.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI & fonts
+  google_fonts: ^6.3.0
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # Firebase (add back after running: flutterfire configure)
+  # firebase_core: ^3.13.0
+  # firebase_auth: ^5.5.1
+  # cloud_firestore: ^5.6.5
+  # firebase_storage: ^12.4.4
+  # firebase_messaging: ^15.2.4
+
+  # Images
+  cached_network_image: ^3.4.1
+
+  # URL launching (phone, WhatsApp, website, Waze)
+  url_launcher: ^6.3.1
+
+  # Local notifications (push display)
+  flutter_local_notifications: ^18.0.1
+
+  # Location / GPS
+  geolocator: ^13.0.2
+
+  # Shared preferences (local cache)
+  shared_preferences: ^2.3.5
+
+  # Image picker (admin product photo upload)
+  image_picker: ^1.1.2
+
+  # HTTP
+  http: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+dependency_overrides:
+  path_provider_android: 2.2.23
+
+flutter:
+  uses-material-design: true
