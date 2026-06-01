@@ -21,13 +21,12 @@ dependencies:
   # Navigation
   go_router: ^14.6.2
 
-  # Firebase — uncomment after running: flutterfire configure
-  # Then add android/app/google-services.json from Firebase Console.
-  # firebase_core: ^3.13.0
-  # firebase_analytics: ^11.3.3
-  # cloud_firestore: ^5.6.5
-  # firebase_messaging: ^15.2.4
-  # firebase_auth: ^5.5.1
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_analytics: ^11.3.3
+  cloud_firestore: ^5.6.5
+  # firebase_messaging: ^15.2.4   # enable when adding push notifications
+  # firebase_auth: ^5.5.1         # enable when adding login
 
   # Images
   cached_network_image: ^3.4.1

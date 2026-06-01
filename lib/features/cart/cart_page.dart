@@ -5,6 +5,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../models/cart_item.dart';
 import '../../models/product.dart';
 import '../../services/contact_service.dart';
+import '../../services/firebase_service.dart';
 import '../../widgets/glass_panel.dart';
 import '../../widgets/section_header.dart';
 
@@ -62,7 +63,11 @@ class CartPage extends StatelessWidget {
                     minimumOrder: minimumOrder,
                     progress: progress,
                     onConfirm: qualifies
-                        ? () => ContactService.orderWhatsApp(items)
+                        ? () {
+                            FirebaseService.trackWhatsAppOrder(
+                              subtotal, items.length);
+                            ContactService.orderWhatsApp(items);
+                          }
                         : null,
                   ),
                 ],
