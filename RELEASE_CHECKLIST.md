@@ -1,7 +1,7 @@
 # Almas – Google Play Release Checklist
 
 Package: `com.almas.app`  
-Privacy policy page: `https://YOUR_GITHUB_USERNAME.github.io/almas/privacy-policy.html`
+Privacy policy page: `https://amranihub.github.io/almas/privacy-policy.html`
 
 ---
 
@@ -24,7 +24,7 @@ git init
 git add .
 git commit -m "Initial commit – Almas Flutter app"
 git branch -M main
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/almas.git
+git remote add origin https://github.com/AmraniHub/almas.git
 git push -u origin main
 ```
 

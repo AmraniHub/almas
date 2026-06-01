@@ -40,7 +40,7 @@ Use these answers unless you change the app behavior before release.
 ### Privacy policy
 
 - Answer: `Yes`
-- URL: `https://YOUR_GITHUB_USERNAME.github.io/almas/privacy-policy.html`
+- URL: `https://amranihub.github.io/almas/privacy-policy.html`
 - Backup URL (if you have your own domain): `https://almas.ma/privacy`
 - The HTML page is ready at `docs/privacy-policy.html` — see `RELEASE_CHECKLIST.md` for GitHub Pages setup
 
