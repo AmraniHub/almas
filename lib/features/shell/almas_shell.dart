@@ -23,7 +23,6 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
   int _selectedIndex = 0;
 
   void _goToCatalog() => setState(() => _selectedIndex = 0);
-  void _goToCart()    => setState(() => _selectedIndex = 1);
 
   Widget _padded(Widget child) => Padding(
         padding: const EdgeInsets.fromLTRB(
