@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/cart_item.dart';
 import '../../models/product.dart';
+import '../../services/contact_service.dart';
 import '../../widgets/glass_panel.dart';
 import '../../widgets/section_header.dart';
 
@@ -34,69 +35,37 @@ class CartPage extends StatelessWidget {
         ? 0.0
         : (subtotal / minimumOrder).clamp(0.0, 1.0);
 
+    final qualifies = subtotal >= minimumOrder;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(
-              title: 'Order draft',
-              subtitle:
-                  'Tuned for quick restaurant repeat orders with a clear operational summary before checkout.',
-            ),
+            const SectionHeader(title: 'Order draft'),
             if (items.isEmpty)
               _EmptyCart(onBrowseCatalog: onBrowseCatalog)
             else
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final wideLayout = constraints.maxWidth >= 920;
-
-                  if (wideLayout) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: _CartLines(
-                            items: items,
-                            onIncrement: onIncrement,
-                            onDecrement: onDecrement,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          flex: 2,
-                          child: _OrderSummaryPanel(
-                            subtotal: subtotal,
-                            deliveryFee: deliveryFee,
-                            total: total,
-                            minimumOrder: minimumOrder,
-                            progress: progress,
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  return Column(
-                    children: [
-                      _CartLines(
-                        items: items,
-                        onIncrement: onIncrement,
-                        onDecrement: onDecrement,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      _OrderSummaryPanel(
-                        subtotal: subtotal,
-                        deliveryFee: deliveryFee,
-                        total: total,
-                        minimumOrder: minimumOrder,
-                        progress: progress,
-                      ),
-                    ],
-                  );
-                },
+              Column(
+                children: [
+                  _CartLines(
+                    items: items,
+                    onIncrement: onIncrement,
+                    onDecrement: onDecrement,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _OrderSummaryPanel(
+                    subtotal: subtotal,
+                    deliveryFee: deliveryFee,
+                    total: total,
+                    minimumOrder: minimumOrder,
+                    progress: progress,
+                    onConfirm: qualifies
+                        ? () => ContactService.orderWhatsApp(items)
+                        : null,
+                  ),
+                ],
               ),
           ],
         ),
@@ -204,10 +173,10 @@ class _CartLineCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GlassPanel(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final wideLayout = constraints.maxWidth >= 620;
-          final detailBlock = Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
               Container(
                 width: 58,
@@ -216,24 +185,15 @@ class _CartLineCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: item.product.accentColor.withValues(alpha: 0.14),
                 ),
-                child: Icon(
-                  Icons.spa_rounded,
-                  color: item.product.accentColor,
-                ),
+                child: Icon(Icons.spa_rounded, color: item.product.accentColor),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.product.name,
-                      style: theme.textTheme.titleLarge,
-                    ),
-                    Text(
-                      item.product.packSize,
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                    Text(item.product.name, style: theme.textTheme.titleLarge),
+                    Text(item.product.packSize, style: theme.textTheme.bodyMedium),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       '${item.product.price.toStringAsFixed(0)} MAD each',
@@ -245,10 +205,9 @@ class _CartLineCard extends StatelessWidget {
                 ),
               ),
             ],
-          );
-
-          final quantityControls = Row(
-            mainAxisSize: MainAxisSize.min,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
             children: [
               IconButton.filledTonal(
                 onPressed: onDecrement,
@@ -256,50 +215,20 @@ class _CartLineCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                child: Text(
-                  '${item.quantity}',
-                  style: theme.textTheme.titleLarge,
-                ),
+                child: Text('${item.quantity}', style: theme.textTheme.titleLarge),
               ),
               IconButton.filledTonal(
                 onPressed: onIncrement,
                 icon: const Icon(Icons.add_rounded),
               ),
-            ],
-          );
-
-          final totalLabel = Text(
-            '${item.lineTotal.toStringAsFixed(0)} MAD',
-            style: theme.textTheme.titleLarge?.copyWith(fontSize: 24),
-          );
-
-          if (wideLayout) {
-            return Row(
-              children: [
-                Expanded(flex: 3, child: detailBlock),
-                const SizedBox(width: AppSpacing.md),
-                quantityControls,
-                const SizedBox(width: AppSpacing.lg),
-                totalLabel,
-              ],
-            );
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              detailBlock,
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  quantityControls,
-                  const Spacer(),
-                  totalLabel,
-                ],
+              const Spacer(),
+              Text(
+                '${item.lineTotal.toStringAsFixed(0)} MAD',
+                style: theme.textTheme.titleLarge?.copyWith(fontSize: 24),
               ),
             ],
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -312,6 +241,7 @@ class _OrderSummaryPanel extends StatelessWidget {
     required this.total,
     required this.minimumOrder,
     required this.progress,
+    required this.onConfirm,
   });
 
   final double subtotal;
@@ -319,25 +249,18 @@ class _OrderSummaryPanel extends StatelessWidget {
   final double total;
   final double minimumOrder;
   final double progress;
+  final VoidCallback? onConfirm; // null = below minimum, button disabled
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final qualifiesForMinimum = subtotal >= minimumOrder;
+    final qualifies = subtotal >= minimumOrder;
 
     return GlassPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Checkout summary',
-            style: theme.textTheme.headlineMedium,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Cash on delivery stays the default. The summary keeps minimum order and dispatch status visible before confirmation.',
-            style: theme.textTheme.bodyMedium,
-          ),
+          Text('Checkout summary', style: theme.textTheme.headlineMedium),
           const SizedBox(height: AppSpacing.lg),
           _SummaryRow(
             label: 'Subtotal',
@@ -360,10 +283,7 @@ class _OrderSummaryPanel extends StatelessWidget {
             emphasize: true,
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Minimum order progress',
-            style: theme.textTheme.titleMedium,
-          ),
+          Text('Minimum order progress', style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppSpacing.pillRadius),
@@ -371,37 +291,29 @@ class _OrderSummaryPanel extends StatelessWidget {
               minHeight: 10,
               value: progress,
               backgroundColor: AppColors.ink.withValues(alpha: 0.06),
-              color: qualifiesForMinimum
-                  ? AppColors.success
-                  : AppColors.warning,
+              color: qualifies ? AppColors.success : AppColors.warning,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            qualifiesForMinimum
-                ? 'Eligible for confirmation and same-day dispatch review.'
-                : 'Add ${(minimumOrder - subtotal).toStringAsFixed(0)} MAD more to reach the minimum order.',
+            qualifies
+                ? 'Ready to order — free delivery on this basket.'
+                : 'Add ${(minimumOrder - subtotal).toStringAsFixed(0)} MAD more to reach the 250 MAD minimum.',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: qualifiesForMinimum
-                  ? AppColors.success
-                  : AppColors.warning,
+              color: qualifies ? AppColors.success : AppColors.warning,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Order confirmation is ready for backend integration.',
-                    ),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.check_circle_outline_rounded),
-              label: const Text('Place cash order'),
+              onPressed: onConfirm,
+              icon: const Icon(Icons.chat_rounded),
+              label: Text(
+                qualifies
+                    ? 'Order via WhatsApp'
+                    : 'Add ${(minimumOrder - subtotal).toStringAsFixed(0)} MAD more',
+              ),
             ),
           ),
         ],

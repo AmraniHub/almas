@@ -27,6 +27,26 @@ class CatalogPage extends StatefulWidget {
 class _CatalogPageState extends State<CatalogPage> {
   String _selectedCategory = demoCategories.first;
   String _searchQuery = '';
+  final _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    setState(() => _searchQuery = '');
+  }
+
+  void _resetFilters() {
+    _searchCtrl.clear();
+    setState(() {
+      _searchQuery = '';
+      _selectedCategory = demoCategories.first;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,23 +68,23 @@ class _CatalogPageState extends State<CatalogPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(
-              title: 'Product library',
-              subtitle:
-                  'Find the right spice profile fast, then build the order around your kitchen rhythm.',
-            ),
+            const SectionHeader(title: 'Product library'),
             GlassPanel(
               child: Column(
                 children: [
                   TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.search_rounded),
-                      hintText: 'Search saffron, mint, blends, bakery staples...',
+                    controller: _searchCtrl,
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      hintText: 'Search saffron, mint, blends...',
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded),
+                              onPressed: _clearSearch,
+                              tooltip: 'Clear search',
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -78,11 +98,9 @@ class _CatalogPageState extends State<CatalogPage> {
                             (category) => ChoiceChip(
                               label: Text(category),
                               selected: _selectedCategory == category,
-                              onSelected: (_) {
-                                setState(() {
-                                  _selectedCategory = category;
-                                });
-                              },
+                              onSelected: (_) => setState(
+                                () => _selectedCategory = category,
+                              ),
                             ),
                           )
                           .toList(),
@@ -94,53 +112,74 @@ class _CatalogPageState extends State<CatalogPage> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final crossAxisCount = width >= 1100
-                    ? 3
-                    : width >= 700
-                    ? 2
-                    : 1;
-                final productCardExtent = crossAxisCount == 1 ? 500.0 : 480.0;
-
-                if (filteredProducts.isEmpty) {
-                  return GlassPanel(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.xl,
-                      ),
-                      child: Center(
-                        child: Text(
-                          'No products match this filter yet.',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                    ),
+            if (filteredProducts.isEmpty)
+              _EmptyCatalog(onReset: _resetFilters)
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filteredProducts.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 1,
+                  mainAxisSpacing: AppSpacing.md,
+                  mainAxisExtent: 500,
+                ),
+                itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
+                  return ProductCard(
+                    product: product,
+                    quantityInCart: widget.cartQuantities[product.id] ?? 0,
+                    onAddToCart: () => widget.onAddToCart(product),
                   );
-                }
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredProducts.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: AppSpacing.md,
-                    mainAxisSpacing: AppSpacing.md,
-                    mainAxisExtent: productCardExtent,
-                  ),
-                  itemBuilder: (context, index) {
-                    final product = filteredProducts[index];
+class _EmptyCatalog extends StatelessWidget {
+  const _EmptyCatalog({required this.onReset});
 
-                    return ProductCard(
-                      product: product,
-                      quantityInCart: widget.cartQuantities[product.id] ?? 0,
-                      onAddToCart: () => widget.onAddToCart(product),
-                    );
-                  },
-                );
-              },
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GlassPanel(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+        child: Column(
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.saffron.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.search_off_rounded,
+                size: 32,
+                color: AppColors.saffron,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text('No products found', style: theme.textTheme.headlineMedium),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Try a different keyword or reset the category filter.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Reset filters'),
             ),
           ],
         ),

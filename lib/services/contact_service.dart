@@ -1,10 +1,13 @@
 ﻿import 'package:url_launcher/url_launcher.dart';
 
+import '../models/cart_item.dart';
+
 /// Central contact config — update these with real Almas numbers/URLs.
 abstract final class AlmasContact {
-  static const String phoneNumber   = '+212600000000';   // TODO: real number
-  static const String whatsappNumber = '212600000000';   // without +
-  static const String website       = 'https://almas.ma';
+  // TODO: replace with real Almas phone and WhatsApp numbers
+  static const String phoneNumber    = '+212600000000';
+  static const String whatsappNumber = '212600000000'; // without +
+  static const String website        = 'https://almas.ma';
   static const String defaultWhatsAppMsg =
       'Bonjour Almas 👋 Je souhaite passer une commande.';
 }
@@ -32,6 +35,30 @@ class ContactService {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  /// Opens WhatsApp with a pre-filled order summary message.
+  /// Used by the cart checkout button as a functional order flow
+  /// until backend/CODRocket integration is wired up.
+  static Future<void> orderWhatsApp(List<CartItem> items) async {
+    final buffer = StringBuffer()
+      ..writeln('🧾 *Nouvelle commande Almas*\n');
+    for (final item in items) {
+      buffer.writeln(
+        '• ${item.product.name} × ${item.quantity} = ${item.lineTotal.toStringAsFixed(0)} MAD',
+      );
+    }
+    final subtotal = items.fold<double>(0, (s, i) => s + i.lineTotal);
+    final delivery = subtotal >= 500 ? 'Incluse ✓' : '35 MAD';
+    final total    = subtotal + (subtotal >= 500 ? 0 : 35);
+    buffer
+      ..writeln()
+      ..writeln('Sous-total : ${subtotal.toStringAsFixed(0)} MAD')
+      ..writeln('Livraison  : $delivery')
+      ..writeln('*Total COD : ${total.toStringAsFixed(0)} MAD*')
+      ..writeln()
+      ..writeln('💳 Paiement espèces à la livraison');
+    await whatsApp(message: buffer.toString());
   }
 
   static Future<void> waze({

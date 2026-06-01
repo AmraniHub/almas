@@ -24,15 +24,6 @@ class ContactBar extends StatelessWidget {
           children: [
             Expanded(
               child: _ContactButton(
-                icon: Icons.phone_rounded,
-                label: 'Call',
-                color: AppColors.success,
-                onTap: ContactService.call,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: _ContactButton(
                 icon: Icons.chat_rounded,
                 label: 'WhatsApp',
                 color: const Color(0xFF25D366),

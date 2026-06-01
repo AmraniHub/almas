@@ -6,7 +6,7 @@ import '../core/theme/app_spacing.dart';
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     required this.title,
-    required this.subtitle,
+    this.subtitle = '',
     super.key,
     this.trailing,
   });
@@ -32,13 +32,15 @@ class SectionHeader extends StatelessWidget {
                   title,
                   style: theme.textTheme.headlineMedium,
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppColors.body.withValues(alpha: 0.84),
+                if (subtitle.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.body.withValues(alpha: 0.84),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

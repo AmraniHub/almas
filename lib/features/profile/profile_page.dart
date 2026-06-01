@@ -17,62 +17,16 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(
-              title: 'Restaurant profile',
-              subtitle:
-                  'Identity, branches, favorites, and service preferences live in a cleaner operational profile.',
-            ),
+            const SectionHeader(title: 'Restaurant profile'),
             const _ProfileHero(),
             const SizedBox(height: AppSpacing.lg),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final wideLayout = constraints.maxWidth >= 920;
-
-                if (wideLayout) {
-                  return const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _BranchPanel()),
-                      SizedBox(width: AppSpacing.md),
-                      Expanded(child: _FavoritesPanel()),
-                    ],
-                  );
-                }
-
-                return const Column(
-                  children: [
-                    _BranchPanel(),
-                    SizedBox(height: AppSpacing.md),
-                    _FavoritesPanel(),
-                  ],
-                );
-              },
-            ),
+            const _BranchPanel(),
             const SizedBox(height: AppSpacing.md),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final wideLayout = constraints.maxWidth >= 920;
-
-                if (wideLayout) {
-                  return const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _PreferencesPanel()),
-                      SizedBox(width: AppSpacing.md),
-                      Expanded(child: _InvoicePanel()),
-                    ],
-                  );
-                }
-
-                return const Column(
-                  children: [
-                    _PreferencesPanel(),
-                    SizedBox(height: AppSpacing.md),
-                    _InvoicePanel(),
-                  ],
-                );
-              },
-            ),
+            const _FavoritesPanel(),
+            const SizedBox(height: AppSpacing.md),
+            const _PreferencesPanel(),
+            const SizedBox(height: AppSpacing.md),
+            const _InvoicePanel(),
             const SizedBox(height: AppSpacing.md),
             // Contact Almas section
             GlassPanel(
