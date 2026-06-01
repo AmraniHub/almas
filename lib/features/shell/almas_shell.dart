@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/products_provider.dart';
@@ -71,7 +72,7 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => ContactService.whatsApp(),
-        tooltip: 'Contact on WhatsApp',
+        tooltip: context.l10n.whatsAppContactTooltip,
         backgroundColor: const Color(0xFF25D366),
         child: const Icon(Icons.chat_rounded, color: Colors.white),
       ),
@@ -79,9 +80,9 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
         destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.storefront_rounded),
-            label: 'Catalog',
+          NavigationDestination(
+            icon: const Icon(Icons.storefront_rounded),
+            label: context.l10n.catalogTab,
           ),
           NavigationDestination(
             icon: Badge(
@@ -89,11 +90,11 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
               label: Text('$cartCount'),
               child: const Icon(Icons.shopping_bag_rounded),
             ),
-            label: 'Cart',
+            label: context.l10n.cartTab,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_rounded),
-            label: 'Profile',
+          NavigationDestination(
+            icon: const Icon(Icons.person_rounded),
+            label: context.l10n.profileTab,
           ),
         ],
       ),
