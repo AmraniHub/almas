@@ -1,7 +1,7 @@
 name: almas
 description: Design-forward B2B spices storefront for Almas.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -48,6 +48,9 @@ dependencies:
 
   # HTTP
   http: ^1.2.2
+
+  # Payments
+  flutter_stripe: ^10.1.1
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for Flutter tooling during profile runs. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
+

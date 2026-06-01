@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'firebase_options.dart';
 import 'services/firebase_service.dart';
+import 'services/payment/stripe_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,7 @@ void main() async {
   );
 
   await FirebaseService.init();
+  StripeService.init();
 
   runApp(const ProviderScope(child: AlmasApp()));
 }

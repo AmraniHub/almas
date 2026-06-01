@@ -2,12 +2,25 @@
 
 import '../models/cart_item.dart';
 
-/// Central contact config — update these with real Almas numbers/URLs.
+/// Central Almas contact & business config.
+/// Update these values with real info before releasing to Play Store.
 abstract final class AlmasContact {
-  // TODO: replace with real Almas phone and WhatsApp numbers
-  static const String phoneNumber    = '+212600000000';
-  static const String whatsappNumber = '212600000000'; // without +
+  // ── Contact ──────────────────────────────────────────────────────────────
+  static const String phoneNumber    = '+212522000000'; // TODO: real landline
+  static const String whatsappNumber = '212600000000';  // TODO: real WhatsApp (no +)
   static const String website        = 'https://almas.ma';
+  static const String email          = 'contact@almas.ma';
+  static const String instagram      = 'https://instagram.com/almas.spices';
+
+  // ── Business hours ───────────────────────────────────────────────────────
+  static const String hoursWeekday   = 'Lun–Ven  08:00–18:00';
+  static const String hoursSaturday  = 'Sam       08:00–14:00';
+
+  // ── Location ─────────────────────────────────────────────────────────────
+  static const double warehouseLat   = 33.5731;  // Casablanca — update if needed
+  static const double warehouseLng   = -7.5898;
+
+  // ── WhatsApp default messages ─────────────────────────────────────────────
   static const String defaultWhatsAppMsg =
       'Bonjour Almas 👋 Je souhaite passer une commande.';
 }
