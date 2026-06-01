@@ -14,10 +14,11 @@ const DB = {
   getObj: (key, def = {}) => JSON.parse(localStorage.getItem('aeon_' + key) || JSON.stringify(def)),
   setObj: (key, val) => localStorage.setItem('aeon_' + key, JSON.stringify(val)),
 
-  leads:    () => DB.get('leads'),
-  bookings: () => DB.get('bookings'),
-  payments: () => DB.get('payments'),
-  activity: () => DB.get('activity'),
+  leads:     () => DB.get('leads'),
+  bookings:  () => DB.get('bookings'),
+  payments:  () => DB.get('payments'),
+  reminders: () => DB.get('reminders'),
+  activity:  () => DB.get('activity'),
   settings: () => DB.getObj('settings', { advisorName: 'AEON Advisor', email: '', phone: '', currency: 'USD' }),
   fees:     () => DB.getObj('fees', { feeEntry: 3500, feeStd: 10000, feePrem: 25000, commRate: 12 }),
 
@@ -44,6 +45,14 @@ const DB = {
     DB.set('payments', all);
   },
   deletePayment(id) { DB.set('payments', DB.payments().filter(p => p.id !== id)); },
+
+  saveReminder(r) {
+    const all = DB.reminders();
+    const idx = all.findIndex(x => x.id === r.id);
+    if (idx >= 0) all[idx] = r; else all.unshift(r);
+    DB.set('reminders', all);
+  },
+  deleteReminder(id) { DB.set('reminders', DB.reminders().filter(r => r.id !== id)); },
 
   addActivity(msg, type = 'stage') {
     const log = DB.activity();
@@ -165,6 +174,8 @@ const Views = {
     this._renderPipelineChart(leads);
     this._renderActivity();
     this._renderPending(payments, leads);
+    Reminders.renderDashboard();
+    Reminders.updateBadge();
   },
 
   _renderRevenueChart(payments) {
@@ -442,6 +453,25 @@ const Views = {
     document.getElementById('s-comm-rate').value = f.commRate || 12;
   },
 
+  /* ---- REMINDERS ---- */
+  reminders() {
+    Reminders.updateBadge();
+    Reminders.render('all');
+
+    // Populate client select in add modal
+    const sel = document.getElementById('reminderClientSelect');
+    if (sel) sel.innerHTML = DB.leads().map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+
+    // Wire filter tabs
+    document.querySelectorAll('[data-rem-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-rem-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        Reminders.render(btn.dataset.remFilter);
+      });
+    });
+  },
+
   /* ---- MATCHER ---- */
   matcher() {
     document.getElementById('matcherResults').innerHTML = `
@@ -633,7 +663,233 @@ const Matcher = {
 };
 
 /* ============================================================
-   6. NOTIFICATION TEMPLATES
+   6. REMINDERS ENGINE
+   ============================================================ */
+const Reminders = {
+
+  FOLLOW_UP_SCHEDULE: [
+    { days: 30,  type: '30_day',  title: '30-Day Follow-Up Call',       msg: 'Check in on post-program progress. Ask about energy, sleep, and any biomarker changes. Propose first retest.' },
+    { days: 90,  type: '90_day',  title: '90-Day Protocol Review',      msg: 'Review any lab work or physician notes from the past 3 months. Identify whether adjustments to supplements or protocols are needed.' },
+    { days: 180, type: '180_day', title: '6-Month Program — Next Phase', msg: 'Propose the next program. Present 3 options for the next longevity intervention. This is the highest-value touchpoint.' },
+    { days: 365, type: 'annual',  title: 'Annual Biomarker Retest',      msg: 'Full annual biomarker panel. Compare against baseline from the first program. Quantify biological age progress.' }
+  ],
+
+  /* Auto-schedule all 4 reminders when a booking is completed */
+  autoSchedule(booking) {
+    const existing = DB.reminders().filter(r => r.bookingId === booking.id);
+    if (existing.length > 0) return; // already scheduled
+
+    const base = booking.checkOut ? new Date(booking.checkOut) : new Date();
+    const lead = DB.leads().find(l => l.id === booking.clientId);
+    const clientName = lead ? lead.name : 'Client';
+    const clinic = booking.clinic || 'clinic';
+
+    this.FOLLOW_UP_SCHEDULE.forEach(sched => {
+      const due = new Date(base);
+      due.setDate(due.getDate() + sched.days);
+
+      const reminder = {
+        id: uid(),
+        clientId: booking.clientId,
+        bookingId: booking.id,
+        title: sched.title,
+        message: `${clientName} — post-${clinic} program. ${sched.msg}`,
+        dueDate: due.toISOString().split('T')[0],
+        type: sched.type,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      DB.saveReminder(reminder);
+    });
+
+    DB.addActivity(
+      `4 follow-up reminders auto-scheduled for <strong>${clientName}</strong> after ${clinic}`,
+      'book'
+    );
+    this.updateBadge();
+  },
+
+  /* Get reminders with status classification */
+  classify(r) {
+    if (r.status === 'dismissed') return 'dismissed';
+    const today = new Date().toDateString();
+    const due   = new Date(r.dueDate);
+    const dueStr= due.toDateString();
+    if (due < new Date() && dueStr !== today) return 'overdue';
+    if (dueStr === today) return 'due-today';
+    return 'upcoming';
+  },
+
+  daysUntil(dateStr) {
+    const diff = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+    return diff;
+  },
+
+  /* Render reminders list */
+  render(filter) {
+    const container = document.getElementById('remindersList');
+    if (!container) return;
+
+    let reminders = DB.reminders().sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    const leads = DB.leads();
+
+    if (filter !== 'all') {
+      reminders = reminders.filter(r => {
+        const cls = this.classify(r);
+        if (filter === 'due')       return cls === 'overdue' || cls === 'due-today';
+        if (filter === 'upcoming')  return cls === 'upcoming';
+        if (filter === 'dismissed') return cls === 'dismissed';
+        return true;
+      });
+    }
+
+    if (!reminders.length) {
+      container.innerHTML = `<div class="matcher-placeholder" style="min-height:200px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p>No reminders in this category.</p></div>`;
+      return;
+    }
+
+    const icons = { overdue: '🔴', 'due-today': '🟡', upcoming: '🔵', dismissed: '⚪' };
+    const lead_map = Object.fromEntries(leads.map(l => [l.id, l]));
+
+    container.innerHTML = reminders.map(r => {
+      const cls   = this.classify(r);
+      const lead  = lead_map[r.clientId];
+      const days  = this.daysUntil(r.dueDate);
+      const dueLabel = cls === 'overdue'   ? `Overdue by ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''}`
+                     : cls === 'due-today' ? 'Due today'
+                     : cls === 'dismissed' ? 'Dismissed'
+                     : `Due in ${days} day${days !== 1 ? 's' : ''}`;
+
+      return `<div class="reminder-card ${cls}" data-id="${r.id}">
+        <div class="rem-icon ${cls}">${icons[cls] || '⏰'}</div>
+        <div class="rem-body">
+          <div class="rem-title">${r.title}</div>
+          ${lead ? `<div class="rem-client">${lead.name}${lead.assignedClinic ? ' · ' + lead.assignedClinic : ''}</div>` : ''}
+          ${r.message ? `<div class="rem-msg">${r.message}</div>` : ''}
+          <div class="rem-due ${cls === 'overdue' ? 'overdue-label' : cls === 'due-today' ? 'today-label' : ''}">
+            📅 ${fmtDate(r.dueDate)} — ${dueLabel}
+          </div>
+        </div>
+        <div class="rem-actions">
+          ${r.status === 'pending' ? `
+            <button class="btn-gold" style="font-size:0.62rem;padding:0.3rem 0.7rem"
+              onclick="Reminders.markSent('${r.id}')">Mark Sent</button>
+            <button class="btn-ghost" style="font-size:0.62rem"
+              onclick="Reminders.dismiss('${r.id}')">Dismiss</button>` : ''}
+          <button class="btn-icon" onclick="Reminders.delete('${r.id}')">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  /* Dashboard widget — overdue + due today only */
+  renderDashboard() {
+    const container = document.getElementById('remindersDueList');
+    if (!container) return;
+
+    const leads = DB.leads();
+    const due = DB.reminders()
+      .filter(r => r.status === 'pending')
+      .map(r => ({ ...r, cls: this.classify(r) }))
+      .filter(r => r.cls === 'overdue' || r.cls === 'due-today')
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+      .slice(0, 5);
+
+    if (!due.length) {
+      container.innerHTML = `<div class="rem-empty">✅ <span>No reminders due right now. You're all caught up.</span></div>`;
+      return;
+    }
+
+    const lead_map = Object.fromEntries(leads.map(l => [l.id, l]));
+    container.innerHTML = due.map(r => {
+      const lead = lead_map[r.clientId];
+      return `<div class="rem-due-item ${r.cls === 'overdue' ? 'overdue' : 'today'}">
+        <div class="rem-due-left">
+          <div class="rem-due-title">${r.title}</div>
+          <div class="rem-due-sub">${lead ? lead.name : 'Unknown client'}${lead && lead.assignedClinic ? ' · ' + lead.assignedClinic : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <div class="rem-due-date ${r.cls === 'overdue' ? 'overdue' : 'today'}">${r.cls === 'due-today' ? 'Today' : fmtDate(r.dueDate)}</div>
+          <button class="btn-gold" style="font-size:0.62rem;padding:0.28rem 0.65rem"
+            onclick="Reminders.markSent('${r.id}');Views.dashboard()">Done</button>
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  updateBadge() {
+    const count = DB.reminders().filter(r => {
+      if (r.status !== 'pending') return false;
+      const cls = this.classify(r);
+      return cls === 'overdue' || cls === 'due-today';
+    }).length;
+    const badge = document.getElementById('badge-reminders');
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline' : 'none';
+    }
+  },
+
+  showBanner() {
+    const count = DB.reminders().filter(r => {
+      if (r.status !== 'pending') return false;
+      const cls = this.classify(r);
+      return cls === 'overdue' || cls === 'due-today';
+    }).length;
+    if (!count) return;
+
+    if (document.getElementById('reminderBanner')) return; // already showing
+    const banner = document.createElement('div');
+    banner.className = 'reminder-banner';
+    banner.id = 'reminderBanner';
+    banner.innerHTML = `
+      <p>⏰ You have <strong>${count} reminder${count !== 1 ? 's' : ''}</strong> due today or overdue.</p>
+      <div class="banner-actions">
+        <a href="#" class="btn-gold" style="font-size:0.65rem;padding:0.3rem 0.75rem" data-view="reminders">View Reminders</a>
+        <button class="banner-dismiss" id="bannerDismiss">Dismiss</button>
+      </div>`;
+    document.querySelector('.crm-main').insertBefore(banner, document.querySelector('.topbar').nextSibling);
+    document.getElementById('bannerDismiss').addEventListener('click', () => banner.remove());
+  },
+
+  markSent(id) {
+    const reminders = DB.reminders();
+    const r = reminders.find(x => x.id === id);
+    if (!r) return;
+    r.status = 'sent';
+    r.sentAt = new Date().toISOString();
+    DB.saveReminder(r);
+    const lead = DB.leads().find(l => l.id === r.clientId);
+    DB.addActivity(`Reminder <strong>"${r.title}"</strong> marked done for ${lead ? lead.name : 'client'}`, 'stage');
+    this.updateBadge();
+    this.render(document.querySelector('[data-rem-filter].active')?.dataset.remFilter || 'all');
+    showToast('Reminder marked as sent ✓', 'success');
+  },
+
+  dismiss(id) {
+    const reminders = DB.reminders();
+    const r = reminders.find(x => x.id === id);
+    if (!r) return;
+    r.status = 'dismissed';
+    DB.saveReminder(r);
+    this.updateBadge();
+    this.render(document.querySelector('[data-rem-filter].active')?.dataset.remFilter || 'all');
+    showToast('Reminder dismissed');
+  },
+
+  delete(id) {
+    if (!confirm('Delete this reminder?')) return;
+    DB.deleteReminder(id);
+    this.updateBadge();
+    this.render(document.querySelector('[data-rem-filter].active')?.dataset.remFilter || 'all');
+    showToast('Reminder deleted');
+  }
+};
+
+/* ============================================================
+   6b. NOTIFICATION TEMPLATES
    ============================================================ */
 const TEMPLATES = {
   welcome: `Dear [CLIENT NAME],
@@ -874,6 +1130,9 @@ const App = {
     ];
     samplePayments.forEach(p => DB.savePayment(p));
 
+    // Auto-schedule reminders for completed booking
+    Reminders.autoSchedule(sampleBookings[1]); // Ahmed's completed Chenot booking
+
     DB.addActivity('Sample data loaded — 5 leads, 2 bookings, 5 payments', 'new');
     DB.addActivity(`<strong>Marcus Hoffmann</strong> booking confirmed at AEON Clinic Dubai`, 'book');
     DB.addActivity(`<strong>Ahmed Al-Sayed</strong> completed Chenot Palace program`, 'stage');
@@ -970,6 +1229,10 @@ document.addEventListener('DOMContentLoaded', () => {
       lead.assignedClinic = data.clinic;
       DB.saveLead(lead);
       DB.addActivity(`<strong>${lead.name}</strong> booking confirmed at ${data.clinic}`, 'book');
+    }
+    // Auto-schedule follow-up reminders when status is completed
+    if (data.status === 'completed') {
+      Reminders.autoSchedule(data);
     }
     Modals.close('modalBooking');
     Views[Router.current]();
@@ -1072,6 +1335,34 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch {}
     }
   });
+
+  /* --- Reminders: add reminder form --- */
+  document.getElementById('btnAddReminder').addEventListener('click', () => {
+    document.getElementById('reminderForm').reset();
+    const leads = DB.leads();
+    document.getElementById('reminderClientSelect').innerHTML = leads.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+    document.getElementById('reminderForm').elements['dueDate'].value = new Date().toISOString().split('T')[0];
+    Modals.open('modalReminder');
+  });
+
+  document.getElementById('reminderForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    if (!data.id) { data.id = uid(); data.createdAt = new Date().toISOString(); data.status = 'pending'; }
+    DB.saveReminder(data);
+    const lead = DB.leads().find(l => l.id === data.clientId);
+    DB.addActivity(`Reminder <strong>"${data.title}"</strong> set for ${lead ? lead.name : 'client'} on ${fmtDate(data.dueDate)}`, 'stage');
+    Modals.close('modalReminder');
+    Reminders.updateBadge();
+    if (Router.current === 'reminders') Views.reminders();
+    showToast('Reminder saved ✓', 'success');
+  });
+
+  /* --- Sample data: also auto-schedule reminders for completed bookings --- */
+  // (handled inside App.seedData via autoSchedule)
+
+  /* --- Show reminder banner on load --- */
+  setTimeout(() => Reminders.showBanner(), 800);
 
   /* --- Boot --- */
   Router.go('dashboard');

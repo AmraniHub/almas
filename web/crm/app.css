@@ -632,6 +632,87 @@ input, select, textarea { font-family: var(--font); }
 .toast.error { border-color: rgba(248,113,113,0.4); color: var(--red); }
 
 /* ============================================================
+   REMINDERS
+   ============================================================ */
+.reminders-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;
+}
+.rem-filters { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+
+.reminders-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.reminder-card {
+  background: var(--navy-card); border: 1px solid var(--border-soft);
+  padding: 1.1rem 1.25rem;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 1rem; align-items: center;
+  transition: border-color 0.2s;
+}
+.reminder-card:hover { border-color: var(--border); }
+.reminder-card.overdue { border-left: 3px solid var(--red); }
+.reminder-card.due-today { border-left: 3px solid var(--gold); }
+.reminder-card.upcoming { border-left: 3px solid var(--blue); }
+.reminder-card.dismissed { opacity: 0.45; }
+
+.rem-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.rem-icon.overdue  { background: rgba(248,113,113,0.12); }
+.rem-icon.due-today{ background: rgba(201,169,110,0.12); }
+.rem-icon.upcoming { background: rgba(96,165,250,0.10); }
+.rem-icon.dismissed{ background: rgba(255,255,255,0.04); }
+
+.rem-body { min-width: 0; }
+.rem-title { font-size: 0.85rem; font-weight: 500; color: var(--ivory); margin-bottom: 0.2rem; }
+.rem-client { font-size: 0.72rem; color: var(--gold); margin-bottom: 0.2rem; }
+.rem-msg { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
+.rem-due { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+.rem-due.overdue-label  { color: var(--red); }
+.rem-due.today-label    { color: var(--gold); }
+
+.rem-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+/* Dashboard widget */
+.reminder-dash-card { grid-column: 1 / -1; }
+.reminders-due-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.rem-due-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: var(--navy-soft); border: 1px solid var(--border-soft);
+}
+.rem-due-item.overdue { border-left: 3px solid var(--red); }
+.rem-due-item.today   { border-left: 3px solid var(--gold); }
+.rem-due-left { display: flex; flex-direction: column; gap: 0.15rem; }
+.rem-due-title { font-size: 0.8rem; font-weight: 500; color: var(--ivory); }
+.rem-due-sub   { font-size: 0.68rem; color: var(--text-muted); }
+.rem-due-date  { font-size: 0.72rem; font-weight: 500; }
+.rem-due-date.overdue { color: var(--red); }
+.rem-due-date.today   { color: var(--gold); }
+.rem-empty { font-size: 0.78rem; color: var(--text-muted); padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Notification banner for due reminders */
+.reminder-banner {
+  position: fixed; top: var(--topbar-h); left: var(--sidebar-w); right: 0;
+  background: linear-gradient(to right, rgba(201,169,110,0.15), rgba(201,169,110,0.05));
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 1.75rem;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 90; animation: slideDown 0.3s var(--ease);
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.reminder-banner p { font-size: 0.78rem; color: var(--gold-light); }
+.reminder-banner p strong { color: var(--ivory); }
+.banner-actions { display: flex; gap: 0.5rem; align-items: center; }
+.banner-dismiss { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; }
+.banner-dismiss:hover { color: var(--ivory); }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 1100px) {
