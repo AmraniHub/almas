@@ -111,7 +111,10 @@
       btn.style.opacity = '0.6';
       btn.style.pointerEvents = 'none';
 
-      // Simulate async submission — replace with real endpoint
+      // Save inquiry to localStorage → picked up by CRM
+      const data = Object.fromEntries(new FormData(form));
+      localStorage.setItem('aeon_new_inquiry', JSON.stringify(data));
+
       setTimeout(() => {
         form.classList.add('hidden');
         formSuccess.classList.add('active');

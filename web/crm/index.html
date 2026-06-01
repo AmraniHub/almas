@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEON CRM — Private Longevity Advisory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-logo">AEON</span>
+    <span class="sidebar-sub">CRM</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-view="dashboard">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="nav-item" data-view="pipeline">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/></svg>
+      Pipeline
+      <span class="nav-badge" id="badge-pipeline">0</span>
+    </a>
+    <a href="#" class="nav-item" data-view="clients">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+      Clients
+    </a>
+    <a href="#" class="nav-item" data-view="bookings">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+      Bookings
+    </a>
+    <a href="#" class="nav-item" data-view="revenue">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.028 2.353 1.118V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.028-2.354-1.118V5z" clip-rule="evenodd"/></svg>
+      Revenue
+    </a>
+    <div class="nav-divider"></div>
+    <a href="#" class="nav-item nav-highlight" data-view="matcher">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+      AI Matcher
+    </a>
+    <a href="#" class="nav-item" data-view="notifications">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+      Notifications
+      <span class="nav-badge unread" id="badge-notif">0</span>
+    </a>
+    <a href="#" class="nav-item" data-view="settings">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+      Settings
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-avatar">A</div>
+    <div class="user-info">
+      <span class="user-name">AEON Advisor</span>
+      <span class="user-role">Dubai, UAE</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="crm-main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+      </button>
+      <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-gold" id="btnAddLead">+ New Lead</button>
+    </div>
+  </header>
+
+  <!-- ===== DASHBOARD ===== -->
+  <section class="view active" id="view-dashboard">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Revenue MTD</span>
+        <span class="kpi-value" id="kpi-revenue">$0</span>
+        <span class="kpi-sub" id="kpi-revenue-sub">0 payments received</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Active Leads</span>
+        <span class="kpi-value" id="kpi-leads">0</span>
+        <span class="kpi-sub" id="kpi-leads-sub">in pipeline</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Active Clients</span>
+        <span class="kpi-value" id="kpi-clients">0</span>
+        <span class="kpi-sub" id="kpi-clients-sub">confirmed bookings</span>
+      </div>
+      <div class="kpi-card gold">
+        <span class="kpi-label">Projected Annual</span>
+        <span class="kpi-value" id="kpi-projected">$0</span>
+        <span class="kpi-sub">based on pipeline</span>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card chart-card">
+        <div class="card-header"><h3>Revenue (6 months)</h3></div>
+        <canvas id="chartRevenue" height="180"></canvas>
+      </div>
+      <div class="card chart-card">
+        <div class="card-header"><h3>Pipeline Distribution</h3></div>
+        <canvas id="chartPipeline" height="180"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Recent Activity</h3><a href="#" class="card-link" data-view="pipeline">View all</a></div>
+        <div class="activity-feed" id="activityFeed"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Pending Payments</h3></div>
+        <div class="pending-list" id="pendingList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PIPELINE ===== -->
+  <section class="view" id="view-pipeline">
+    <div class="pipeline-toolbar">
+      <span class="pipeline-count" id="pipelineCount">0 leads</span>
+      <button class="btn-gold" id="btnAddLeadPipeline">+ Add Lead</button>
+    </div>
+    <div class="kanban" id="kanban">
+      <!-- Generated by JS -->
+    </div>
+  </section>
+
+  <!-- ===== CLIENTS ===== -->
+  <section class="view" id="view-clients">
+    <div class="table-toolbar">
+      <input type="text" class="search-input" id="clientSearch" placeholder="Search clients…" />
+      <select class="filter-select" id="clientFilter">
+        <option value="">All stages</option>
+        <option value="booking_confirmed">Booking Confirmed</option>
+        <option value="active_client">Active Client</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="clientsTable">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Primary Goal</th>
+            <th>Budget</th>
+            <th>Stage</th>
+            <th>Assigned Clinic</th>
+            <th>Coord. Fee</th>
+            <th>Commission</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="clientsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== BOOKINGS ===== -->
+  <section class="view" id="view-bookings">
+    <div class="table-toolbar">
+      <span class="section-stat" id="bookingsStat">0 bookings</span>
+      <button class="btn-gold" id="btnAddBooking">+ New Booking</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Clinic</th>
+            <th>Program</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Program Value</th>
+            <th>Your Fee</th>
+            <th>Commission</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="bookingsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== REVENUE ===== -->
+  <section class="view" id="view-revenue">
+    <div class="revenue-kpis">
+      <div class="kpi-card">
+        <span class="kpi-label">Total Earned</span>
+        <span class="kpi-value" id="rev-total">$0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Coordination Fees</span>
+        <span class="kpi-value" id="rev-coord">$0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Clinic Commissions</span>
+        <span class="kpi-value" id="rev-comm">$0</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Pending Invoices</span>
+        <span class="kpi-value" id="rev-pending">$0</span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:2rem">
+      <div class="card-header"><h3>Payment Records</h3><button class="btn-ghost" id="btnAddPayment">+ Record Payment</button></div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Date</th><th>Client</th><th>Type</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="paymentsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== AI MATCHER ===== -->
+  <section class="view" id="view-matcher">
+    <div class="matcher-layout">
+      <div class="matcher-form-wrap card">
+        <h2 class="matcher-title">Client Profile</h2>
+        <p class="matcher-sub">Enter the client's parameters to generate precise clinic recommendations.</p>
+        <form id="matcherForm">
+          <div class="form-group">
+            <label>Primary Goal</label>
+            <select name="goal" required>
+              <option value="">Select goal</option>
+              <option value="diagnostics">Comprehensive diagnostics & biomarker mapping</option>
+              <option value="retreat">Residential longevity retreat</option>
+              <option value="pharmacological">Pharmacological optimization (NAD+, rapamycin)</option>
+              <option value="regenerative">Regenerative medicine (stem cells, exosomes)</option>
+              <option value="performance">Performance & cognitive optimization</option>
+              <option value="aesthetic">Hormonal & aesthetic integration</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Travel Preference</label>
+            <select name="travel">
+              <option value="any">Any destination</option>
+              <option value="europe">Europe only</option>
+              <option value="dubai">Dubai / GCC only</option>
+              <option value="us">USA only</option>
+              <option value="asia">Asia</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Time Available</label>
+            <select name="duration">
+              <option value="day">Day visit / outpatient</option>
+              <option value="week">1 week program</option>
+              <option value="multi">Multi-week (2+ weeks)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Investment Range</label>
+            <select name="budget">
+              <option value="entry">Entry ($5K – $15K)</option>
+              <option value="mid">Mid ($15K – $50K)</option>
+              <option value="premium">Premium ($50K+)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Privacy Requirement</label>
+            <select name="privacy">
+              <option value="any">Standard</option>
+              <option value="private">Fully private facility required</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Known Biomarker Concerns (optional)</label>
+            <input type="text" name="biomarkers" placeholder="e.g. elevated Lp(a), coronary calcium, metabolic syndrome" />
+          </div>
+          <button type="submit" class="btn-gold btn-full">Generate Recommendations</button>
+        </form>
+      </div>
+      <div class="matcher-results" id="matcherResults">
+        <div class="matcher-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <p>Enter a client profile to generate AI-matched clinic recommendations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NOTIFICATIONS ===== -->
+  <section class="view" id="view-notifications">
+    <div class="notif-layout">
+      <div class="card notif-templates">
+        <div class="card-header"><h3>Message Templates</h3></div>
+        <div class="template-tabs">
+          <button class="tab-btn active" data-tab="welcome">Welcome</button>
+          <button class="tab-btn" data-tab="proposal">Proposal</button>
+          <button class="tab-btn" data-tab="confirmed">Confirmed</button>
+          <button class="tab-btn" data-tab="followup">Follow-up</button>
+          <button class="tab-btn" data-tab="payment">Payment</button>
+        </div>
+        <div id="templateContent" class="template-content"></div>
+        <div class="template-actions">
+          <select id="templateRecipient" class="filter-select">
+            <option value="">Select recipient…</option>
+          </select>
+          <button class="btn-gold" id="btnCopyTemplate">Copy Message</button>
+          <button class="btn-ghost" id="btnEmailDraft">Open Email Draft</button>
+        </div>
+      </div>
+      <div class="card notif-log">
+        <div class="card-header"><h3>Activity Log</h3></div>
+        <div class="notif-list" id="notifList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SETTINGS ===== -->
+  <section class="view" id="view-settings">
+    <div class="settings-grid">
+      <div class="card">
+        <div class="card-header"><h3>Business Profile</h3></div>
+        <form class="settings-form" id="settingsForm">
+          <div class="form-group"><label>Advisor Name</label><input type="text" name="advisorName" id="s-name" /></div>
+          <div class="form-group"><label>Email</label><input type="email" name="email" id="s-email" /></div>
+          <div class="form-group"><label>Phone / WhatsApp</label><input type="text" name="phone" id="s-phone" /></div>
+          <div class="form-group"><label>Base Currency</label>
+            <select name="currency" id="s-currency">
+              <option value="USD">USD $</option>
+              <option value="AED">AED</option>
+              <option value="CHF">CHF</option>
+              <option value="EUR">EUR €</option>
+              <option value="GBP">GBP £</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-gold">Save Settings</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Default Fee Structure</h3></div>
+        <form class="settings-form" id="feeForm">
+          <div class="form-group"><label>Entry Coordination Fee ($)</label><input type="number" name="feeEntry" id="s-fee-entry" value="3500" /></div>
+          <div class="form-group"><label>Standard Coordination Fee ($)</label><input type="number" name="feeStd" id="s-fee-std" value="10000" /></div>
+          <div class="form-group"><label>Premium Coordination Fee ($)</label><input type="number" name="feePrem" id="s-fee-prem" value="25000" /></div>
+          <div class="form-group"><label>Default Commission Rate (%)</label><input type="number" name="commRate" id="s-comm-rate" value="12" /></div>
+          <button type="submit" class="btn-gold">Save Fees</button>
+        </form>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <div class="card-header"><h3>Data Management</h3></div>
+        <div class="data-actions">
+          <button class="btn-ghost" id="btnExportCSV">Export Clients CSV</button>
+          <button class="btn-ghost" id="btnExportJSON">Export All Data (JSON)</button>
+          <button class="btn-ghost" id="btnSeedData">Load Sample Data</button>
+          <button class="btn-danger" id="btnClearData">Clear All Data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== MODAL: ADD/EDIT LEAD ===== -->
+<div class="modal-overlay" id="modalLead">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalLeadTitle">New Lead</h2>
+      <button class="modal-close" data-close="modalLead">✕</button>
+    </div>
+    <form class="modal-form" id="leadForm">
+      <input type="hidden" name="id" />
+      <div class="form-row">
+        <div class="form-group"><label>Full Name *</label><input type="text" name="name" required placeholder="Client name" /></div>
+        <div class="form-group"><label>Email *</label><input type="email" name="email" required placeholder="Email address" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone / WhatsApp</label><input type="text" name="phone" placeholder="+971 50 000 0000" /></div>
+        <div class="form-group"><label>Referred by</label><input type="text" name="referral" placeholder="Bank / person / event" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Primary Goal</label>
+          <select name="primaryGoal">
+            <option value="">Select…</option>
+            <option>Comprehensive diagnostics & biomarker mapping</option>
+            <option>Residential longevity retreat</option>
+            <option>Pharmacological optimization</option>
+            <option>Regenerative medicine</option>
+            <option>Performance & cognitive optimization</option>
+            <option>Hormonal & aesthetic integration</option>
+            <option>Multi-year longevity strategy</option>
+            <option>Family office health infrastructure</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Budget Range</label>
+          <select name="budget">
+            <option value="entry">Entry ($5K – $15K)</option>
+            <option value="mid">Mid ($15K – $50K)</option>
+            <option value="premium">Premium ($50K+)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Stage</label>
+          <select name="stage">
+            <option value="new_inquiry">New Inquiry</option>
+            <option value="intake_call">Intake Call</option>
+            <option value="proposal_sent">Proposal Sent</option>
+            <option value="booking_confirmed">Booking Confirmed</option>
+            <option value="active_client">Active Client</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Assigned Clinic</label><input type="text" name="assignedClinic" placeholder="Clinic name (if confirmed)" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Coordination Fee ($)</label><input type="number" name="coordinationFee" placeholder="0" /></div>
+        <div class="form-group"><label>Expected Commission ($)</label><input type="number" name="commissionExpected" placeholder="0" /></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea name="notes" rows="3" placeholder="Health baseline, special requirements, internal notes…"></textarea></div>
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" data-close="modalLead">Cancel</button>
+        <button type="submit" class="btn-gold">Save Lead</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: ADD BOOKING ===== -->
+<div class="modal-overlay" id="modalBooking">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>New Booking</h2>
+      <button class="modal-close" data-close="modalBooking">✕</button>
+    </div>
+    <form class="modal-form" id="bookingForm">
+      <input type="hidden" name="id" />
+      <div class="form-row">
+        <div class="form-group"><label>Client *</label>
+          <select name="clientId" required id="bookingClientSelect"></select>
+        </div>
+        <div class="form-group"><label>Clinic *</label><input type="text" name="clinic" required placeholder="e.g. Clinique La Prairie" /></div>
+      </div>
+      <div class="form-group"><label>Program</label><input type="text" name="program" placeholder="e.g. Revitalisation Premium" /></div>
+      <div class="form-row">
+        <div class="form-group"><label>Check-in</label><input type="date" name="checkIn" /></div>
+        <div class="form-group"><label>Check-out</label><input type="date" name="checkOut" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Program Investment ($)</label><input type="number" name="programInvestment" placeholder="0" /></div>
+        <div class="form-group"><label>Your Coordination Fee ($)</label><input type="number" name="coordinationFee" placeholder="0" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Commission Amount ($)</label><input type="number" name="commissionAmount" placeholder="0" /></div>
+        <div class="form-group"><label>Status</label>
+          <select name="status">
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" data-close="modalBooking">Cancel</button>
+        <button type="submit" class="btn-gold">Save Booking</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: ADD PAYMENT ===== -->
+<div class="modal-overlay" id="modalPayment">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>Record Payment</h2>
+      <button class="modal-close" data-close="modalPayment">✕</button>
+    </div>
+    <form class="modal-form" id="paymentForm">
+      <input type="hidden" name="id" />
+      <div class="form-group"><label>Client</label>
+        <select name="clientId" id="paymentClientSelect"></select>
+      </div>
+      <div class="form-group"><label>Payment Type</label>
+        <select name="type">
+          <option value="coordination_fee">Coordination Fee</option>
+          <option value="clinic_commission">Clinic Commission</option>
+          <option value="retainer">Annual Retainer</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Amount ($)</label><input type="number" name="amount" required /></div>
+        <div class="form-group"><label>Date</label><input type="date" name="date" /></div>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select name="status">
+          <option value="pending">Pending / Invoiced</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" data-close="modalPayment">Cancel</button>
+        <button type="submit" class="btn-gold">Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
