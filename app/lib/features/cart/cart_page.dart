@@ -7,6 +7,7 @@ import '../../models/cart_item.dart';
 import '../../models/product.dart';
 import '../../widgets/glass_panel.dart';
 import '../../widgets/section_header.dart';
+import 'checkout_sheet.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({
@@ -14,6 +15,7 @@ class CartPage extends StatelessWidget {
     required this.onIncrement,
     required this.onDecrement,
     required this.onBrowseCatalog,
+    required this.onOrderSent,
     super.key,
   });
 
@@ -21,6 +23,7 @@ class CartPage extends StatelessWidget {
   final ValueChanged<Product> onIncrement;
   final ValueChanged<Product> onDecrement;
   final VoidCallback onBrowseCatalog;
+  final VoidCallback onOrderSent;
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +71,13 @@ class CartPage extends StatelessWidget {
                         Expanded(
                           flex: 2,
                           child: _OrderSummaryPanel(
+                            items: items,
                             subtotal: subtotal,
                             deliveryFee: deliveryFee,
                             total: total,
                             minimumOrder: minimumOrder,
                             progress: progress,
+                            onOrderSent: onOrderSent,
                           ),
                         ),
                       ],
@@ -88,11 +93,13 @@ class CartPage extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       _OrderSummaryPanel(
+                        items: items,
                         subtotal: subtotal,
                         deliveryFee: deliveryFee,
                         total: total,
                         minimumOrder: minimumOrder,
                         progress: progress,
+                        onOrderSent: onOrderSent,
                       ),
                     ],
                   );
@@ -309,18 +316,22 @@ class _CartLineCard extends StatelessWidget {
 
 class _OrderSummaryPanel extends StatelessWidget {
   const _OrderSummaryPanel({
+    required this.items,
     required this.subtotal,
     required this.deliveryFee,
     required this.total,
     required this.minimumOrder,
     required this.progress,
+    required this.onOrderSent,
   });
 
+  final List<CartItem> items;
   final double subtotal;
   final double deliveryFee;
   final double total;
   final double minimumOrder;
   final double progress;
+  final VoidCallback onOrderSent;
 
   @override
   Widget build(BuildContext context) {
@@ -394,13 +405,16 @@ class _OrderSummaryPanel extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.orderConfirmationReady),
-                  ),
-                );
-              },
+              onPressed: qualifiesForMinimum
+                  ? () => showCheckoutSheet(
+                        context,
+                        items: items,
+                        subtotal: subtotal,
+                        deliveryFee: deliveryFee,
+                        total: total,
+                        onOrderSent: onOrderSent,
+                      )
+                  : null,
               icon: const Icon(Icons.check_circle_outline_rounded),
               label: Text(l10n.placeCashOrder),
             ),

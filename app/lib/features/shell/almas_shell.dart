@@ -6,7 +6,6 @@ import '../../core/theme/app_spacing.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../widgets/ambient_background.dart';
-import '../admin/admin_page.dart';
 import '../cart/cart_page.dart';
 import '../catalog/catalog_page.dart';
 import '../chat/chat_page.dart';
@@ -65,9 +64,9 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
           onIncrement: cartNotifier.add,
           onDecrement: cartNotifier.decrement,
           onBrowseCatalog: _goToCatalog,
+          onOrderSent: cartNotifier.clear,
         ),
       ),
-      _padded(const AdminPage()),
       _padded(const ProfilePage()),
     ];
 
@@ -118,10 +117,6 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
               child: const Icon(Icons.shopping_bag_rounded),
             ),
             label: l10n.cartTab,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.hub_rounded),
-            label: l10n.opsTab,
           ),
           NavigationDestination(
             icon: const Icon(Icons.person_rounded),

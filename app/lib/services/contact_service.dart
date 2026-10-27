@@ -2,8 +2,8 @@
 
 /// Central contact config — update these with real Almas numbers/URLs.
 abstract final class AlmasContact {
-  static const String phoneNumber   = '+212600000000';   // TODO: real number
-  static const String whatsappNumber = '212600000000';   // without +
+  static const String phoneNumber   = '+212619434035';
+  static const String whatsappNumber = '212619434035';   // without +
   static const String website       = 'https://almas.ma';
   static const String defaultWhatsAppMsg =
       'Hello Almas 👋 I would like to place an order.';
@@ -15,15 +15,24 @@ class ContactService {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
-  static Future<void> whatsApp({String? message}) async {
+  /// Opens WhatsApp to Almas with an optional pre-filled [message].
+  /// Returns `true` if a WhatsApp/browser target was launched.
+  static Future<bool> whatsApp({String? message}) async {
     final text = Uri.encodeComponent(
       message ?? AlmasContact.defaultWhatsAppMsg,
     );
     final uri = Uri.parse(
       'https://wa.me/${AlmasContact.whatsappNumber}?text=$text',
     );
+    // Some devices report canLaunchUrl == false even when a handler exists,
+    // so fall back to attempting the launch directly before giving up.
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+    try {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      return false;
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/cart_item.dart';
 import '../../models/order_snapshot.dart';
 import '../../models/product.dart';
 
@@ -288,6 +289,126 @@ class AppLocalizations {
         french: 'Confirmer la commande',
         arabic: 'تأكيد طلب الدفع عند الاستلام',
       );
+
+  // ── Checkout / delivery details ────────────────────────────────────────
+  String get checkoutDetailsTitle => _pick(
+        english: 'Delivery details',
+        french: 'Détails de livraison',
+        arabic: 'تفاصيل التوصيل',
+      );
+
+  String get checkoutDetailsSubtitle => _pick(
+        english:
+            'Confirm where we deliver and who to contact. We send your order to Almas on WhatsApp for confirmation.',
+        french:
+            'Confirmez le lieu de livraison et le contact. Nous envoyons votre commande à Almas sur WhatsApp pour confirmation.',
+        arabic:
+            'أكد مكان التوصيل وجهة الاتصال. نرسل طلبك إلى ألماس عبر واتساب للتأكيد.',
+      );
+
+  String get businessNameLabel => _pick(
+        english: 'Restaurant / hotel name',
+        french: 'Nom du restaurant / hôtel',
+        arabic: 'اسم المطعم / الفندق',
+      );
+
+  String get phoneFieldLabel => _pick(
+        english: 'Phone number',
+        french: 'Numéro de téléphone',
+        arabic: 'رقم الهاتف',
+      );
+
+  String get deliveryAddressLabel => _pick(
+        english: 'Delivery address',
+        french: 'Adresse de livraison',
+        arabic: 'عنوان التوصيل',
+      );
+
+  String get orderNotesLabel => _pick(
+        english: 'Notes for Almas (optional)',
+        french: 'Notes pour Almas (facultatif)',
+        arabic: 'ملاحظات لألماس (اختياري)',
+      );
+
+  String get orderNotesHint => _pick(
+        english: 'Delivery time, floor, contact person…',
+        french: 'Heure de livraison, étage, personne à contacter…',
+        arabic: 'وقت التوصيل، الطابق، الشخص المسؤول…',
+      );
+
+  String get requiredFieldError => _pick(
+        english: 'Required',
+        french: 'Obligatoire',
+        arabic: 'مطلوب',
+      );
+
+  String get confirmOrderOnWhatsApp => _pick(
+        english: 'Confirm order on WhatsApp',
+        french: 'Confirmer sur WhatsApp',
+        arabic: 'تأكيد الطلب عبر واتساب',
+      );
+
+  String get orderSentSuccess => _pick(
+        english: 'Order sent! Almas will confirm on WhatsApp.',
+        french: 'Commande envoyée ! Almas confirmera sur WhatsApp.',
+        arabic: 'تم إرسال الطلب! سيؤكد ألماس عبر واتساب.',
+      );
+
+  String get orderSendFailed => _pick(
+        english: 'Could not open WhatsApp. Please call us instead.',
+        french: 'Impossible d\'ouvrir WhatsApp. Appelez-nous plutôt.',
+        arabic: 'تعذر فتح واتساب. يرجى الاتصال بنا بدلاً من ذلك.',
+      );
+
+  /// Builds the full itemized order message sent to Almas on WhatsApp.
+  String buildOrderMessage({
+    required String businessName,
+    required String phone,
+    required String address,
+    required String notes,
+    required List<CartItem> items,
+    required double subtotal,
+    required double deliveryFee,
+    required double total,
+  }) {
+    final buffer = StringBuffer();
+    buffer.writeln(_pick(
+      english: '🌿 *New Almas order*',
+      french: '🌿 *Nouvelle commande Almas*',
+      arabic: '🌿 *طلب جديد من ألماس*',
+    ));
+    buffer.writeln();
+    buffer.writeln(
+      '${_pick(english: '🏢 Business', french: '🏢 Établissement', arabic: '🏢 المنشأة')}: $businessName',
+    );
+    buffer.writeln(
+      '${_pick(english: '📞 Phone', french: '📞 Téléphone', arabic: '📞 الهاتف')}: $phone',
+    );
+    buffer.writeln(
+      '${_pick(english: '📍 Address', french: '📍 Adresse', arabic: '📍 العنوان')}: $address',
+    );
+    if (notes.trim().isNotEmpty) {
+      buffer.writeln(
+        '${_pick(english: '📝 Notes', french: '📝 Notes', arabic: '📝 ملاحظات')}: ${notes.trim()}',
+      );
+    }
+    buffer.writeln();
+    buffer.writeln(
+      '${_pick(english: '🛒 Items', french: '🛒 Articles', arabic: '🛒 المنتجات')}:',
+    );
+    for (final item in items) {
+      buffer.writeln(
+        '• ${item.quantity}× ${productName(item.product)} (${productPackSize(item.product)}) — ${formatMad(item.lineTotal)}',
+      );
+    }
+    buffer.writeln();
+    buffer.writeln('$subtotalLabel: ${formatMad(subtotal)}');
+    buffer.writeln(
+      '${_pick(english: 'Delivery', french: 'Livraison', arabic: 'التوصيل')}: ${deliveryFee == 0 ? includedLabel : formatMad(deliveryFee)}',
+    );
+    buffer.writeln('*$totalDueOnDelivery: ${formatMad(total)}*');
+    return buffer.toString();
+  }
 
   String get orderTrackingTitle => _pick(
         english: 'Order tracking',
