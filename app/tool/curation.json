@@ -1,0 +1,831 @@
+{
+ "about": "Which till products the Almas app shows, on which shelf, with which French and English name, and whether they are sold by the kilo. Read by tool/build_catalog.py (the catalogue built into the app) and by the till (Aronium shop/agent/app_feed.py, the live catalogue online). Prices and Arabic names always come from the till. A product not listed here is not in the app.",
+ "categories": [
+  {
+   "id": "spices",
+   "ar": "التوابل",
+   "fr": "Épices",
+   "en": "Spices",
+   "color": "#B5472C"
+  },
+  {
+   "id": "blends",
+   "ar": "الخلطات",
+   "fr": "Mélanges",
+   "en": "Spice blends",
+   "color": "#C9822B"
+  },
+  {
+   "id": "herbs",
+   "ar": "الأعشاب",
+   "fr": "Herbes",
+   "en": "Herbs",
+   "color": "#5E7F3E"
+  },
+  {
+   "id": "seeds",
+   "ar": "حبوب وفواكه جافة",
+   "fr": "Graines & fruits secs",
+   "en": "Seeds & dried fruit",
+   "color": "#8A6A3B"
+  },
+  {
+   "id": "pastry",
+   "ar": "الحلويات",
+   "fr": "Pâtisserie",
+   "en": "Pastry",
+   "color": "#C7647A"
+  },
+  {
+   "id": "pantry",
+   "ar": "البقالة",
+   "fr": "Épicerie",
+   "en": "Pantry",
+   "color": "#4F6D8A"
+  },
+  {
+   "id": "beauty",
+   "ar": "الحناء والتجميل",
+   "fr": "Henné & beauté",
+   "en": "Henna & beauty",
+   "color": "#7C4A2D"
+  },
+  {
+   "id": "incense",
+   "ar": "البخور والمسك",
+   "fr": "Encens & musc",
+   "en": "Incense & musk",
+   "color": "#5B4B8A"
+  }
+ ],
+ "products": {
+  "13": {
+   "cat": "spices",
+   "fr": "Paprika doux",
+   "en": "Sweet paprika",
+   "unit": "kg"
+  },
+  "2": {
+   "cat": "spices",
+   "fr": "Curcuma",
+   "en": "Turmeric",
+   "unit": "kg"
+  },
+  "8": {
+   "cat": "spices",
+   "fr": "Piment fort moulu",
+   "en": "Hot chili powder",
+   "unit": "kg"
+  },
+  "5": {
+   "cat": "spices",
+   "fr": "Ail en poudre",
+   "en": "Garlic powder",
+   "unit": "kg"
+  },
+  "11": {
+   "cat": "spices",
+   "fr": "Oignon en poudre",
+   "en": "Onion powder",
+   "unit": "kg"
+  },
+  "1": {
+   "cat": "spices",
+   "fr": "Gingembre moulu",
+   "en": "Ground ginger",
+   "unit": "kg"
+  },
+  "6": {
+   "cat": "spices",
+   "fr": "Cumin",
+   "en": "Cumin",
+   "unit": "kg"
+  },
+  "3": {
+   "cat": "spices",
+   "fr": "Poivre noir",
+   "en": "Black pepper",
+   "unit": "kg"
+  },
+  "245": {
+   "cat": "spices",
+   "fr": "Poivre blanc",
+   "en": "White pepper",
+   "unit": "kg"
+  },
+  "9": {
+   "cat": "spices",
+   "fr": "Cannelle",
+   "en": "Cinnamon",
+   "unit": "kg"
+  },
+  "212": {
+   "cat": "spices",
+   "fr": "Cannelle spéciale",
+   "en": "Cinnamon (special)",
+   "unit": "kg"
+  },
+  "130": {
+   "cat": "spices",
+   "fr": "Coriandre",
+   "en": "Coriander",
+   "unit": "kg"
+  },
+  "92": {
+   "cat": "spices",
+   "fr": "Clou de girofle",
+   "en": "Cloves",
+   "unit": "kg"
+  },
+  "40": {
+   "cat": "spices",
+   "fr": "Fenouil",
+   "en": "Fennel seeds",
+   "unit": "kg"
+  },
+  "39": {
+   "cat": "spices",
+   "fr": "Anis vert",
+   "en": "Aniseed",
+   "unit": "kg"
+  },
+  "73": {
+   "cat": "spices",
+   "fr": null,
+   "en": null,
+   "unit": "kg"
+  },
+  "64": {
+   "cat": "spices",
+   "fr": "Gingembre",
+   "en": "Ginger",
+   "unit": "kg"
+  },
+  "43": {
+   "cat": "spices",
+   "fr": "Nigelle",
+   "en": "Nigella seeds",
+   "unit": "kg"
+  },
+  "79": {
+   "cat": "spices",
+   "fr": "Galanga",
+   "en": "Galangal",
+   "unit": "kg"
+  },
+  "282": {
+   "cat": "spices",
+   "fr": "Fenugrec",
+   "en": "Fenugreek",
+   "unit": "kg"
+  },
+  "292": {
+   "cat": "spices",
+   "fr": "Carvi",
+   "en": "Caraway",
+   "unit": "kg"
+  },
+  "48": {
+   "cat": "spices",
+   "fr": "Cardamome",
+   "en": "Cardamom",
+   "unit": "kg"
+  },
+  "49": {
+   "cat": "spices",
+   "fr": "Macis",
+   "en": "Mace",
+   "unit": "kg"
+  },
+  "75": {
+   "cat": "spices",
+   "fr": null,
+   "en": null,
+   "unit": "kg"
+  },
+  "46": {
+   "cat": "spices",
+   "fr": null,
+   "en": null,
+   "unit": "kg"
+  },
+  "128": {
+   "cat": "spices",
+   "fr": "Ail",
+   "en": "Garlic",
+   "unit": "kg"
+  },
+  "269": {
+   "cat": "spices",
+   "fr": null,
+   "en": null,
+   "unit": "kg"
+  },
+  "52": {
+   "cat": "spices",
+   "fr": "Noix de muscade",
+   "en": "Nutmeg",
+   "unit": "piece"
+  },
+  "85": {
+   "cat": "spices",
+   "fr": "Safran pur",
+   "en": "Pure saffron",
+   "unit": "piece"
+  },
+  "193": {
+   "cat": "spices",
+   "fr": "Asa-fœtida",
+   "en": "Asafoetida",
+   "unit": "piece"
+  },
+  "7": {
+   "cat": "blends",
+   "fr": "Ras el hanout",
+   "en": "Ras el hanout",
+   "unit": "kg"
+  },
+  "4": {
+   "cat": "blends",
+   "fr": "Mélange pour poulet",
+   "en": "Chicken spice blend",
+   "unit": "kg"
+  },
+  "12": {
+   "cat": "blends",
+   "fr": "Mélange pour viande",
+   "en": "Meat spice blend",
+   "unit": "kg"
+  },
+  "10": {
+   "cat": "blends",
+   "fr": "Mélange pour poisson",
+   "en": "Fish spice blend",
+   "unit": "kg"
+  },
+  "226": {
+   "cat": "blends",
+   "fr": "Mélange maison (tkhlita)",
+   "en": "House blend (tkhlita)",
+   "unit": "kg"
+  },
+  "185": {
+   "cat": "blends",
+   "fr": "Tbrima pour viande",
+   "en": "Tbrima meat seasoning",
+   "unit": "kg"
+  },
+  "14": {
+   "cat": "blends",
+   "fr": "Épices pour harira",
+   "en": "Harira spice blend",
+   "unit": "kg"
+  },
+  "15": {
+   "cat": "blends",
+   "fr": "Épices pour kefta",
+   "en": "Kefta spice blend",
+   "unit": "kg"
+  },
+  "36": {
+   "cat": "herbs",
+   "fr": "Thym (zaatar)",
+   "en": "Thyme (zaatar)",
+   "unit": "kg"
+  },
+  "63": {
+   "cat": "herbs",
+   "fr": "Menthe séchée",
+   "en": "Dried mint",
+   "unit": "kg"
+  },
+  "59": {
+   "cat": "herbs",
+   "fr": "Verveine",
+   "en": "Lemon verbena",
+   "unit": "kg"
+  },
+  "55": {
+   "cat": "herbs",
+   "fr": "Camomille",
+   "en": "Chamomile",
+   "unit": "kg"
+  },
+  "143": {
+   "cat": "herbs",
+   "fr": "Lavande",
+   "en": "Lavender",
+   "unit": "kg"
+  },
+  "65": {
+   "cat": "herbs",
+   "fr": "Hibiscus",
+   "en": "Hibiscus",
+   "unit": "kg"
+  },
+  "56": {
+   "cat": "herbs",
+   "fr": "Boutons de rose",
+   "en": "Rose buds",
+   "unit": "kg"
+  },
+  "60": {
+   "cat": "herbs",
+   "fr": "Romarin",
+   "en": "Rosemary",
+   "unit": "kg"
+  },
+  "62": {
+   "cat": "herbs",
+   "fr": "Sauge",
+   "en": "Sage",
+   "unit": "kg"
+  },
+  "140": {
+   "cat": "herbs",
+   "fr": "Marjolaine",
+   "en": "Marjoram",
+   "unit": "kg"
+  },
+  "35": {
+   "cat": "herbs",
+   "fr": "Armoise blanche (chih)",
+   "en": "White wormwood (chih)",
+   "unit": "kg"
+  },
+  "68": {
+   "cat": "herbs",
+   "fr": "Myrte (rihan)",
+   "en": "Myrtle (rihan)",
+   "unit": "kg"
+  },
+  "70": {
+   "cat": "herbs",
+   "fr": "Genévrier (arar)",
+   "en": "Juniper (arar)",
+   "unit": "kg"
+  },
+  "91": {
+   "cat": "herbs",
+   "fr": "Réglisse",
+   "en": "Licorice root",
+   "unit": "kg"
+  },
+  "50": {
+   "cat": "herbs",
+   "fr": "Écorce de grenade",
+   "en": "Pomegranate peel",
+   "unit": "kg"
+  },
+  "271": {
+   "cat": "herbs",
+   "fr": "Marrube",
+   "en": "Horehound",
+   "unit": "kg"
+  },
+  "268": {
+   "cat": "herbs",
+   "fr": "Moringa",
+   "en": "Moringa",
+   "unit": "kg"
+  },
+  "213": {
+   "cat": "herbs",
+   "fr": "Costus indien",
+   "en": "Indian costus",
+   "unit": "kg"
+  },
+  "74": {
+   "cat": "herbs",
+   "fr": null,
+   "en": null,
+   "unit": "kg"
+  },
+  "37": {
+   "cat": "herbs",
+   "fr": "Laurier",
+   "en": "Bay leaves",
+   "unit": "piece"
+  },
+  "57": {
+   "cat": "herbs",
+   "fr": "Menthe pouliot",
+   "en": "Pennyroyal",
+   "unit": "piece"
+  },
+  "20": {
+   "cat": "seeds",
+   "fr": "Sésame",
+   "en": "Sesame seeds",
+   "unit": "kg"
+  },
+  "21": {
+   "cat": "seeds",
+   "fr": "Sésame premium",
+   "en": "Sesame seeds (premium)",
+   "unit": "piece"
+  },
+  "44": {
+   "cat": "seeds",
+   "fr": "Graines de lin",
+   "en": "Flaxseed",
+   "unit": "kg"
+  },
+  "47": {
+   "cat": "seeds",
+   "fr": "Graines de cresson",
+   "en": "Garden cress seeds",
+   "unit": "kg"
+  },
+  "26": {
+   "cat": "seeds",
+   "fr": "Raisins secs",
+   "en": "Raisins",
+   "unit": "kg"
+  },
+  "25": {
+   "cat": "seeds",
+   "fr": "Raisins secs premium",
+   "en": "Raisins (premium)",
+   "unit": "piece"
+  },
+  "16": {
+   "cat": "seeds",
+   "fr": "Amandes",
+   "en": "Almonds",
+   "unit": "kg"
+  },
+  "17": {
+   "cat": "seeds",
+   "fr": "Noix",
+   "en": "Walnuts",
+   "unit": "kg"
+  },
+  "76": {
+   "cat": "seeds",
+   "fr": "Graines de courge",
+   "en": "Pumpkin seeds",
+   "unit": "kg"
+  },
+  "41": {
+   "cat": "seeds",
+   "fr": "Souchet (habb laaziz)",
+   "en": "Tiger nuts",
+   "unit": "kg"
+  },
+  "45": {
+   "cat": "seeds",
+   "fr": "Soja",
+   "en": "Soybeans",
+   "unit": "kg"
+  },
+  "90": {
+   "cat": "seeds",
+   "fr": "Lentilles corail",
+   "en": "Red lentils",
+   "unit": "kg"
+  },
+  "94": {
+   "cat": "seeds",
+   "fr": "Psyllium",
+   "en": "Psyllium seeds",
+   "unit": "piece"
+  },
+  "267": {
+   "cat": "seeds",
+   "fr": "Son de psyllium",
+   "en": "Psyllium husk",
+   "unit": "kg"
+  },
+  "135": {
+   "cat": "pastry",
+   "fr": "Eau de fleur d'oranger",
+   "en": "Orange blossom water",
+   "unit": "piece"
+  },
+  "136": {
+   "cat": "pastry",
+   "fr": "Eau de fleur d'oranger premium",
+   "en": "Orange blossom water (premium)",
+   "unit": "piece"
+  },
+  "223": {
+   "cat": "pastry",
+   "fr": "Eau de rose",
+   "en": "Rose water",
+   "unit": "piece"
+  },
+  "156": {
+   "cat": "pastry",
+   "fr": "Eau de rose (petite)",
+   "en": "Rose water (small)",
+   "unit": "piece"
+  },
+  "131": {
+   "cat": "pastry",
+   "fr": "Levure chimique",
+   "en": "Baking powder",
+   "unit": "piece"
+  },
+  "133": {
+   "cat": "pastry",
+   "fr": "Levure chimique (grand)",
+   "en": "Baking powder (large)",
+   "unit": "piece"
+  },
+  "263": {
+   "cat": "pastry",
+   "fr": "Levure",
+   "en": "Yeast",
+   "unit": "piece"
+  },
+  "138": {
+   "cat": "pastry",
+   "fr": "Sucre glace",
+   "en": "Icing sugar",
+   "unit": "piece"
+  },
+  "22": {
+   "cat": "pastry",
+   "fr": "Noix de coco râpée",
+   "en": "Desiccated coconut",
+   "unit": "kg"
+  },
+  "28": {
+   "cat": "pastry",
+   "fr": "Vermicelles de chocolat",
+   "en": "Chocolate sprinkles",
+   "unit": "piece"
+  },
+  "29": {
+   "cat": "pastry",
+   "fr": "Fruits confits",
+   "en": "Candied fruit",
+   "unit": "piece"
+  },
+  "24": {
+   "cat": "pastry",
+   "fr": "Beurre pâtissier",
+   "en": "Pastry butter",
+   "unit": "piece"
+  },
+  "31": {
+   "cat": "pastry",
+   "fr": "Caissettes à gâteaux (grandes)",
+   "en": "Cake cases (large)",
+   "unit": "piece"
+  },
+  "30": {
+   "cat": "pastry",
+   "fr": "Caissettes à gâteaux (petites)",
+   "en": "Cake cases (small)",
+   "unit": "piece"
+  },
+  "54": {
+   "cat": "pantry",
+   "fr": "Café moulu",
+   "en": "Ground coffee",
+   "unit": "kg"
+  },
+  "53": {
+   "cat": "pantry",
+   "fr": "Café aux épices",
+   "en": "Spiced coffee",
+   "unit": "kg"
+  },
+  "32": {
+   "cat": "pantry",
+   "fr": "Miel (petit)",
+   "en": "Honey (small)",
+   "unit": "piece"
+  },
+  "33": {
+   "cat": "pantry",
+   "fr": "Miel (moyen)",
+   "en": "Honey (medium)",
+   "unit": "piece"
+  },
+  "34": {
+   "cat": "pantry",
+   "fr": "Miel (grand)",
+   "en": "Honey (large)",
+   "unit": "piece"
+  },
+  "61": {
+   "cat": "pantry",
+   "fr": "Pollen d'abeille",
+   "en": "Bee pollen",
+   "unit": "kg"
+  },
+  "132": {
+   "cat": "pantry",
+   "fr": "Sel de l'Himalaya",
+   "en": "Himalayan salt",
+   "unit": "kg"
+  },
+  "125": {
+   "cat": "pantry",
+   "fr": "Sel",
+   "en": "Salt",
+   "unit": "kg"
+  },
+  "72": {
+   "cat": "pantry",
+   "fr": "Câpres",
+   "en": "Capers",
+   "unit": "piece"
+  },
+  "137": {
+   "cat": "pantry",
+   "fr": "Bicarbonate de soude",
+   "en": "Baking soda",
+   "unit": "piece"
+  },
+  "153": {
+   "cat": "pantry",
+   "fr": "Vinaigre de cidre (grand)",
+   "en": "Apple cider vinegar (large)",
+   "unit": "piece"
+  },
+  "154": {
+   "cat": "pantry",
+   "fr": "Vinaigre de cidre (petit)",
+   "en": "Apple cider vinegar (small)",
+   "unit": "piece"
+  },
+  "278": {
+   "cat": "pantry",
+   "fr": "Vinaigre (grande bouteille)",
+   "en": "Vinegar (large bottle)",
+   "unit": "piece"
+  },
+  "175": {
+   "cat": "beauty",
+   "fr": "Henné en poudre",
+   "en": "Henna powder",
+   "unit": "kg"
+  },
+  "208": {
+   "cat": "beauty",
+   "fr": "Henné (sachet)",
+   "en": "Henna (sachet)",
+   "unit": "piece"
+  },
+  "163": {
+   "cat": "beauty",
+   "fr": "Henné Tamzourine",
+   "en": "Tamzourine henna",
+   "unit": "piece"
+  },
+  "277": {
+   "cat": "beauty",
+   "fr": "Henné Oued Eddahab",
+   "en": "Oued Eddahab henna",
+   "unit": "piece"
+  },
+  "287": {
+   "cat": "beauty",
+   "fr": "Henné Najwa",
+   "en": "Najwa henna",
+   "unit": "piece"
+  },
+  "69": {
+   "cat": "beauty",
+   "fr": null,
+   "en": null,
+   "unit": "piece"
+  },
+  "194": {
+   "cat": "beauty",
+   "fr": "Savon noir beldi",
+   "en": "Black soap (beldi)",
+   "unit": "kg"
+  },
+  "198": {
+   "cat": "beauty",
+   "fr": "Savon noir aux herbes",
+   "en": "Herbal black soap",
+   "unit": "piece"
+  },
+  "205": {
+   "cat": "beauty",
+   "fr": "Ghassoul",
+   "en": "Ghassoul clay",
+   "unit": "piece"
+  },
+  "237": {
+   "cat": "beauty",
+   "fr": "Ghassoul blanc",
+   "en": "White ghassoul",
+   "unit": "piece"
+  },
+  "51": {
+   "cat": "beauty",
+   "fr": "Poudre de sidr",
+   "en": "Sidr powder",
+   "unit": "kg"
+  },
+  "187": {
+   "cat": "beauty",
+   "fr": "Huile d'argan",
+   "en": "Argan oil",
+   "unit": "piece"
+  },
+  "160": {
+   "cat": "beauty",
+   "fr": "Huile aux herbes",
+   "en": "Herbal oil",
+   "unit": "piece"
+  },
+  "162": {
+   "cat": "beauty",
+   "fr": "Huile aux herbes premium",
+   "en": "Herbal oil (premium)",
+   "unit": "piece"
+  },
+  "161": {
+   "cat": "beauty",
+   "fr": "Huile aux herbes naturelle",
+   "en": "Natural herbal oil",
+   "unit": "piece"
+  },
+  "227": {
+   "cat": "beauty",
+   "fr": "Akar fassi",
+   "en": "Akar fassi (natural blush)",
+   "unit": "piece"
+  },
+  "126": {
+   "cat": "beauty",
+   "fr": "Pierre d'alun",
+   "en": "Alum stone",
+   "unit": "kg"
+  },
+  "176": {
+   "cat": "beauty",
+   "fr": "Siwak",
+   "en": "Miswak stick",
+   "unit": "piece"
+  },
+  "211": {
+   "cat": "beauty",
+   "fr": "Nila bleue",
+   "en": "Blue nila",
+   "unit": "piece"
+  },
+  "58": {
+   "cat": "incense",
+   "fr": "Encens (bkhour)",
+   "en": "Incense (bakhour)",
+   "unit": "piece"
+  },
+  "261": {
+   "cat": "incense",
+   "fr": "Encens Anouar",
+   "en": "Anouar incense",
+   "unit": "piece"
+  },
+  "250": {
+   "cat": "incense",
+   "fr": "Nadd",
+   "en": "Nadd incense",
+   "unit": "piece"
+  },
+  "127": {
+   "cat": "incense",
+   "fr": "Benjoin (jaoui)",
+   "en": "Benzoin (jawi)",
+   "unit": "piece"
+  },
+  "86": {
+   "cat": "incense",
+   "fr": "Musc pur",
+   "en": "Pure musk",
+   "unit": "piece"
+  },
+  "84": {
+   "cat": "incense",
+   "fr": "Musc (petit)",
+   "en": "Musk (small)",
+   "unit": "piece"
+  },
+  "260": {
+   "cat": "incense",
+   "fr": "Musc (grand)",
+   "en": "Musk (large)",
+   "unit": "piece"
+  },
+  "210": {
+   "cat": "incense",
+   "fr": "Brûle-encens (mjmar)",
+   "en": "Incense burner (mjmar)",
+   "unit": "piece"
+  },
+  "238": {
+   "cat": "incense",
+   "fr": "Charbon pour encens",
+   "en": "Incense charcoal",
+   "unit": "piece"
+  }
+ }
+}

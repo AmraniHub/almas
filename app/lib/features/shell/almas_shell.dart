@@ -22,6 +22,13 @@ class AlmasShell extends ConsumerStatefulWidget {
 class _AlmasShellState extends ConsumerState<AlmasShell> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // the till's live prices and photos, once the first screen is up (no wait, no error if offline)
+    Future.microtask(() => ref.read(productsProvider.notifier).refresh());
+  }
+
   void _goToCatalog() => setState(() => _selectedIndex = 1);
   void _goToCart() => setState(() => _selectedIndex = 2);
 

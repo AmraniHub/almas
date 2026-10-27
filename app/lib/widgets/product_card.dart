@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../core/localization/app_localizations.dart';
@@ -35,14 +36,22 @@ class ProductCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.sm),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                width: 64,
+                height: 64,
                 color: product.accentColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(14),
+                // the shop's own photo of it when the till has one, else the shelf's icon
+                child: product.imageUrl == null
+                    ? Icon(_iconFor(product.category), color: product.accentColor, size: 28)
+                    : CachedNetworkImage(
+                        imageUrl: product.imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Icon(_iconFor(product.category), color: product.accentColor, size: 28),
+                        errorWidget: (_, __, ___) => Icon(_iconFor(product.category), color: product.accentColor, size: 28),
+                      ),
               ),
-              child: Icon(_iconFor(product.category), color: product.accentColor, size: 26),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(

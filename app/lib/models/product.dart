@@ -22,9 +22,12 @@ class Product {
 
   /// One product of the shop's catalogue (assets/catalog/products.json, built from the till by
   /// tool/build_catalog.py): the till's Arabic name and price, a French and English name, and the unit.
-  factory Product.fromCatalog(Map<String, dynamic> json, Color accentColor) {
+  factory Product.fromCatalog(Map<String, dynamic> json, Color accentColor, {String? imageBase}) {
     final kilo = json['unit'] == 'kg';
+    final id = json['id'] as String;
+    final img = json['img'] as String?; // the photo's version: a new photo is a new address, never a stale cache
     return Product(
+      imageUrl: img != null && imageBase != null ? '$imageBase/${id.substring(1)}.jpg?v=$img' : null,
       id: json['id'] as String,
       name: json['en'] as String,
       arabicName: json['ar'] as String,
