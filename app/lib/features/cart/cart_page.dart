@@ -31,8 +31,9 @@ class CartPage extends StatelessWidget {
       0,
       (sum, item) => sum + item.lineTotal,
     );
-    const minimumOrder = 250.0;
-    final deliveryFee = items.isEmpty ? 0.0 : subtotal >= 500 ? 0.0 : 35.0;
+    // The shop has set no minimum and no delivery price: delivery is agreed on WhatsApp (shown as such)
+    const minimumOrder = 0.0;
+    const deliveryFee = 0.0;
     final total = subtotal + deliveryFee;
     final progress = subtotal == 0
         ? 0.0
@@ -239,13 +240,14 @@ class _CartLineCard extends StatelessWidget {
                       l10n.productName(item.product),
                       style: theme.textTheme.titleLarge,
                     ),
-                    Text(
-                      l10n.productPackSize(item.product),
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                    if (l10n.productSecondaryName(item.product).isNotEmpty)
+                      Text(
+                        l10n.productSecondaryName(item.product),
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '${l10n.formatMad(item.product.price)} ${l10n.madEach}',
+                      l10n.pricePerUnit(item.product),
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: item.product.accentColor,
                       ),
@@ -266,7 +268,7 @@ class _CartLineCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Text(
-                  '${item.quantity}',
+                  l10n.amountLabel(item.product, item.quantity),
                   style: theme.textTheme.titleLarge,
                 ),
               ),
@@ -373,23 +375,25 @@ class _OrderSummaryPanel extends StatelessWidget {
             value: l10n.formatMad(total),
             emphasize: true,
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            l10n.minimumOrderProgress,
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.pillRadius),
-            child: LinearProgressIndicator(
-              minHeight: 10,
-              value: progress,
-              backgroundColor: AppColors.ink.withValues(alpha: 0.06),
-              color: qualifiesForMinimum
-                  ? AppColors.success
-                  : AppColors.warning,
+          if (minimumOrder > 0) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              l10n.minimumOrderProgress,
+              style: theme.textTheme.titleMedium,
             ),
-          ),
+            const SizedBox(height: AppSpacing.sm),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.pillRadius),
+              child: LinearProgressIndicator(
+                minHeight: 10,
+                value: progress,
+                backgroundColor: AppColors.ink.withValues(alpha: 0.06),
+                color: qualifiesForMinimum
+                    ? AppColors.success
+                    : AppColors.warning,
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
           Text(
             qualifiesForMinimum

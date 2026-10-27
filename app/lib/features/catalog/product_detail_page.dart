@@ -27,7 +27,7 @@ class ProductDetailPage extends ConsumerWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 280,
+            expandedHeight: 180,
             pinned: true,
             backgroundColor: AppColors.background,
             leading: IconButton(
@@ -69,11 +69,6 @@ class ProductDetailPage extends ConsumerWidget {
                   spacing: AppSpacing.sm,
                   children: [
                     _Chip(
-                      icon: Icons.place_rounded,
-                      label: l10n.productOrigin(product),
-                      color: AppColors.body,
-                    ),
-                    _Chip(
                       icon: Icons.category_rounded,
                       label: l10n.productCategory(product),
                       color: product.accentColor,
@@ -91,12 +86,12 @@ class ProductDetailPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        l10n.aboutThisProduct,
+                        l10n.forBusinessesTitle,
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        l10n.productDescription(product),
+                        l10n.forBusinessesBody,
                         style: theme.textTheme.bodyLarge,
                       ),
                     ],
@@ -154,9 +149,7 @@ class ProductDetailPage extends ConsumerWidget {
                                   ),
                                 ),
                                 Text(
-                                  l10n.perUnit(
-                                    l10n.productUnitLabel(product),
-                                  ),
+                                  l10n.productPackSize(product),
                                   style: theme.textTheme.bodyMedium,
                                 ),
                               ],
@@ -176,7 +169,7 @@ class ProductDetailPage extends ConsumerWidget {
                                     horizontal: AppSpacing.sm,
                                   ),
                                   child: Text(
-                                    '$qtyInCart',
+                                    l10n.amountLabel(product, qtyInCart),
                                     style: theme.textTheme.titleLarge,
                                   ),
                                 ),

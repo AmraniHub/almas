@@ -4,17 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../data/demo_data.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../widgets/almas_logo.dart';
 import '../../widgets/contact_bar.dart';
 import '../../widgets/glass_panel.dart';
-import '../../widgets/order_stage_bar.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/section_header.dart';
 import '../catalog/product_detail_page.dart';
-import '../orders/order_tracking_page.dart';
+import '../../services/contact_service.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({
@@ -31,7 +29,7 @@ class HomePage extends ConsumerWidget {
     final l10n = context.l10n;
     final cartCount = ref.watch(cartCountProvider);
     final products = ref.watch(productsProvider);
-    final featured = products.take(3).toList();
+    final featured = products.take(5).toList(); // the catalogue lists the best sellers first
 
     return SingleChildScrollView(
       child: Padding(
@@ -52,7 +50,8 @@ class HomePage extends ConsumerWidget {
                 ),
               ],
             ),
-            const _LiveOrderCard(),
+            const SizedBox(height: AppSpacing.md),
+            const _ForBusinessesCard(),
             const SizedBox(height: AppSpacing.lg),
             _QuickActionsPanel(
               cartCount: cartCount,
@@ -85,85 +84,6 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             const GlassPanel(child: ContactBar()),
             const SizedBox(height: AppSpacing.lg),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LiveOrderCard extends StatelessWidget {
-  const _LiveOrderCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final order = liveOrder;
-
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => OrderTrackingPage(order: order),
-        ),
-      ),
-      child: GlassPanel(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: AppColors.success,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  l10n.activeOrderTapToTrack,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: AppColors.success,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.body,
-                  size: 20,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(order.id, style: theme.textTheme.headlineMedium),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.orderItemsAndTotal(order.itemCount, order.total),
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              children: [
-                const Icon(Icons.place_rounded, size: 16, color: AppColors.body),
-                const SizedBox(width: AppSpacing.xxs),
-                Expanded(
-                  child: Text(
-                    l10n.orderDestination(order),
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ),
-                const Icon(Icons.schedule_rounded, size: 16, color: AppColors.body),
-                const SizedBox(width: AppSpacing.xxs),
-                Text(
-                  l10n.orderEta(order),
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            OrderStageBar(stage: order.stage),
           ],
         ),
       ),
@@ -230,5 +150,38 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(label, style: Theme.of(context).textTheme.titleLarge);
+  }
+}
+
+class _ForBusinessesCard extends StatelessWidget {
+  const _ForBusinessesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return GlassPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.restaurant_menu_rounded, color: AppColors.terracotta),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: Text(l10n.forBusinessesTitle, style: theme.textTheme.titleLarge)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(l10n.forBusinessesBody, style: theme.textTheme.bodyLarge),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
+            onPressed: () => ContactService.whatsApp(message: l10n.largeQuantityWhatsAppMessage),
+            icon: const Icon(Icons.request_quote_rounded),
+            label: Text(l10n.askPriceForLargeQuantities),
+          ),
+        ],
+      ),
+    );
   }
 }

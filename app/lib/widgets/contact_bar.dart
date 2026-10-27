@@ -46,10 +46,10 @@ class ContactBar extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _ContactButton(
-                icon: Icons.language_rounded,
-                label: l10n.websiteLabel,
+                icon: Icons.place_rounded,
+                label: l10n.locationLabel,
                 color: AppColors.info,
-                onTap: ContactService.website,
+                onTap: ContactService.directions,
               ),
             ),
           ],

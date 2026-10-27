@@ -8,7 +8,7 @@ import '../../providers/products_provider.dart';
 import '../../widgets/ambient_background.dart';
 import '../cart/cart_page.dart';
 import '../catalog/catalog_page.dart';
-import '../chat/chat_page.dart';
+import '../../services/contact_service.dart';
 import '../home/home_page.dart';
 import '../profile/profile_page.dart';
 
@@ -85,15 +85,9 @@ class _AlmasShellState extends ConsumerState<AlmasShell> {
           ),
         ],
       ),
+      // The shop answers on WhatsApp: the button opens it (it used to open an in-app chat that replied by itself)
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ChatPage(
-              title: l10n.chatWithAlmas,
-              chatId: 'general',
-            ),
-          ),
-        ),
+        onPressed: () => ContactService.whatsApp(message: l10n.generalWhatsAppMessage),
         tooltip: l10n.chatWithAlmas,
         backgroundColor: const Color(0xFF25D366),
         child: const Icon(Icons.chat_rounded, color: Colors.white),

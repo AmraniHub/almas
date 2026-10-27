@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../data/demo_data.dart';
+import '../../data/catalog.dart';
 import '../../models/product.dart';
+import '../../services/contact_service.dart';
 import '../../widgets/glass_panel.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/section_header.dart';
+import 'product_detail_page.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({
@@ -26,7 +28,8 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  String _selectedCategory = demoCategories.first;
+  static const _all = 'All';
+  String _selectedCategory = _all;
   String _searchQuery = '';
 
   @override
@@ -35,194 +38,100 @@ class _CatalogPageState extends State<CatalogPage> {
     final normalizedQuery = _searchQuery.trim().toLowerCase();
 
     final filteredProducts = widget.products.where((product) {
-      final categoryMatches = _selectedCategory == demoCategories.first ||
-          product.category == _selectedCategory;
+      final categoryMatches = _selectedCategory == _all || product.category == _selectedCategory;
       final queryMatches = normalizedQuery.isEmpty ||
           l10n.productSearchTerms(product).any(
-            (term) => term.toLowerCase().contains(normalizedQuery),
-          );
-
+                (term) => term.toLowerCase().contains(normalizedQuery),
+              );
       return categoryMatches && queryMatches;
     }).toList();
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SectionHeader(
-              title: l10n.productLibraryTitle,
-              subtitle: l10n.productLibrarySubtitle,
-            ),
-            GlassPanel(
-              child: Column(
-                children: [
-                  TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      hintText: l10n.catalogSearchHint,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: demoCategories
-                          .map(
-                            (category) => ChoiceChip(
-                              label: Text(l10n.categoryLabel(category)),
-                              selected: _selectedCategory == category,
-                              onSelected: (_) {
-                                setState(() {
-                                  _selectedCategory = category;
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _CatalogInsightStrip(matchCount: filteredProducts.length),
-                ],
+    final shelves = [_all, ...Catalog.categories.map((c) => c.id)];
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeader(
+                title: l10n.productLibraryTitle,
+                subtitle: l10n.productLibrarySubtitle,
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                final crossAxisCount = width >= 1100
-                    ? 3
-                    : width >= 700
-                        ? 2
-                        : 1;
-                final productCardExtent = crossAxisCount == 1 ? 500.0 : 480.0;
-
-                if (filteredProducts.isEmpty) {
-                  return GlassPanel(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.xl,
-                      ),
-                      child: Center(
-                        child: Text(
-                          l10n.noProductsMatchFilter,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
+              GlassPanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      onChanged: (value) => setState(() => _searchQuery = value),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        hintText: l10n.catalogSearchHint,
                       ),
                     ),
-                  );
-                }
-
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredProducts.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: AppSpacing.md,
-                    mainAxisSpacing: AppSpacing.md,
-                    mainAxisExtent: productCardExtent,
+                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      height: 40,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: shelves.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+                        itemBuilder: (context, index) {
+                          final shelf = shelves[index];
+                          return ChoiceChip(
+                            label: Text(l10n.categoryLabel(shelf)),
+                            selected: _selectedCategory == shelf,
+                            onSelected: (_) => setState(() => _selectedCategory = shelf),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      '${l10n.visibleProducts(filteredProducts.length)} · ${l10n.operationalMinimumOrderNote}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    TextButton.icon(
+                      onPressed: () => ContactService.whatsApp(message: l10n.largeQuantityWhatsAppMessage),
+                      icon: const Icon(Icons.request_quote_rounded, color: AppColors.olive),
+                      label: Text(l10n.askPriceForLargeQuantities),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              if (filteredProducts.isEmpty)
+                GlassPanel(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                    child: Center(
+                      child: Text(
+                        l10n.noProductsMatchFilter,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
                   ),
-                  itemBuilder: (context, index) {
-                    final product = filteredProducts[index];
-
-                    return ProductCard(
-                      product: product,
-                      quantityInCart: widget.cartQuantities[product.id] ?? 0,
-                      onAddToCart: () => widget.onAddToCart(product),
-                    );
-                  },
-                );
-              },
-            ),
-          ],
+                ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _CatalogInsightStrip extends StatelessWidget {
-  const _CatalogInsightStrip({
-    required this.matchCount,
-  });
-
-  final int matchCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return Wrap(
-      spacing: AppSpacing.md,
-      runSpacing: AppSpacing.md,
-      children: [
-        _InsightPill(
-          icon: Icons.inventory_2_rounded,
-          label: l10n.visibleProducts(matchCount),
-          accentColor: AppColors.olive,
+        SliverList.separated(
+          itemCount: filteredProducts.length,
+          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+          itemBuilder: (context, index) {
+            final product = filteredProducts[index];
+            return ProductCard(
+              product: product,
+              quantityInCart: widget.cartQuantities[product.id] ?? 0,
+              onAddToCart: () => widget.onAddToCart(product),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ProductDetailPage(product: product)),
+              ),
+            );
+          },
         ),
-        _InsightPill(
-          icon: Icons.payments_rounded,
-          label: l10n.cashOnDeliveryDefault,
-          accentColor: AppColors.terracotta,
-        ),
-        _InsightPill(
-          icon: Icons.place_rounded,
-          label: l10n.moroccoDeliveryZone,
-          accentColor: AppColors.saffron,
-        ),
-        Text(
-          l10n.operationalMinimumOrderNote,
-          style: theme.textTheme.bodyMedium,
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
       ],
-    );
-  }
-}
-
-class _InsightPill extends StatelessWidget {
-  const _InsightPill({
-    required this.icon,
-    required this.label,
-    required this.accentColor,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color accentColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.pillRadius),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18, color: accentColor),
-            const SizedBox(width: AppSpacing.xs),
-            Text(label),
-          ],
-        ),
-      ),
     );
   }
 }

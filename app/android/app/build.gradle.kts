@@ -43,11 +43,21 @@ android {
     }
 
     buildTypes {
+        // A preview build installs beside the Play version (its own id), so trying it on a phone never blocks
+        // the real app with a different signature
+        debug {
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-preview"
+        }
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
             } else {
-                signingConfigs.getByName("debug")
+                // No upload key here: this is a preview for a phone, never a Play build, so it gets its own id
+                // (it can sit beside the Play app) and says so in its version
+                signingConfig = signingConfigs.getByName("debug")
+                applicationIdSuffix = ".preview"
+                versionNameSuffix = "-preview"
             }
         }
     }

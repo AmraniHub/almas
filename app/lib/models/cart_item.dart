@@ -7,8 +7,12 @@ class CartItem {
   });
 
   final Product product;
+
+  /// Taps on "add": steps of 250 g for a product sold by the kilo, pieces otherwise.
   final int quantity;
 
-  double get lineTotal => product.price * quantity;
-}
+  /// Kilos (or pieces) in the cart.
+  double get amount => quantity * product.step;
 
+  double get lineTotal => product.price * amount;
+}

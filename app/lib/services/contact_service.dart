@@ -1,12 +1,13 @@
 ﻿import 'package:url_launcher/url_launcher.dart';
 
-/// Central contact config — update these with real Almas numbers/URLs.
+/// The shop's real contact details: Almas Spices & Herbs (معشبة ألماس), Ksar Sghir.
 abstract final class AlmasContact {
-  static const String phoneNumber   = '+212619434035';
-  static const String whatsappNumber = '212619434035';   // without +
-  static const String website       = 'https://almas.ma';
-  static const String defaultWhatsAppMsg =
-      'Hello Almas 👋 I would like to place an order.';
+  static const String phoneNumber = '+212619434035';
+  static const String whatsappNumber = '212619434035'; // without +
+
+  /// The shop's own Google Maps place (its Business Profile), not a guessed pin.
+  static const String mapsUrl = 'https://maps.google.com/?cid=5907200103412499017';
+  static const String defaultWhatsAppMsg = 'Hello Almas 👋 I would like to place an order.';
 }
 
 class ContactService {
@@ -36,28 +37,13 @@ class ContactService {
     }
   }
 
-  static Future<void> website() async {
-    final uri = Uri.parse(AlmasContact.website);
-    if (await canLaunchUrl(uri)) {
+  /// The shop on Google Maps, ready for directions.
+  static Future<void> directions() async {
+    final uri = Uri.parse(AlmasContact.mapsUrl);
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  static Future<void> waze({
-    required double lat,
-    required double lng,
-  }) async {
-    final wazeUri = Uri.parse('waze://?ll=$lat,$lng&navigate=yes');
-    if (await canLaunchUrl(wazeUri)) {
-      await launchUrl(wazeUri);
-    } else {
-      // Fallback: Google Maps
-      final mapsUri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
-      );
-      if (await canLaunchUrl(mapsUri)) {
-        await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
-      }
+    } catch (_) {
+      // no maps app and no browser: nothing to open
     }
   }
 }

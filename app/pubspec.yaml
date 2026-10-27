@@ -61,5 +61,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/branding/almas_logo.png
+    - assets/catalog/products.json
 
 

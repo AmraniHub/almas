@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../data/catalog.dart';
 import '../../models/cart_item.dart';
 import '../../models/order_snapshot.dart';
 import '../../models/product.dart';
@@ -33,7 +34,11 @@ class AppLocalizations {
   bool get isEnglish => !isFrench && !isArabic;
 
   String get appTitle => 'Almas';
-  String get appBrandName => 'Almas Spices';
+  String get appBrandName => _pick(
+        english: 'Almas Spices & Herbs',
+        french: 'Almas Épices & Herbes',
+        arabic: 'معشبة ألماس',
+      );
 
   String get homeTab => _pick(
         english: 'Home',
@@ -60,9 +65,9 @@ class AppLocalizations {
       );
 
   String get profileTab => _pick(
-        english: 'Profile',
-        french: 'Profil',
-        arabic: 'الملف الشخصي',
+        english: 'Shop & you',
+        french: 'Boutique',
+        arabic: 'المحل',
       );
 
   String get chatWithAlmas => _pick(
@@ -74,17 +79,103 @@ class AppLocalizations {
   String get homeTitle => appBrandName;
   String get homeSubtitle => _pick(
         english:
-            "Morocco's finest spice supply partner for professional kitchens.",
+            'Spices and herbs from our shop in Ksar Sghir, for homes, restaurants, hotels and wedding venues.',
         french:
-            'Votre partenaire marocain en epices premium pour les cuisines professionnelles.',
-        arabic: 'شريككم المغربي في التوابل الفاخرة للمطابخ الاحترافية.',
+            'Épices et herbes de notre boutique à Ksar Sghir, pour la maison, les restaurants, les hôtels et les salles de fêtes.',
+        arabic: 'توابل وأعشاب من محلنا في القصر الصغير، للبيت والمطاعم والفنادق وقاعات الأفراح.',
       );
 
   String get featuredThisWeek => _pick(
-        english: 'Featured this week',
-        french: 'A la une cette semaine',
-        arabic: 'منتجات هذا الأسبوع',
+        english: 'Most ordered',
+        french: 'Les plus demandés',
+        arabic: 'الأكثر طلبا',
       );
+
+  String get forBusinessesTitle => _pick(
+        english: 'Restaurants, hotels, wedding venues',
+        french: 'Restaurants, hôtels, salles de fêtes',
+        arabic: 'المطاعم والفنادق وقاعات الأفراح',
+      );
+
+  String get forBusinessesBody => _pick(
+        english:
+            'Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.',
+        french:
+            'Commandez au kilo avec le nom et l\'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.',
+        arabic:
+            'اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.',
+      );
+
+  String get askPriceForLargeQuantities => _pick(
+        english: 'Ask a price for large quantities',
+        french: 'Demander un prix (grandes quantités)',
+        arabic: 'اطلب ثمن الكميات الكبيرة',
+      );
+
+  String get largeQuantityWhatsAppMessage => _pick(
+        english: 'Hello Almas, I run a business and would like a price for large quantities of: ',
+        french: 'Bonjour Almas, je représente un établissement et je voudrais un prix pour de grandes quantités de : ',
+        arabic: 'السلام عليكم ألماس، عندي مؤسسة وبغيت الثمن ديال كميات كبيرة من: ',
+      );
+
+  String get yourDetailsTitle => _pick(
+        english: 'Your details',
+        french: 'Vos coordonnées',
+        arabic: 'معلوماتك',
+      );
+
+  String get yourDetailsSubtitle => _pick(
+        english: 'Saved on this phone when you order, so the next order is faster. They only go to the shop inside your WhatsApp order.',
+        french: 'Enregistrées sur ce téléphone quand vous commandez, pour aller plus vite la prochaine fois. Elles ne partent à la boutique que dans votre commande WhatsApp.',
+        arabic: 'كتتسجل فهاد التليفون ملي كتطلب، باش الطلب الجاي يكون أسرع. وما كتوصل للمحل غير داخل الطلب ديالك فواتساب.',
+      );
+
+  String get noSavedDetails => _pick(
+        english: 'Nothing saved yet. Your name, phone and address are kept here after your first order.',
+        french: 'Rien d\'enregistré pour l\'instant. Votre nom, téléphone et adresse seront gardés ici après votre première commande.',
+        arabic: 'ما كاين حتى معلومة. الاسم والتليفون والعنوان كيتسجلو هنا من بعد أول طلب.',
+      );
+
+  String get shopLocation => _pick(
+        english: 'Ksar Sghir, near Tangier',
+        french: 'Ksar Sghir, près de Tanger',
+        arabic: 'القصر الصغير، قرب طنجة',
+      );
+
+  String get locationLabel => _pick(
+        english: 'Location',
+        french: 'Itinéraire',
+        arabic: 'الموقع',
+      );
+
+  String pricePerUnit(Product product) => product.soldByKilo
+      ? _pick(
+          english: '${formatMad(product.price)} / kg',
+          french: '${formatMad(product.price)} le kilo',
+          arabic: '${formatMad(product.price)} للكيلو',
+        )
+      : _pick(
+          english: '${formatMad(product.price)} each',
+          french: '${formatMad(product.price)} la pièce',
+          arabic: '${formatMad(product.price)} للحبة',
+        );
+
+  /// How much of a product a cart line holds: 750 g, 1.5 kg, or ×3.
+  String amountLabel(Product product, int steps) {
+    if (!product.soldByKilo) {
+      return '×$steps';
+    }
+    final kilos = steps * product.step;
+    if (kilos < 1) {
+      return _pick(
+        english: '${(kilos * 1000).round()} g',
+        french: '${(kilos * 1000).round()} g',
+        arabic: '${(kilos * 1000).round()} غ',
+      );
+    }
+    final text = kilos == kilos.roundToDouble() ? kilos.toStringAsFixed(0) : kilos.toString();
+    return _pick(english: '$text kg', french: '$text kg', arabic: '$text كلغ');
+  }
 
   String get seeAllProducts => _pick(
         english: 'See all products',
@@ -123,48 +214,48 @@ class AppLocalizations {
       );
 
   String get productLibraryTitle => _pick(
-        english: 'Product library',
-        french: 'Bibliotheque produits',
-        arabic: 'مكتبة المنتجات',
+        english: 'Our products',
+        french: 'Nos produits',
+        arabic: 'منتجاتنا',
       );
 
   String get productLibrarySubtitle => _pick(
         english:
-            'Find the right spice profile fast, then build the order around your kitchen rhythm.',
+            "The shop's products at the shop's prices. Spices and herbs are sold by the kilo, in steps of 250 g.",
         french:
-            'Trouvez rapidement le bon profil d’epices puis composez la commande selon le rythme de votre cuisine.',
+            'Les produits de la boutique, aux prix de la boutique. Épices et herbes au kilo, par 250 g.',
         arabic:
-            'اعثر بسرعة على خلطة التوابل المناسبة ثم ابنِ طلبك حسب إيقاع مطبخك.',
+            'منتجات المحل بثمن المحل. التوابل والأعشاب بالكيلو، و250 غرام في كل مرة.',
       );
 
   String get catalogSearchHint => _pick(
-        english: 'Search saffron, mint, blends, bakery staples...',
-        french: 'Rechercher safran, menthe, melanges, essentials boulangerie...',
-        arabic: 'ابحث عن الزعفران أو النعناع أو الخلطات أو أساسيات المخبز...',
+        english: 'Search cumin, ras el hanout, henna...',
+        french: 'Rechercher cumin, ras el hanout, henné...',
+        arabic: 'ابحث: الكمون، راس الحانوت، الحناء...',
       );
 
   String visibleProducts(int matchCount) => _pick(
-        english: '$matchCount products visible',
-        french: '$matchCount produits affiches',
-        arabic: '$matchCount منتجات ظاهرة',
+        english: '$matchCount products',
+        french: '$matchCount produits',
+        arabic: '$matchCount منتج',
       );
 
   String get cashOnDeliveryDefault => _pick(
-        english: 'Cash on delivery default',
-        french: 'Paiement a la livraison par defaut',
-        arabic: 'الدفع عند الاستلام هو الافتراضي',
+        english: 'Order on WhatsApp',
+        french: 'Commande sur WhatsApp',
+        arabic: 'الطلب عبر واتساب',
       );
 
   String get moroccoDeliveryZone => _pick(
-        english: 'Morocco delivery zone filtered',
-        french: 'Zone de livraison Maroc filtree',
-        arabic: 'تمت تصفية منطقة التوصيل داخل المغرب',
+        english: 'Shop in Ksar Sghir',
+        french: 'Boutique à Ksar Sghir',
+        arabic: 'المحل في القصر الصغير',
       );
 
   String get operationalMinimumOrderNote => _pick(
-        english: 'Operational note: minimum order 250 MAD.',
-        french: 'Note operationnelle : commande minimum 250 MAD.',
-        arabic: 'ملاحظة تشغيلية: الحد الأدنى للطلب 250 درهم.',
+        english: 'Large quantities for businesses: ask us for a price on WhatsApp.',
+        french: 'Grandes quantités pour les professionnels : demandez-nous un prix sur WhatsApp.',
+        arabic: 'كميات كبيرة للمحترفين: اطلب منا الثمن عبر واتساب.',
       );
 
   String get noProductsMatchFilter => _pick(
@@ -174,33 +265,33 @@ class AppLocalizations {
       );
 
   String get orderDraftTitle => _pick(
-        english: 'Order draft',
-        french: 'Brouillon de commande',
-        arabic: 'مسودة الطلب',
+        english: 'Your order',
+        french: 'Votre commande',
+        arabic: 'طلبك',
       );
 
   String get orderDraftSubtitle => _pick(
         english:
-            'Tuned for quick restaurant repeat orders with a clear operational summary before checkout.',
+            'Your order goes to the shop on WhatsApp. We confirm the price, the delivery and the time with you.',
         french:
-            'Concu pour les commandes repetitives des restaurants avec un resume clair avant validation.',
+            "Votre commande part à la boutique sur WhatsApp. Nous confirmons avec vous le prix, la livraison et l'heure.",
         arabic:
-            'مصمم لطلبات المطاعم المتكررة بسرعة مع ملخص تشغيلي واضح قبل التأكيد.',
+            'طلبك كيوصل للمحل عبر واتساب، ونأكدو معاك الثمن والتوصيل والوقت.',
       );
 
   String get noOrderDraftYet => _pick(
-        english: 'No order draft yet',
-        french: 'Aucun brouillon de commande',
-        arabic: 'لا توجد مسودة طلب بعد',
+        english: 'Your cart is empty',
+        french: 'Votre panier est vide',
+        arabic: 'السلة فارغة',
       );
 
   String get emptyCartSubtitle => _pick(
         english:
-            'Start from the catalog and build a restaurant order with reusable staples and signature blends.',
+            'Add products from the catalogue, then send the order to the shop.',
         french:
-            'Commencez par le catalogue et composez une commande restaurant avec essentiels et melanges signature.',
+            'Ajoutez des produits du catalogue, puis envoyez la commande à la boutique.',
         arabic:
-            'ابدأ من الكتالوج وأنشئ طلب مطعم يضم الأساسيات المتكررة والخلطات المميزة.',
+            'زيد المنتجات من الكتالوج، ومن بعد صيفط الطلب للمحل.',
       );
 
   String get openCatalog => _pick(
@@ -223,11 +314,11 @@ class AppLocalizations {
 
   String get checkoutSummarySubtitle => _pick(
         english:
-            'Cash on delivery stays the default. The summary keeps minimum order and dispatch status visible before confirmation.',
+            'You pay on delivery or at the shop. Delivery is agreed with you on WhatsApp.',
         french:
-            'Le paiement a la livraison reste par defaut. Le resume garde visibles le minimum de commande et l\'etat d\'expedition avant confirmation.',
+            'Vous payez à la livraison ou à la boutique. La livraison se convient avec vous sur WhatsApp.',
         arabic:
-            'يبقى الدفع عند الاستلام هو الافتراضي. يحافظ الملخص على وضوح الحد الأدنى للطلب وحالة الإرسال قبل التأكيد.',
+            'الخلاص عند الاستلام أو فالمحل. والتوصيل كنتافقو عليه معاك فواتساب.',
       );
 
   String get subtotalLabel => _pick(
@@ -249,15 +340,15 @@ class AppLocalizations {
       );
 
   String get includedLabel => _pick(
-        english: 'Included',
-        french: 'Inclus',
-        arabic: 'مشمول',
+        english: 'Agreed on WhatsApp',
+        french: 'À convenir sur WhatsApp',
+        arabic: 'يُتفق عليه عبر واتساب',
       );
 
   String get totalDueOnDelivery => _pick(
-        english: 'Total due on delivery',
-        french: 'Total a payer a la livraison',
-        arabic: 'الإجمالي المستحق عند الاستلام',
+        english: 'Products total',
+        french: 'Total des produits',
+        arabic: 'مجموع المنتجات',
       );
 
   String get minimumOrderProgress => _pick(
@@ -267,9 +358,9 @@ class AppLocalizations {
       );
 
   String get eligibleForConfirmation => _pick(
-        english: 'Eligible for confirmation and same-day dispatch review.',
-        french: 'Eligible a la confirmation et a la revue d\'expedition le meme jour.',
-        arabic: 'مؤهل للتأكيد ولمراجعة الإرسال في نفس اليوم.',
+        english: 'Ready to send to the shop.',
+        french: 'Prête à être envoyée à la boutique.',
+        arabic: 'جاهز للإرسال إلى المحل.',
       );
 
   String addMoreToReachMinimum(double amount) => _pick(
@@ -285,9 +376,9 @@ class AppLocalizations {
       );
 
   String get placeCashOrder => _pick(
-        english: 'Place cash order',
-        french: 'Confirmer la commande',
-        arabic: 'تأكيد طلب الدفع عند الاستلام',
+        english: 'Send the order to the shop',
+        french: 'Envoyer la commande à la boutique',
+        arabic: 'صيفط الطلب للمحل',
       );
 
   // ── Checkout / delivery details ────────────────────────────────────────
@@ -396,9 +487,11 @@ class AppLocalizations {
     buffer.writeln(
       '${_pick(english: '🛒 Items', french: '🛒 Articles', arabic: '🛒 المنتجات')}:',
     );
+    // The shop reads the till's Arabic names, so every line carries it, with the customer's name for it
     for (final item in items) {
+      final name = isArabic ? item.product.arabicName : '${item.product.arabicName} (${productName(item.product)})';
       buffer.writeln(
-        '• ${item.quantity}× ${productName(item.product)} (${productPackSize(item.product)}) — ${formatMad(item.lineTotal)}',
+        '• ${amountLabel(item.product, item.quantity)} $name — ${formatMad(item.lineTotal)}',
       );
     }
     buffer.writeln();
@@ -1107,114 +1200,51 @@ class AppLocalizations {
           ),
       };
 
-  String categoryLabel(String category) => switch (category) {
-        'All' => _pick(english: 'All', french: 'Tous', arabic: 'الكل'),
-        'Signature' => _pick(
-            english: 'Signature',
-            french: 'Signature',
-            arabic: 'مميز',
-          ),
-        'Blends' => _pick(
-            english: 'Blends',
-            french: 'Melanges',
-            arabic: 'خلطات',
-          ),
-        'Ground' => _pick(
-            english: 'Ground',
-            french: 'Moulues',
-            arabic: 'مطحونة',
-          ),
-        'Whole' => _pick(
-            english: 'Whole',
-            french: 'Entieres',
-            arabic: 'حبوب كاملة',
-          ),
-        'Herbs' => _pick(
-            english: 'Herbs',
-            french: 'Herbes',
-            arabic: 'أعشاب',
-          ),
-        _ => category,
-      };
-
-  String productName(Product product) {
-    if (isEnglish) {
-      return product.name;
+  /// 'All', or one of the shop's shelves from the catalogue file, in the user's language.
+  String categoryLabel(String category) {
+    if (category == 'All') {
+      return _pick(english: 'All', french: 'Tous', arabic: 'الكل');
     }
-
-    return _productCopy(product.id).nameFor(languageCode, fallback: product.name);
+    final c = Catalog.category(category);
+    if (c == null) {
+      return category;
+    }
+    return _pick(english: c.english, french: c.french, arabic: c.arabic);
   }
 
-  String productSecondaryName(Product product) {
-    if (isArabic) {
-      return product.name;
-    }
+  /// The name in the user's language: the till's Arabic name, or its French / English name.
+  String productName(Product product) => _pick(
+        english: product.name,
+        french: product.frenchName ?? product.name,
+        arabic: product.arabicName,
+      );
 
-    return product.arabicName;
+  /// The other name under it (the Arabic one, or the French one in Arabic), empty when it says the same.
+  String productSecondaryName(Product product) {
+    final other = isArabic ? product.frenchName ?? product.name : product.arabicName;
+    return other == productName(product) ? '' : other;
   }
 
   String productCategory(Product product) => categoryLabel(product.category);
 
-  String productOrigin(Product product) {
-    if (isEnglish) {
-      return product.origin;
-    }
+  String productOrigin(Product product) => '';
 
-    return _productCopy(product.id)
-        .originFor(languageCode, fallback: product.origin);
-  }
+  String productDescription(Product product) => '';
 
-  String productDescription(Product product) {
-    if (isEnglish) {
-      return product.description;
-    }
+  /// Under the price: "per kg" or "per piece".
+  String productPackSize(Product product) => product.soldByKilo
+      ? _pick(english: 'per kg', french: 'le kilo', arabic: 'للكيلو')
+      : _pick(english: 'per piece', french: 'la pièce', arabic: 'للحبة');
 
-    return _productCopy(product.id)
-        .descriptionFor(languageCode, fallback: product.description);
-  }
+  String productUnitLabel(Product product) => productPackSize(product);
 
-  String productPackSize(Product product) {
-    if (isEnglish) {
-      return product.packSize;
-    }
-
-    return _productCopy(product.id)
-        .packSizeFor(languageCode, fallback: product.packSize);
-  }
-
-  String productUnitLabel(Product product) {
-    if (isEnglish) {
-      return product.unitLabel;
-    }
-
-    return _productCopy(product.id)
-        .unitLabelFor(languageCode, fallback: product.unitLabel);
-  }
-
-  List<String> productTags(Product product) {
-    if (isEnglish) {
-      return product.tags;
-    }
-
-    return _productCopy(product.id).tagsFor(languageCode, fallback: product.tags);
-  }
+  List<String> productTags(Product product) => const [];
 
   Iterable<String> productSearchTerms(Product product) sync* {
     yield product.name;
     yield product.arabicName;
-    yield product.category;
-    yield product.origin;
-    yield product.description;
-    yield product.packSize;
-    yield productName(product);
-    yield productSecondaryName(product);
+    if (product.frenchName != null) yield product.frenchName!;
     yield productCategory(product);
-    yield productOrigin(product);
-    yield productDescription(product);
-    yield productPackSize(product);
-    yield productUnitLabel(product);
-    yield* product.tags;
-    yield* productTags(product);
   }
 
   String orderCustomerName(OrderSnapshot order) => switch (order.id) {
@@ -1244,7 +1274,11 @@ class AppLocalizations {
         _ => order.eta,
       };
 
-  String formatMad(num amount) => '${amount.toStringAsFixed(0)} MAD';
+  /// 90 MAD, 22.50 MAD (a quarter kilo can land on half a dirham), 90 درهم in Arabic.
+  String formatMad(num amount) {
+    final text = amount == amount.roundToDouble() ? amount.toStringAsFixed(0) : amount.toStringAsFixed(2);
+    return isArabic ? '$text درهم' : '$text MAD';
+  }
 
   String productNameById(String productId) =>
       _productCopy(productId).nameFor(languageCode, fallback: productId);

@@ -1,0 +1,1342 @@
+{
+ "categories": [
+  {
+   "id": "spices",
+   "ar": "التوابل",
+   "fr": "Épices",
+   "en": "Spices",
+   "color": "#B5472C"
+  },
+  {
+   "id": "blends",
+   "ar": "الخلطات",
+   "fr": "Mélanges",
+   "en": "Spice blends",
+   "color": "#C9822B"
+  },
+  {
+   "id": "herbs",
+   "ar": "الأعشاب",
+   "fr": "Herbes",
+   "en": "Herbs",
+   "color": "#5E7F3E"
+  },
+  {
+   "id": "seeds",
+   "ar": "حبوب وفواكه جافة",
+   "fr": "Graines & fruits secs",
+   "en": "Seeds & dried fruit",
+   "color": "#8A6A3B"
+  },
+  {
+   "id": "pastry",
+   "ar": "الحلويات",
+   "fr": "Pâtisserie",
+   "en": "Pastry",
+   "color": "#C7647A"
+  },
+  {
+   "id": "pantry",
+   "ar": "البقالة",
+   "fr": "Épicerie",
+   "en": "Pantry",
+   "color": "#4F6D8A"
+  },
+  {
+   "id": "beauty",
+   "ar": "الحناء والتجميل",
+   "fr": "Henné & beauté",
+   "en": "Henna & beauty",
+   "color": "#7C4A2D"
+  },
+  {
+   "id": "incense",
+   "ar": "البخور والمسك",
+   "fr": "Encens & musc",
+   "en": "Incense & musk",
+   "color": "#5B4B8A"
+  }
+ ],
+ "products": [
+  {
+   "id": "p13",
+   "ar": "الفلفلة حلوة",
+   "fr": "Paprika doux",
+   "en": "Sweet paprika",
+   "cat": "spices",
+   "price": 60.0,
+   "unit": "kg",
+   "rank": 113.04
+  },
+  {
+   "id": "p2",
+   "ar": "الخرقوم",
+   "fr": "Curcuma",
+   "en": "Turmeric",
+   "cat": "spices",
+   "price": 70.0,
+   "unit": "kg",
+   "rank": 109.04
+  },
+  {
+   "id": "p1",
+   "ar": "سكنجبر",
+   "fr": "Gingembre moulu",
+   "en": "Ground ginger",
+   "cat": "spices",
+   "price": 90.0,
+   "unit": "kg",
+   "rank": 105.19
+  },
+  {
+   "id": "p6",
+   "ar": "الكيمون",
+   "fr": "Cumin",
+   "en": "Cumin",
+   "cat": "spices",
+   "price": 90.0,
+   "unit": "kg",
+   "rank": 103.115
+  },
+  {
+   "id": "p3",
+   "ar": "ليبزار",
+   "fr": "Poivre noir",
+   "en": "Black pepper",
+   "cat": "spices",
+   "price": 130.0,
+   "unit": "kg",
+   "rank": 65.627
+  },
+  {
+   "id": "p52",
+   "ar": "كوزة",
+   "fr": "Noix de muscade",
+   "en": "Nutmeg",
+   "cat": "spices",
+   "price": 1.0,
+   "unit": "piece",
+   "rank": 56.0
+  },
+  {
+   "id": "p9",
+   "ar": "القرفة",
+   "fr": "Cannelle",
+   "en": "Cinnamon",
+   "cat": "spices",
+   "price": 80.0,
+   "unit": "kg",
+   "rank": 29.74
+  },
+  {
+   "id": "p130",
+   "ar": "القصبور",
+   "fr": "Coriandre",
+   "en": "Coriander",
+   "cat": "spices",
+   "price": 50.0,
+   "unit": "kg",
+   "rank": 23.585
+  },
+  {
+   "id": "p269",
+   "ar": "تومة خضراء",
+   "fr": "تومة خضراء",
+   "en": "تومة خضراء",
+   "cat": "spices",
+   "price": 50.0,
+   "unit": "kg",
+   "rank": 15.558
+  },
+  {
+   "id": "p282",
+   "ar": "لحلبة",
+   "fr": "Fenugrec",
+   "en": "Fenugreek",
+   "cat": "spices",
+   "price": 40.0,
+   "unit": "kg",
+   "rank": 10.91
+  },
+  {
+   "id": "p92",
+   "ar": "قرنفل",
+   "fr": "Clou de girofle",
+   "en": "Cloves",
+   "cat": "spices",
+   "price": 200.0,
+   "unit": "kg",
+   "rank": 8.36
+  },
+  {
+   "id": "p245",
+   "ar": "ليبزار ابيض",
+   "fr": "Poivre blanc",
+   "en": "White pepper",
+   "cat": "spices",
+   "price": 160.0,
+   "unit": "kg",
+   "rank": 7.46
+  },
+  {
+   "id": "p40",
+   "ar": "النفع",
+   "fr": "Fenouil",
+   "en": "Fennel seeds",
+   "cat": "spices",
+   "price": 90.0,
+   "unit": "kg",
+   "rank": 5.955
+  },
+  {
+   "id": "p64",
+   "ar": "الزنجبيل",
+   "fr": "Gingembre",
+   "en": "Ginger",
+   "cat": "spices",
+   "price": 70.0,
+   "unit": "kg",
+   "rank": 5.21
+  },
+  {
+   "id": "p8",
+   "ar": "سدانية حارة",
+   "fr": "Piment fort moulu",
+   "en": "Hot chili powder",
+   "cat": "spices",
+   "price": 70.0,
+   "unit": "kg",
+   "rank": 3.778
+  },
+  {
+   "id": "p39",
+   "ar": "حبة حلوى",
+   "fr": "Anis vert",
+   "en": "Aniseed",
+   "cat": "spices",
+   "price": 90.0,
+   "unit": "kg",
+   "rank": 3.745
+  },
+  {
+   "id": "p43",
+   "ar": "صانوج",
+   "fr": "Nigelle",
+   "en": "Nigella seeds",
+   "cat": "spices",
+   "price": 80.0,
+   "unit": "kg",
+   "rank": 2.435
+  },
+  {
+   "id": "p85",
+   "ar": "زعفران حر",
+   "fr": "Safran pur",
+   "en": "Pure saffron",
+   "cat": "spices",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 2.0
+  },
+  {
+   "id": "p79",
+   "ar": "الخدنجال",
+   "fr": "Galanga",
+   "en": "Galangal",
+   "cat": "spices",
+   "price": 160.0,
+   "unit": "kg",
+   "rank": 1.805
+  },
+  {
+   "id": "p5",
+   "ar": "الثوم مطحونة",
+   "fr": "Ail en poudre",
+   "en": "Garlic powder",
+   "cat": "spices",
+   "price": 120.0,
+   "unit": "kg",
+   "rank": 1.494
+  },
+  {
+   "id": "p212",
+   "ar": "قرفة سبيسيال",
+   "fr": "Cannelle spéciale",
+   "en": "Cinnamon (special)",
+   "cat": "spices",
+   "price": 150.0,
+   "unit": "kg",
+   "rank": 1.36
+  },
+  {
+   "id": "p11",
+   "ar": "بصال مطحون",
+   "fr": "Oignon en poudre",
+   "en": "Onion powder",
+   "cat": "spices",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.815
+  },
+  {
+   "id": "p48",
+   "ar": "قعقلة",
+   "fr": "Cardamome",
+   "en": "Cardamom",
+   "cat": "spices",
+   "price": 650.0,
+   "unit": "kg",
+   "rank": 0.45
+  },
+  {
+   "id": "p73",
+   "ar": "اليانسون",
+   "fr": "اليانسون",
+   "en": "اليانسون",
+   "cat": "spices",
+   "price": 200.0,
+   "unit": "kg",
+   "rank": 0.44
+  },
+  {
+   "id": "p292",
+   "ar": "كروية",
+   "fr": "Carvi",
+   "en": "Caraway",
+   "cat": "spices",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.37
+  },
+  {
+   "id": "p75",
+   "ar": "كيمون صوفي",
+   "fr": "كيمون صوفي",
+   "en": "كيمون صوفي",
+   "cat": "spices",
+   "price": 300.0,
+   "unit": "kg",
+   "rank": 0.285
+  },
+  {
+   "id": "p49",
+   "ar": "بسيبيسة",
+   "fr": "Macis",
+   "en": "Mace",
+   "cat": "spices",
+   "price": 650.0,
+   "unit": "kg",
+   "rank": 0.23
+  },
+  {
+   "id": "p46",
+   "ar": "حب الراس",
+   "fr": "حب الراس",
+   "en": "حب الراس",
+   "cat": "spices",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.055
+  },
+  {
+   "id": "p128",
+   "ar": "الثوم",
+   "fr": "Ail",
+   "en": "Garlic",
+   "cat": "spices",
+   "price": 60.0,
+   "unit": "kg",
+   "rank": 0.0
+  },
+  {
+   "id": "p193",
+   "ar": "الحنتيث",
+   "fr": "Asa-fœtida",
+   "en": "Asafoetida",
+   "cat": "spices",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p4",
+   "ar": "دجاج",
+   "fr": "Mélange pour poulet",
+   "en": "Chicken spice blend",
+   "cat": "blends",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 10.13
+  },
+  {
+   "id": "p10",
+   "ar": "توابل السمك طري",
+   "fr": "Mélange pour poisson",
+   "en": "Fish spice blend",
+   "cat": "blends",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 9.527
+  },
+  {
+   "id": "p7",
+   "ar": "راس الحانوت",
+   "fr": "Ras el hanout",
+   "en": "Ras el hanout",
+   "cat": "blends",
+   "price": 160.0,
+   "unit": "kg",
+   "rank": 1.028
+  },
+  {
+   "id": "p12",
+   "ar": "اللحم",
+   "fr": "Mélange pour viande",
+   "en": "Meat spice blend",
+   "cat": "blends",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.915
+  },
+  {
+   "id": "p226",
+   "ar": "تخليطة",
+   "fr": "Mélange maison (tkhlita)",
+   "en": "House blend (tkhlita)",
+   "cat": "blends",
+   "price": 95.0,
+   "unit": "kg",
+   "rank": 0.805
+  },
+  {
+   "id": "p14",
+   "ar": "حريرة",
+   "fr": "Épices pour harira",
+   "en": "Harira spice blend",
+   "cat": "blends",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.235
+  },
+  {
+   "id": "p15",
+   "ar": "الكفتة",
+   "fr": "Épices pour kefta",
+   "en": "Kefta spice blend",
+   "cat": "blends",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.0
+  },
+  {
+   "id": "p185",
+   "ar": "تبريمة اللحم",
+   "fr": "Tbrima pour viande",
+   "en": "Tbrima meat seasoning",
+   "cat": "blends",
+   "price": 170.0,
+   "unit": "kg",
+   "rank": 0.0
+  },
+  {
+   "id": "p36",
+   "ar": "سحتر",
+   "fr": "Thym (zaatar)",
+   "en": "Thyme (zaatar)",
+   "cat": "herbs",
+   "price": 120.0,
+   "unit": "kg",
+   "rank": 3.295
+  },
+  {
+   "id": "p35",
+   "ar": "شح",
+   "fr": "Armoise blanche (chih)",
+   "en": "White wormwood (chih)",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 2.305
+  },
+  {
+   "id": "p143",
+   "ar": "خزامة",
+   "fr": "Lavande",
+   "en": "Lavender",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 2.015
+  },
+  {
+   "id": "p65",
+   "ar": "كركديه",
+   "fr": "Hibiscus",
+   "en": "Hibiscus",
+   "cat": "herbs",
+   "price": 160.0,
+   "unit": "kg",
+   "rank": 1.625
+  },
+  {
+   "id": "p268",
+   "ar": "مورينكة",
+   "fr": "Moringa",
+   "en": "Moringa",
+   "cat": "herbs",
+   "price": 400.0,
+   "unit": "kg",
+   "rank": 1.21
+  },
+  {
+   "id": "p56",
+   "ar": "الورد",
+   "fr": "Boutons de rose",
+   "en": "Rose buds",
+   "cat": "herbs",
+   "price": 250.0,
+   "unit": "kg",
+   "rank": 1.065
+  },
+  {
+   "id": "p55",
+   "ar": "بابونج",
+   "fr": "Camomille",
+   "en": "Chamomile",
+   "cat": "herbs",
+   "price": 170.0,
+   "unit": "kg",
+   "rank": 0.893
+  },
+  {
+   "id": "p68",
+   "ar": "ريحان",
+   "fr": "Myrte (rihan)",
+   "en": "Myrtle (rihan)",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.765
+  },
+  {
+   "id": "p213",
+   "ar": "قسط ااهندي",
+   "fr": "Costus indien",
+   "en": "Indian costus",
+   "cat": "herbs",
+   "price": 300.0,
+   "unit": "kg",
+   "rank": 0.59
+  },
+  {
+   "id": "p63",
+   "ar": "مانتا",
+   "fr": "Menthe séchée",
+   "en": "Dried mint",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.465
+  },
+  {
+   "id": "p91",
+   "ar": "عرق سوس",
+   "fr": "Réglisse",
+   "en": "Licorice root",
+   "cat": "herbs",
+   "price": 160.0,
+   "unit": "kg",
+   "rank": 0.405
+  },
+  {
+   "id": "p50",
+   "ar": "قشور الرمان",
+   "fr": "Écorce de grenade",
+   "en": "Pomegranate peel",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.335
+  },
+  {
+   "id": "p60",
+   "ar": "ازير",
+   "fr": "Romarin",
+   "en": "Rosemary",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.23
+  },
+  {
+   "id": "p59",
+   "ar": "لويزا",
+   "fr": "Verveine",
+   "en": "Lemon verbena",
+   "cat": "herbs",
+   "price": 200.0,
+   "unit": "kg",
+   "rank": 0.21
+  },
+  {
+   "id": "p62",
+   "ar": "سلمية",
+   "fr": "Sauge",
+   "en": "Sage",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.155
+  },
+  {
+   "id": "p74",
+   "ar": "شوك الجمل",
+   "fr": "شوك الجمل",
+   "en": "شوك الجمل",
+   "cat": "herbs",
+   "price": 140.0,
+   "unit": "kg",
+   "rank": 0.105
+  },
+  {
+   "id": "p70",
+   "ar": "لعرعار",
+   "fr": "Genévrier (arar)",
+   "en": "Juniper (arar)",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.105
+  },
+  {
+   "id": "p271",
+   "ar": "مريوت",
+   "fr": "Marrube",
+   "en": "Horehound",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.06
+  },
+  {
+   "id": "p140",
+   "ar": "مرددوش",
+   "fr": "Marjolaine",
+   "en": "Marjoram",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 0.045
+  },
+  {
+   "id": "p37",
+   "ar": "رند",
+   "fr": "Laurier",
+   "en": "Bay leaves",
+   "cat": "herbs",
+   "price": 200.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p57",
+   "ar": "فلايو",
+   "fr": "Menthe pouliot",
+   "en": "Pennyroyal",
+   "cat": "herbs",
+   "price": 100.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p20",
+   "ar": "زنجلان العادي",
+   "fr": "Sésame",
+   "en": "Sesame seeds",
+   "cat": "seeds",
+   "price": 30.0,
+   "unit": "kg",
+   "rank": 21.65
+  },
+  {
+   "id": "p26",
+   "ar": "زبيب",
+   "fr": "Raisins secs",
+   "en": "Raisins",
+   "cat": "seeds",
+   "price": 55.0,
+   "unit": "kg",
+   "rank": 14.769
+  },
+  {
+   "id": "p44",
+   "ar": "زريع الكتان",
+   "fr": "Graines de lin",
+   "en": "Flaxseed",
+   "cat": "seeds",
+   "price": 30.0,
+   "unit": "kg",
+   "rank": 11.05
+  },
+  {
+   "id": "p90",
+   "ar": "عدس حمراء",
+   "fr": "Lentilles corail",
+   "en": "Red lentils",
+   "cat": "seeds",
+   "price": 25.0,
+   "unit": "kg",
+   "rank": 8.938
+  },
+  {
+   "id": "p16",
+   "ar": "لوز",
+   "fr": "Amandes",
+   "en": "Almonds",
+   "cat": "seeds",
+   "price": 98.0,
+   "unit": "kg",
+   "rank": 7.395
+  },
+  {
+   "id": "p76",
+   "ar": "قرع خضراء",
+   "fr": "Graines de courge",
+   "en": "Pumpkin seeds",
+   "cat": "seeds",
+   "price": 80.0,
+   "unit": "kg",
+   "rank": 6.225
+  },
+  {
+   "id": "p47",
+   "ar": "حب الرشاد",
+   "fr": "Graines de cresson",
+   "en": "Garden cress seeds",
+   "cat": "seeds",
+   "price": 70.0,
+   "unit": "kg",
+   "rank": 4.3
+  },
+  {
+   "id": "p45",
+   "ar": "صوجا",
+   "fr": "Soja",
+   "en": "Soybeans",
+   "cat": "seeds",
+   "price": 25.0,
+   "unit": "kg",
+   "rank": 3.411
+  },
+  {
+   "id": "p17",
+   "ar": "كركاع",
+   "fr": "Noix",
+   "en": "Walnuts",
+   "cat": "seeds",
+   "price": 80.0,
+   "unit": "kg",
+   "rank": 1.929
+  },
+  {
+   "id": "p267",
+   "ar": "نخالة القاطونة",
+   "fr": "Son de psyllium",
+   "en": "Psyllium husk",
+   "cat": "seeds",
+   "price": 400.0,
+   "unit": "kg",
+   "rank": 1.28
+  },
+  {
+   "id": "p41",
+   "ar": "حب العزيز",
+   "fr": "Souchet (habb laaziz)",
+   "en": "Tiger nuts",
+   "cat": "seeds",
+   "price": 90.0,
+   "unit": "kg",
+   "rank": 0.405
+  },
+  {
+   "id": "p25",
+   "ar": "زبيب ممتاز",
+   "fr": "Raisins secs premium",
+   "en": "Raisins (premium)",
+   "cat": "seeds",
+   "price": 60.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p21",
+   "ar": "زنجلان ممتاز",
+   "fr": "Sésame premium",
+   "en": "Sesame seeds (premium)",
+   "cat": "seeds",
+   "price": 40.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p94",
+   "ar": "قاطونة",
+   "fr": "Psyllium",
+   "en": "Psyllium seeds",
+   "cat": "seeds",
+   "price": 150.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p131",
+   "ar": "خميرة الحلوى 1",
+   "fr": "Levure chimique",
+   "en": "Baking powder",
+   "cat": "pastry",
+   "price": 1.0,
+   "unit": "piece",
+   "rank": 20.0
+  },
+  {
+   "id": "p135",
+   "ar": "ماء الزهار عادي",
+   "fr": "Eau de fleur d'oranger",
+   "en": "Orange blossom water",
+   "cat": "pastry",
+   "price": 4.0,
+   "unit": "piece",
+   "rank": 14.0
+  },
+  {
+   "id": "p223",
+   "ar": "ماء الورد",
+   "fr": "Eau de rose",
+   "en": "Rose water",
+   "cat": "pastry",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 14.0
+  },
+  {
+   "id": "p263",
+   "ar": "خميرة زهار",
+   "fr": "Levure",
+   "en": "Yeast",
+   "cat": "pastry",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 11.0
+  },
+  {
+   "id": "p133",
+   "ar": "خميرة الحلوى 5",
+   "fr": "Levure chimique (grand)",
+   "en": "Baking powder (large)",
+   "cat": "pastry",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 9.0
+  },
+  {
+   "id": "p138",
+   "ar": "سكر كلاصي",
+   "fr": "Sucre glace",
+   "en": "Icing sugar",
+   "cat": "pastry",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 8.0
+  },
+  {
+   "id": "p136",
+   "ar": "ماءالزهر ممتاز",
+   "fr": "Eau de fleur d'oranger premium",
+   "en": "Orange blossom water (premium)",
+   "cat": "pastry",
+   "price": 8.0,
+   "unit": "piece",
+   "rank": 5.0
+  },
+  {
+   "id": "p31",
+   "ar": "كواغط الحلوى كبار",
+   "fr": "Caissettes à gâteaux (grandes)",
+   "en": "Cake cases (large)",
+   "cat": "pastry",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 4.0
+  },
+  {
+   "id": "p156",
+   "ar": "ماء الورد صغيرة",
+   "fr": "Eau de rose (petite)",
+   "en": "Rose water (small)",
+   "cat": "pastry",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 3.0
+  },
+  {
+   "id": "p22",
+   "ar": "كوكو",
+   "fr": "Noix de coco râpée",
+   "en": "Desiccated coconut",
+   "cat": "pastry",
+   "price": 80.0,
+   "unit": "kg",
+   "rank": 2.06
+  },
+  {
+   "id": "p30",
+   "ar": "كواغط الحلوى صغار",
+   "fr": "Caissettes à gâteaux (petites)",
+   "en": "Cake cases (small)",
+   "cat": "pastry",
+   "price": 3.0,
+   "unit": "piece",
+   "rank": 2.0
+  },
+  {
+   "id": "p24",
+   "ar": "زبدة الحلوى",
+   "fr": "Beurre pâtissier",
+   "en": "Pastry butter",
+   "cat": "pastry",
+   "price": 24.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p28",
+   "ar": "شكلاط فيرسي",
+   "fr": "Vermicelles de chocolat",
+   "en": "Chocolate sprinkles",
+   "cat": "pastry",
+   "price": 100.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p29",
+   "ar": "فواكه الحلوى",
+   "fr": "Fruits confits",
+   "en": "Candied fruit",
+   "cat": "pastry",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p137",
+   "ar": "كربوناتور السودى",
+   "fr": "Bicarbonate de soude",
+   "en": "Baking soda",
+   "cat": "pantry",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 17.0
+  },
+  {
+   "id": "p54",
+   "ar": "قهوة عادية",
+   "fr": "Café moulu",
+   "en": "Ground coffee",
+   "cat": "pantry",
+   "price": 120.0,
+   "unit": "kg",
+   "rank": 14.685
+  },
+  {
+   "id": "p278",
+   "ar": "خل كبيرة",
+   "fr": "Vinaigre (grande bouteille)",
+   "en": "Vinegar (large bottle)",
+   "cat": "pantry",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 7.0
+  },
+  {
+   "id": "p32",
+   "ar": "العسل صغيرة",
+   "fr": "Miel (petit)",
+   "en": "Honey (small)",
+   "cat": "pantry",
+   "price": 7.0,
+   "unit": "piece",
+   "rank": 6.0
+  },
+  {
+   "id": "p154",
+   "ar": "خل تفاح 10",
+   "fr": "Vinaigre de cidre (petit)",
+   "en": "Apple cider vinegar (small)",
+   "cat": "pantry",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 6.0
+  },
+  {
+   "id": "p153",
+   "ar": "خل تفاح 40",
+   "fr": "Vinaigre de cidre (grand)",
+   "en": "Apple cider vinegar (large)",
+   "cat": "pantry",
+   "price": 40.0,
+   "unit": "piece",
+   "rank": 6.0
+  },
+  {
+   "id": "p132",
+   "ar": "ملح الهملايا",
+   "fr": "Sel de l'Himalaya",
+   "en": "Himalayan salt",
+   "cat": "pantry",
+   "price": 25.0,
+   "unit": "kg",
+   "rank": 2.0
+  },
+  {
+   "id": "p125",
+   "ar": "ملحة",
+   "fr": "Sel",
+   "en": "Salt",
+   "cat": "pantry",
+   "price": 6.0,
+   "unit": "kg",
+   "rank": 1.105
+  },
+  {
+   "id": "p61",
+   "ar": "حبوب لقاح",
+   "fr": "Pollen d'abeille",
+   "en": "Bee pollen",
+   "cat": "pantry",
+   "price": 340.0,
+   "unit": "kg",
+   "rank": 0.38
+  },
+  {
+   "id": "p53",
+   "ar": "قهوة معشبة",
+   "fr": "Café aux épices",
+   "en": "Spiced coffee",
+   "cat": "pantry",
+   "price": 130.0,
+   "unit": "kg",
+   "rank": 0.045
+  },
+  {
+   "id": "p72",
+   "ar": "الكبار",
+   "fr": "Câpres",
+   "en": "Capers",
+   "cat": "pantry",
+   "price": 100.0,
+   "unit": "piece",
+   "rank": 0.035
+  },
+  {
+   "id": "p34",
+   "ar": "العسل كبيرة",
+   "fr": "Miel (grand)",
+   "en": "Honey (large)",
+   "cat": "pantry",
+   "price": 13.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p33",
+   "ar": "العسل متوسطة",
+   "fr": "Miel (moyen)",
+   "en": "Honey (medium)",
+   "cat": "pantry",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p163",
+   "ar": "حناء تمزورين",
+   "fr": "Henné Tamzourine",
+   "en": "Tamzourine henna",
+   "cat": "beauty",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 35.0
+  },
+  {
+   "id": "p194",
+   "ar": "صابون بلدي",
+   "fr": "Savon noir beldi",
+   "en": "Black soap (beldi)",
+   "cat": "beauty",
+   "price": 20.0,
+   "unit": "kg",
+   "rank": 17.21
+  },
+  {
+   "id": "p160",
+   "ar": "زيت الاعشاب",
+   "fr": "Huile aux herbes",
+   "en": "Herbal oil",
+   "cat": "beauty",
+   "price": 15.0,
+   "unit": "piece",
+   "rank": 15.0
+  },
+  {
+   "id": "p277",
+   "ar": "حناء واد الذهب",
+   "fr": "Henné Oued Eddahab",
+   "en": "Oued Eddahab henna",
+   "cat": "beauty",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 12.0
+  },
+  {
+   "id": "p208",
+   "ar": "ليبرا حناء عادية",
+   "fr": "Henné (sachet)",
+   "en": "Henna (sachet)",
+   "cat": "beauty",
+   "price": 3.0,
+   "unit": "piece",
+   "rank": 12.0
+  },
+  {
+   "id": "p175",
+   "ar": "حناء",
+   "fr": "Henné en poudre",
+   "en": "Henna powder",
+   "cat": "beauty",
+   "price": 60.0,
+   "unit": "kg",
+   "rank": 10.505
+  },
+  {
+   "id": "p162",
+   "ar": "زيت لاعشاب ممتازة",
+   "fr": "Huile aux herbes premium",
+   "en": "Herbal oil (premium)",
+   "cat": "beauty",
+   "price": 25.0,
+   "unit": "piece",
+   "rank": 8.0
+  },
+  {
+   "id": "p51",
+   "ar": "السدر",
+   "fr": "Poudre de sidr",
+   "en": "Sidr powder",
+   "cat": "beauty",
+   "price": 100.0,
+   "unit": "kg",
+   "rank": 7.995
+  },
+  {
+   "id": "p227",
+   "ar": "عكار الفاسي",
+   "fr": "Akar fassi",
+   "en": "Akar fassi (natural blush)",
+   "cat": "beauty",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 7.0
+  },
+  {
+   "id": "p69",
+   "ar": "زواقة حناء",
+   "fr": "زواقة حناء",
+   "en": "زواقة حناء",
+   "cat": "beauty",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 5.0
+  },
+  {
+   "id": "p205",
+   "ar": "الغاسول",
+   "fr": "Ghassoul",
+   "en": "Ghassoul clay",
+   "cat": "beauty",
+   "price": 8.0,
+   "unit": "piece",
+   "rank": 4.0
+  },
+  {
+   "id": "p176",
+   "ar": "عود لاراك",
+   "fr": "Siwak",
+   "en": "Miswak stick",
+   "cat": "beauty",
+   "price": 8.0,
+   "unit": "piece",
+   "rank": 4.0
+  },
+  {
+   "id": "p126",
+   "ar": "شبة",
+   "fr": "Pierre d'alun",
+   "en": "Alum stone",
+   "cat": "beauty",
+   "price": 50.0,
+   "unit": "kg",
+   "rank": 3.695
+  },
+  {
+   "id": "p198",
+   "ar": "صابون بلدي بلاعشاب",
+   "fr": "Savon noir aux herbes",
+   "en": "Herbal black soap",
+   "cat": "beauty",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 3.0
+  },
+  {
+   "id": "p211",
+   "ar": "نيلة",
+   "fr": "Nila bleue",
+   "en": "Blue nila",
+   "cat": "beauty",
+   "price": 15.0,
+   "unit": "piece",
+   "rank": 3.0
+  },
+  {
+   "id": "p287",
+   "ar": "حناء نجوى",
+   "fr": "Henné Najwa",
+   "en": "Najwa henna",
+   "cat": "beauty",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 2.0
+  },
+  {
+   "id": "p161",
+   "ar": "زيت الاعشاب طبيعية",
+   "fr": "Huile aux herbes naturelle",
+   "en": "Natural herbal oil",
+   "cat": "beauty",
+   "price": 40.0,
+   "unit": "piece",
+   "rank": 1.0
+  },
+  {
+   "id": "p237",
+   "ar": "غاسول ابيض",
+   "fr": "Ghassoul blanc",
+   "en": "White ghassoul",
+   "cat": "beauty",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 1.0
+  },
+  {
+   "id": "p187",
+   "ar": "أركان",
+   "fr": "Huile d'argan",
+   "en": "Argan oil",
+   "cat": "beauty",
+   "price": 260.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p86",
+   "ar": "مسك حر",
+   "fr": "Musc pur",
+   "en": "Pure musk",
+   "cat": "incense",
+   "price": 7.0,
+   "unit": "piece",
+   "rank": 8.0
+  },
+  {
+   "id": "p238",
+   "ar": "فحام",
+   "fr": "Charbon pour encens",
+   "en": "Incense charcoal",
+   "cat": "incense",
+   "price": 8.0,
+   "unit": "piece",
+   "rank": 6.0
+  },
+  {
+   "id": "p210",
+   "ar": "مجمار",
+   "fr": "Brûle-encens (mjmar)",
+   "en": "Incense burner (mjmar)",
+   "cat": "incense",
+   "price": 10.0,
+   "unit": "piece",
+   "rank": 3.0
+  },
+  {
+   "id": "p260",
+   "ar": "مسك",
+   "fr": "Musc (grand)",
+   "en": "Musk (large)",
+   "cat": "incense",
+   "price": 20.0,
+   "unit": "piece",
+   "rank": 3.0
+  },
+  {
+   "id": "p261",
+   "ar": "بخور انوار",
+   "fr": "Encens Anouar",
+   "en": "Anouar incense",
+   "cat": "incense",
+   "price": 35.0,
+   "unit": "piece",
+   "rank": 2.0
+  },
+  {
+   "id": "p84",
+   "ar": "مسك",
+   "fr": "Musc (petit)",
+   "en": "Musk (small)",
+   "cat": "incense",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 2.0
+  },
+  {
+   "id": "p127",
+   "ar": "الجاوي",
+   "fr": "Benjoin (jaoui)",
+   "en": "Benzoin (jawi)",
+   "cat": "incense",
+   "price": 200.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p250",
+   "ar": "الند",
+   "fr": "Nadd",
+   "en": "Nadd incense",
+   "cat": "incense",
+   "price": 5.0,
+   "unit": "piece",
+   "rank": 0.0
+  },
+  {
+   "id": "p58",
+   "ar": "بخور",
+   "fr": "Encens (bkhour)",
+   "en": "Incense (bakhour)",
+   "cat": "incense",
+   "price": 100.0,
+   "unit": "piece",
+   "rank": 0.0
+  }
+ ]
+}
