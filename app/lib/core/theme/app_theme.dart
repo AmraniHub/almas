@@ -116,9 +116,11 @@ abstract final class AlmasTheme {
           horizontal: AppSpacing.sm,
           vertical: AppSpacing.xs,
         ),
-        labelStyle: textTheme.labelLarge!,
+        // Cairo's own line height is tall enough to push a chip label below the chip's bottom edge
+        labelStyle: textTheme.labelLarge!.copyWith(height: 1.2),
         secondaryLabelStyle: textTheme.labelLarge!.copyWith(
           color: AppColors.white,
+          height: 1.2,
         ),
         brightness: Brightness.light,
         shape: RoundedRectangleBorder(

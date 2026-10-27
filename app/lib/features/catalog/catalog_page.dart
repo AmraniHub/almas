@@ -70,8 +70,9 @@ class _CatalogPageState extends State<CatalogPage> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
+                    // Tall enough for the Cairo label: at 40 the chip text was cut off on a real phone
                     SizedBox(
-                      height: 40,
+                      height: 56,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: shelves.length,
@@ -81,6 +82,7 @@ class _CatalogPageState extends State<CatalogPage> {
                           return ChoiceChip(
                             label: Text(l10n.categoryLabel(shelf)),
                             selected: _selectedCategory == shelf,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             onSelected: (_) => setState(() => _selectedCategory = shelf),
                           );
                         },
