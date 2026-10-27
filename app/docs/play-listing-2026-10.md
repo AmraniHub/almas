@@ -85,8 +85,43 @@ Sans compte ni mot de passe. Vous payez à la livraison ou à la boutique ; la l
 
 بلا حساب وبلا كلمة سر. الخلاص عند الاستلام ولا فالمحل، والتوصيل كنتافقو عليه معاك فواتساب.
 
+## Release notes for 1.2.0 (code 13), paste as-is into "Release notes"
+```
+<en-US>
+• The shop's real catalogue: more than 120 products with their prices
+• Order by the kilo in steps of 250 g, or by the piece
+• Send your order to the shop on WhatsApp with your name, phone and address
+• Prices and photos now update without an app update
+• Arabic, French and English
+</en-US>
+<fr-FR>
+• Le vrai catalogue de la boutique : plus de 120 produits avec leurs prix
+• Commandez au kilo par 250 g, ou à la pièce
+• Envoyez votre commande à la boutique sur WhatsApp avec votre nom, téléphone et adresse
+• Les prix et les photos se mettent à jour sans mise à jour de l'application
+• Arabe, français et anglais
+</fr-FR>
+<ar>
+• السلعة ديال المحل بصّح: أكثر من 120 منتوج بالثمن ديالو
+• طلب بالكيلو بـ 250 غرام، ولا بالحبة
+• صيفط الطلب للمحل فواتساب مع السمية والتيليفون والعنوان
+• الأثمنة والتصاور كيتبدلو بلا ما تحدّث التطبيق
+• العربية والفرنسية والإنجليزية
+</ar>
+```
+
+## Data safety (re-answer for 1.2.0)
+Checked in the built bundle (27 Oct): the only permission the app requests is INTERNET. The unused notification,
+location and image-picker plugins were removed from 1.2.0, so it no longer declares POST_NOTIFICATIONS or VIBRATE.
+- **Does your app collect or share any of the required user data types?** No.
+  Name, phone and address stay on the phone (SharedPreferences). The customer sends them to the shop himself in
+  WhatsApp, which is not collection by the app. The catalogue and photo downloads carry no personal data.
+- **Is all of the user data encrypted in transit?** Yes (HTTPS only).
+- **Account creation:** the app has no accounts.
+- **Privacy policy URL:** unchanged (GitHub Pages `docs/privacy-policy.html`), shows the 1.2.0 text once the repo is pushed.
+
 ## Before production (not listing text)
-- Data safety: version 1.2.0 sends nothing to any server (no analytics, no account). It keeps the customer's name, phone and address on the phone, and the customer shares them with the shop through WhatsApp. Re-answer the form for this version.
-- Privacy policy: replace the placeholder email in docs/privacy-policy.html, republish, re-check the URL in Play.
-- Version: 1.2.0+12 clashes with the build already uploaded with versionCode 12: the release build must use 13 or higher.
-- Signing: the upload key's key.properties is missing; the owner enters the keystore passwords himself before the release build.
+- Done: version 1.2.0 code 13, signed with the upload key (SHA1 C3:6C:77:…:3C:95), checked in the bundle.
+- Privacy policy: rewritten (commit e9850b4). It goes live on GitHub Pages only after the owner approves a push.
+- Contact phone +212 619 434 035: owner to confirm it is the shop's number.
+- Production application answers: docs/production-application-2026-10.md, owner to approve before submitting.

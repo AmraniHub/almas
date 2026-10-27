@@ -34,17 +34,8 @@ dependencies:
   # URL launching (phone, WhatsApp, website, Waze)
   url_launcher: ^6.3.1
 
-  # Local notifications (push display)
-  flutter_local_notifications: ^18.0.1
-
-  # Location / GPS
-  geolocator: ^13.0.2
-
   # Shared preferences (local cache)
   shared_preferences: ^2.3.5
-
-  # Image picker (admin product photo upload)
-  image_picker: ^1.1.2
 
   # HTTP
   http: ^1.2.2
