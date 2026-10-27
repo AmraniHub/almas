@@ -77,10 +77,15 @@ class ProductCard extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Colours set here: the theme painted the + the same dark colour as the button (seen on a phone)
                 IconButton.filled(
                   onPressed: product.isAvailable ? onAddToCart : null,
                   icon: const Icon(Icons.add_rounded),
                   tooltip: l10n.addLabel,
+                  style: IconButton.styleFrom(
+                    backgroundColor: product.accentColor,
+                    foregroundColor: Colors.white,
+                  ),
                 ),
                 if (quantityInCart > 0)
                   Text(
