@@ -50,8 +50,13 @@ android {
             versionNameSuffix = "-preview"
         }
         release {
+            // Android Studio's "Generate Signed Bundle" window signs with the key it remembers and passes it in as
+            // android.injected.signing.*: that is a real Play build too, never a preview
+            val studioSigned = project.hasProperty("android.injected.signing.store.file")
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+            } else if (studioSigned) {
+                // Studio applies its own signing over this; nothing to set here
             } else {
                 // No upload key here: this is a preview for a phone, never a Play build, so it gets its own id
                 // (it can sit beside the Play app) and says so in its version
