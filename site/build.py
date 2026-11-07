@@ -88,7 +88,7 @@ T = {
         "biz_body": "اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.",
         "biz_cta": "اطلب ثمن الكميات الكبيرة",
         "biz_msg": "السلام عليكم ألماس، عندي مؤسسة وبغيت الثمن ديال كميات كبيرة من: ",
-        "nav_pro": "للمهنيين", "t_waze": "Waze", "t_waze_sub": "سوق حتى للمحل", "t_dir": "الطريق للمحل", "t_call": "اتصل بنا", "t_wa": "واتساب", "t_review": "قيمنا على Google", "t_insta": "إنستغرام",
+        "nav_pro": "للمهنيين", "search_ph": "ابحث بالعربية أو الفرنسية أو الإنجليزية…", "search_none": "ما لقينا والو. جرب اسم آخر.", "search_pop": "الأكثر طلبا", "search_btn": "بحث", "upsell": "كمل الطلب ديالك", "photo": "صورة", "t_waze": "Waze", "t_waze_sub": "سوق حتى للمحل", "t_dir": "الطريق للمحل", "t_call": "اتصل بنا", "t_wa": "واتساب", "t_review": "قيمنا على Google", "t_insta": "إنستغرام",
         "review": "قيم ألماس على Google",
         "insta": "إنستغرام",
         "directions": "الطريق للمحل",
@@ -158,7 +158,7 @@ T = {
         "biz_body": "Commandez au kilo avec le nom et l'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.",
         "biz_cta": "Demander un prix pour de grandes quantités",
         "biz_msg": "Bonjour Almas, j'ai un établissement et je voudrais un prix pour de grandes quantités de : ",
-        "nav_pro": "Professionnels", "t_waze": "Waze", "t_waze_sub": "Y aller en voiture", "t_dir": "Itinéraire", "t_call": "Appeler", "t_wa": "WhatsApp", "t_review": "Avis Google", "t_insta": "Instagram",
+        "nav_pro": "Professionnels", "search_ph": "Chercher en arabe, en français ou en anglais…", "search_none": "Aucun résultat. Essayez un autre nom.", "search_pop": "Les plus demandés", "search_btn": "Rechercher", "upsell": "Complétez votre commande", "photo": "Photo", "t_waze": "Waze", "t_waze_sub": "Y aller en voiture", "t_dir": "Itinéraire", "t_call": "Appeler", "t_wa": "WhatsApp", "t_review": "Avis Google", "t_insta": "Instagram",
         "review": "Notez Almas sur Google",
         "insta": "Instagram",
         "directions": "Itinéraire vers la boutique",
@@ -228,7 +228,7 @@ T = {
         "biz_body": "Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.",
         "biz_cta": "Ask for a bulk price",
         "biz_msg": "Hello Almas, I run a business and would like a price for large quantities of: ",
-        "nav_pro": "Businesses", "t_waze": "Waze", "t_waze_sub": "Drive there", "t_dir": "Directions", "t_call": "Call", "t_wa": "WhatsApp", "t_review": "Google review", "t_insta": "Instagram",
+        "nav_pro": "Businesses", "search_ph": "Search in Arabic, French or English…", "search_none": "No result. Try another name.", "search_pop": "Most ordered", "search_btn": "Search", "upsell": "Complete your order", "photo": "Photo", "t_waze": "Waze", "t_waze_sub": "Drive there", "t_dir": "Directions", "t_call": "Call", "t_wa": "WhatsApp", "t_review": "Google review", "t_insta": "Instagram",
         "review": "Rate Almas on Google",
         "insta": "Instagram",
         "directions": "Directions to the shop",
@@ -320,6 +320,22 @@ def image_of(p):
     return f"{BASE}/img/cat/{p['cat']}.jpg", False
 
 
+def images_of(p):
+    """Up to 3 pictures: the shop's own cloud photo, then web photos <id>.jpg, <id>-2.jpg, <id>-3.jpg, else the card."""
+    out = []
+    if p.get("img"):
+        out.append(f"{CFG['image_base']}/{p['id'][1:]}.jpg?v={p['img']}")
+    for suffix in ("", "-2", "-3"):
+        if (STATIC / "img" / "photo" / f"{p['id']}{suffix}.jpg").exists():
+            out.append(f"{BASE}/img/photo/{p['id']}{suffix}.jpg")
+    return out[:3] or [image_of(p)[0]]
+
+
+def local(u):
+    """Our own images by site path (works before publishing too); outside URLs unchanged."""
+    return PREFIX + u[len(BASE):] if u.startswith(BASE) else u
+
+
 def src(p):
     """The picture as a page uses it: our own images by site path (they work before publishing too)."""
     img, real = image_of(p)
@@ -386,6 +402,7 @@ def header(lang, path):
     return f"""<header class="top">
 <div class="wrap top-in">
 <a class="brand" href="{url(lang)}"><img src="{PREFIX}/img/logo-192.png" alt="" width="40" height="40"><span><b>{esc(t['name'])}</b><small>{esc(t['kicker'])}</small></span></a>
+<button class="search-btn" type="button" data-open-search aria-label="{esc(t['search_btn'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
 <a class="nav-pro" href="{url(lang, 'pro/')}">{esc(t['nav_pro'])}</a>
 <nav class="langs" aria-label="Language">{switch}</nav>
 <button class="cart-btn" type="button" data-open-cart aria-label="{esc(t['cart'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span class="count" data-cart-count>0</span></button>
@@ -540,13 +557,19 @@ def pro_page(lang, products, cats):
 
 def cart_drawer(lang):
     t = T[lang]
-    return f"""<div class="drawer" data-drawer hidden>
+    return f"""<div class="search" data-search-panel hidden role="dialog" aria-modal="true" aria-label="{esc(t['search_btn'])}">
+<div class="search-in wrap"><input type="search" data-search-input placeholder="{esc(t['search_ph'])}" aria-label="{esc(t['search_ph'])}" autocomplete="off">
+<button type="button" class="x" data-close-search aria-label="×">×</button></div>
+<div class="wrap"><p class="search-head" data-search-head></p><ul class="results" data-search-results></ul></div>
+</div>
+<div class="drawer" data-drawer hidden>
 <div class="drawer-bg" data-close-cart></div>
 <aside class="drawer-in" role="dialog" aria-modal="true" aria-label="{esc(t['cart'])}">
 <div class="drawer-head"><h2>{esc(t['cart'])}</h2><button type="button" class="x" data-close-cart aria-label="×">×</button></div>
 <div class="drawer-body">
 <div data-cart-empty class="empty"><p><b>{esc(t['cart_empty'])}</b></p><p>{esc(t['cart_empty_sub'])}</p></div>
 <ul class="lines" data-cart-lines></ul>
+<div class="upsell" data-upsell hidden><h3>{esc(t['upsell'])}</h3><ul data-upsell-list></ul></div>
 <div data-cart-form hidden>
 <p class="total"><span>{esc(t['subtotal'])}</span><b data-cart-total></b></p>
 <form data-order-form>
@@ -606,8 +629,11 @@ def page_data(lang, products, cats):
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
                                 "o_from", "add", "added", "remove", "kg", "piece", "one_msg", "o_pay", "o_number",
                                 "pay_cod", "pay_bank", "pay_card", "card_fail", "sending", "send", "done_body", "fail",
+                                "search_none", "search_pop", "upsell",
                                 "copied", "copy", "q_send", "q_fail", "sending")},
-        "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "price": p["price"], "u": p["unit"]} for p in products},
+        "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "fr": p["fr"], "en": p["en"], "price": p["price"], "u": p["unit"],
+                        "c": p["cat"], "r": p.get("rank") or 0, "i": src(p), "l": url(lang, "p/" + p["id"] + "/")} for p in products},
+        "cats": {c: cats[c][lang] for c in cats},
     }
     return data
 
@@ -703,6 +729,18 @@ def home(lang, products, cats, stamp_day):
 """
 
 
+def gallery(p, n, t):
+    """Swipe between the pictures on a phone, thumbnails to pick one; a single picture shows alone."""
+    imgs = images_of(p)
+    track = "".join(f'<img src="{esc(local(u))}" alt="{esc(n)}" width="800" height="800"{"" if i == 0 else " loading=lazy"}>'
+                    for i, u in enumerate(imgs))
+    if len(imgs) == 1:
+        return f'<div class="product-img"><div class="g-track">{track}</div></div>'
+    thumbs = "".join(f'<button type="button" data-g="{i}" aria-label="{esc(t["photo"])} {i + 1}"{" aria-current=true" if i == 0 else ""}>'
+                     f'<img src="{esc(local(u))}" alt="" width="80" height="80" loading="lazy"></button>' for i, u in enumerate(imgs))
+    return f'<div class="product-img" data-gallery><div class="g-track">{track}</div><div class="g-thumbs">{thumbs}</div></div>'
+
+
 def product_page(lang, p, products, cats):
     t = T[lang]
     cat = cats[p["cat"]]
@@ -725,7 +763,7 @@ def product_page(lang, p, products, cats):
              f'\n<meta property="product:brand" content="Almas">')
     ld = {
         "@context": "https://schema.org", "@type": "Product", "productID": p["id"], "sku": p["id"], "name": n,
-        "alternateName": [p[l] for l in LANGS if p.get(l) and p[l] != n], "image": img, "brand": {"@type": "Brand", "name": "Almas"},
+        "alternateName": [p[l] for l in LANGS if p.get(l) and p[l] != n], "image": images_of(p), "brand": {"@type": "Brand", "name": "Almas"},
         "category": cat[lang], "description": desc,
         "offers": {"@type": "Offer", "price": num(p["price"]), "priceCurrency": "MAD", "availability": "https://schema.org/InStock",
                    "itemCondition": "https://schema.org/NewCondition", "url": BASE + url(lang, path)[len(PREFIX):],
@@ -741,7 +779,7 @@ def product_page(lang, p, products, cats):
 <main>
 <div class="wrap crumbs"><a href="{url(lang)}#products">← {esc(t['back'])}</a> · <span style="color:{cat['color']}">{esc(cat[lang])}</span></div>
 <section class="wrap product" style="--c:{cat['color']}">
-<div class="product-img"><img src="{esc(src(p))}" alt="{esc(n)}" width="800" height="800"></div>
+{gallery(p, n, t)}
 <div class="product-info">
 <p class="kicker">{esc(cat[lang])}</p>
 <h1>{esc(n)}</h1>
@@ -783,7 +821,7 @@ def feeds(products, cats):
     """The Meta catalogue: feed/meta.csv (French, the main feed) and the Arabic and English language overrides."""
     out = OUT / "feed"
     out.mkdir(exist_ok=True)
-    cols = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand",
+    cols = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "additional_image_link", "brand",
             "google_product_category", "product_type", "custom_label_0", "custom_label_1"]
     with open(out / "meta.csv", "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, lineterminator=chr(10))  # LF on every OS, so the daily Linux build does not rewrite it
@@ -796,7 +834,7 @@ def feeds(products, cats):
                 f"{p['fr']} ({p['ar']}), vendu {how} par Almas, herboristerie à Ksar Sghir près de Tanger. "
                 f"Commande en ligne ou sur WhatsApp ; paiement à la livraison, à la boutique ou par virement.",
                 "in stock", "new", f"{float(p['price']):.2f} MAD", BASE + url("fr", "p/" + p["id"] + "/")[len(PREFIX):],
-                img, "Almas", GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), cats[p["cat"]]["fr"],
+                img, ",".join(images_of(p)[1:]), "Almas", GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), cats[p["cat"]]["fr"],
                 cats[p["cat"]]["fr"], "photo" if real else "carte"])
     over = {"ar": ("ar_AR", "{ar} {size}", "{ar}، كيتباع {how} عند معشبة ألماس فالقصر الصغير قرب طنجة. الطلب فالموقع أو عبر واتساب، والخلاص عند الاستلام أو فالمحل أو بتحويل بنكي.",
                    {"kg": ("بالكيلو", "(1 كيلو)"), "piece": ("بالوحدة", "(للوحدة)")}),

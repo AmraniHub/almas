@@ -81,7 +81,119 @@
     if (form) form.hidden = !has;
     var t = $("[data-cart-total]");
     if (t) t.textContent = money(total());
+    renderUpsell();
   }
+
+  /* upsell: what goes with the cart, from the shelves that complete it, best sellers first */
+  var GOES_WITH = { spices: ["blends", "herbs", "spices"], blends: ["spices", "blends"], herbs: ["herbs", "spices"],
+    seeds: ["seeds", "pastry"], pastry: ["pastry", "seeds"], pantry: ["pantry", "spices"],
+    beauty: ["beauty", "incense"], incense: ["incense", "beauty"] };
+  function suggestions(n) {
+    var ids = Object.keys(cart), shelves = [];
+    ids.forEach(function (id) { (GOES_WITH[A.p[id].c] || [A.p[id].c]).forEach(function (c) { if (shelves.indexOf(c) < 0) shelves.push(c); }); });
+    var out = [];
+    shelves.forEach(function (c) {
+      Object.keys(A.p).filter(function (id) { return A.p[id].c === c && !cart[id] && out.indexOf(id) < 0; })
+        .sort(function (a, b) { return A.p[b].r - A.p[a].r; }).slice(0, 2)
+        .forEach(function (id) { if (out.length < n) out.push(id); });
+    });
+    return out;
+  }
+  function miniItem(id, attr) {
+    var p = A.p[id], unit = p.u === "kg" ? A.s.kg : A.s.piece;
+    return '<li><a href="' + p.l + '"><img src="' + p.i + '" alt="" width="56" height="56" loading="lazy"><span><b>' + esc(p.n) +
+      "</b><small>" + esc(A.lang === "ar" ? p.fr : p.ar) + "</small><small>" + money(p.price) + " " + esc(unit) + "</small></span></a>" +
+      '<button type="button" class="add" ' + attr + '="' + id + '" aria-label="' + esc(A.s.add) + '">+</button></li>';
+  }
+  function addFrom(b, attr) {
+    var id = b.getAttribute(attr);
+    add(id, step(id));
+    track("AddToCart", [id], step(id) * A.p[id].price);
+    b.classList.add("done"); b.textContent = "✓";
+  }
+  function renderUpsell() {
+    var box = $("[data-upsell]"), list = $("[data-upsell-list]");
+    if (!box || !list) return;
+    var ids = count() ? suggestions(4) : [];
+    box.hidden = !ids.length;
+    list.innerHTML = ids.map(function (id) { return miniItem(id, "data-up"); }).join("");
+    $$("[data-up]", list).forEach(function (b) { b.onclick = function () { addFrom(b, "data-up"); }; });
+  }
+
+  /* search in any of the three languages: accents, Arabic vowel marks and letter variants do not matter */
+  var ch = String.fromCharCode;
+  var LATIN_MARKS = new RegExp("[" + ch(0x300) + "-" + ch(0x36f) + "]", "g");
+  var AR_MARKS = new RegExp("[" + ch(0x64b) + "-" + ch(0x652) + ch(0x640) + "]", "g");
+  var AR_SAME = [[new RegExp("[" + ch(0x623) + ch(0x625) + ch(0x622) + "]", "g"), ch(0x627)], [new RegExp(ch(0x629), "g"), ch(0x647)],
+    [new RegExp(ch(0x649), "g"), ch(0x64a)], [new RegExp(ch(0x624), "g"), ch(0x648)], [new RegExp(ch(0x626), "g"), ch(0x64a)]];
+  function norm(s) {
+    s = String(s || "").toLowerCase().normalize("NFD").replace(LATIN_MARKS, "").replace(AR_MARKS, "");
+    AR_SAME.forEach(function (r) { s = s.replace(r[0], r[1]); });
+    return s.replace(/[^a-z0-9؀-ۿ]+/g, " ").trim();
+  }
+  /* consonant skeletons, so spellings meet: the till's الكيمون and a customer's كمون, or Darija in Latin letters
+     (kamoun, kharkoum, skinjbir, zaatar) against the Arabic name */
+  var AL = ch(0x627) + ch(0x644), AR_VOWELS = new RegExp("[" + ch(0x627) + ch(0x648) + ch(0x64a) + ch(0x621) + "]", "g");
+  var AR2LAT = {};
+  [[0x628, "b"], [0x62a, "t"], [0x62b, "t"], [0x62c, "j"], [0x62d, "h"], [0x62e, "kh"], [0x62f, "d"], [0x630, "d"], [0x631, "r"],
+   [0x632, "z"], [0x633, "s"], [0x634, "ch"], [0x635, "s"], [0x636, "d"], [0x637, "t"], [0x638, "d"], [0x63a, "gh"], [0x641, "f"],
+   [0x642, "k"], [0x643, "k"], [0x644, "l"], [0x645, "m"], [0x646, "n"], [0x647, "h"]].forEach(function (x) { AR2LAT[ch(x[0])] = x[1]; });
+  function arWords(s) { return norm(s).split(" ").map(function (w) { return w.length > 3 && w.indexOf(AL) === 0 ? w.slice(2) : w; }); }
+  function arSkel(s) { return arWords(s).map(function (w) { return w.replace(AR_VOWELS, ""); }).join(" "); }
+  function arToLat(s) { return arWords(s).map(function (w) { return w.split("").map(function (c) { return AR2LAT[c] || ""; }).join(""); }).join(" "); }
+  function latSkel(s) { return norm(s).replace(/sh/g, "ch").replace(/q/g, "k").replace(/[aeiouyw]/g, ""); }
+  var INDEX = {}, SKEL = {};
+  Object.keys(A.p).forEach(function (id) {
+    var p = A.p[id];
+    INDEX[id] = norm([p.n, p.ar, p.fr, p.en, A.cats ? A.cats[p.c] : ""].join(" "));
+    SKEL[id] = arSkel(p.ar) + " | " + arToLat(p.ar);
+  });
+  function find(q) {
+    var words = norm(q).split(" ").filter(Boolean);
+    if (!words.length) return Object.keys(A.p).sort(function (a, b) { return A.p[b].r - A.p[a].r; }).slice(0, 8);
+    var arabic = /[؀-ۿ]/.test(q);
+    var skel = (arabic ? arSkel(q) : latSkel(q)).split(" ").filter(function (w) { return w.length >= 2; });
+    return Object.keys(A.p).map(function (id) {
+      var h = INDEX[id], score = 0, ok = true;
+      for (var i = 0; i < words.length; i++) {
+        var at = h.indexOf(words[i]);
+        if (at < 0) { ok = false; break; }
+        score += at === 0 || h.charAt(at - 1) === " " ? 3 : 1; // a word that starts a name counts more
+      }
+      if (!ok) { // a near spelling: every consonant skeleton of the query inside the product's
+        if (!skel.length || !skel.every(function (w) { return SKEL[id].indexOf(w) >= 0; })) return null;
+        score = 0.5;
+      }
+      return [id, score + Math.min(A.p[id].r, 200) / 1000];
+    }).filter(Boolean).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 8).map(function (x) { return x[0]; });
+  }
+  var sv = $("[data-search-panel]"), si = $("[data-search-input]");
+  function showResults() {
+    var q = si.value, ids = find(q), head = $("[data-search-head]"), list = $("[data-search-results]");
+    head.textContent = !norm(q) ? A.s.search_pop : ids.length ? "" : A.s.search_none;
+    list.innerHTML = ids.map(function (id) { return miniItem(id, "data-sadd"); }).join("");
+    $$("[data-sadd]", list).forEach(function (b) { b.onclick = function () { addFrom(b, "data-sadd"); }; });
+  }
+  function openSearch() { if (!sv) return; sv.hidden = false; document.body.style.overflow = "hidden"; showResults(); setTimeout(function () { si.focus(); }, 30); }
+  function closeSearch() { if (sv && !sv.hidden) { sv.hidden = true; document.body.style.overflow = ""; } }
+  $$("[data-open-search]").forEach(function (b) { b.onclick = openSearch; });
+  $$("[data-close-search]").forEach(function (b) { b.onclick = closeSearch; });
+  if (si) si.oninput = showResults;
+  if (sv) sv.addEventListener("click", function (e) { if (e.target === sv) closeSearch(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSearch(); });
+
+  /* product page gallery: thumbnails pick a picture, swiping moves the highlight */
+  $$("[data-gallery]").forEach(function (g) {
+    var track = $(".g-track", g), thumbs = $$("[data-g]", g);
+    var mark = function (i) { thumbs.forEach(function (t, k) { if (k === i) t.setAttribute("aria-current", "true"); else t.removeAttribute("aria-current"); }); };
+    thumbs.forEach(function (t, i) {
+      t.onclick = function () { track.scrollTo({ left: track.children[i].offsetLeft - track.offsetLeft, behavior: "smooth" }); mark(i); };
+    });
+    track.addEventListener("scroll", function () {
+      var w = track.clientWidth || 1;
+      mark(Math.min(thumbs.length - 1, Math.round(Math.abs(track.scrollLeft) / w)));
+    }, { passive: true });
+  });
   function esc(s) { return String(s).replace(/[&<>"']/g, function (ch) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]; }); }
 
   var drawer = $("[data-drawer]");
@@ -229,7 +341,7 @@
     var apply = function () {
       var shown = 0;
       $$(".card", grid).forEach(function (c) {
-        var ok = (!shelf || c.getAttribute("data-cat") === shelf) && (!term || c.getAttribute("data-search").indexOf(term) >= 0);
+        var ok = (!shelf || c.getAttribute("data-cat") === shelf) && (!term || norm(c.getAttribute("data-search")).indexOf(term) >= 0);
         c.hidden = !ok; if (ok) shown++;
       });
       var none = $("[data-none]"); if (none) none.hidden = shown > 0;
@@ -242,7 +354,7 @@
       };
     });
     var sb = $("[data-search-box]");
-    if (sb) sb.oninput = function () { term = sb.value.trim().toLowerCase(); apply(); };
+    if (sb) sb.oninput = function () { term = norm(sb.value); apply(); };
   }
 
   /* any WhatsApp link: tell the pixel someone reached out */
