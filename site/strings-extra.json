@@ -86,7 +86,18 @@
     "mic": "ابحث بصوتك",
     "mic_on": "تكلّم الآن…",
     "mic_no": "لم نتمكن من الاستماع. تحقّق من إذن الميكروفون.",
-    "as_sound": "صوت نار الحطب"
+    "as_sound": "صوت نار الحطب",
+    "sh_btn": "شارك ما اشتريت",
+    "sh_title": "مشترياتي من معشبة ألماس",
+    "sh_more": "و{n} منتجات أخرى",
+    "sh_text": "اشتريتُ هذه المنتجات من معشبة ألماس في القصر الصغير. اطلب أنت أيضًا:",
+    "sh_saved": "حُفظت الصورة. يمكنك نشرها في الحالة أو القصة.",
+    "as_addall": "أضف الكل إلى السلة",
+    "as_added": "أُضيفت إلى السلة",
+    "as_checkout": "أكمل الطلب",
+    "as_maps": "الطريق على خرائط Google",
+    "as_pro": "صفحة المشاريع",
+    "as_listen": "استمع"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -175,7 +186,18 @@
     "mic": "Chercher à la voix",
     "mic_on": "Parlez maintenant…",
     "mic_no": "Écoute impossible. Vérifiez l'autorisation du micro.",
-    "as_sound": "Son du feu de bois"
+    "as_sound": "Son du feu de bois",
+    "sh_btn": "Partager mes achats",
+    "sh_title": "Mes achats chez Almas",
+    "sh_more": "et {n} autres produits",
+    "sh_text": "Mes épices et herbes de chez Almas, à Ksar Sghir. Commandez aussi :",
+    "sh_saved": "Image enregistrée. Publiez-la en statut ou en story.",
+    "as_addall": "Tout ajouter au panier",
+    "as_added": "Ajouté au panier",
+    "as_checkout": "Finaliser la commande",
+    "as_maps": "Itinéraire Google Maps",
+    "as_pro": "Page professionnels",
+    "as_listen": "Écouter"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -264,7 +286,18 @@
     "mic": "Search by voice",
     "mic_on": "Speak now…",
     "mic_no": "Could not listen. Check the microphone permission.",
-    "as_sound": "Wood fire sound"
+    "as_sound": "Wood fire sound",
+    "sh_btn": "Share what I bought",
+    "sh_title": "My order from Almas",
+    "sh_more": "and {n} more products",
+    "sh_text": "My spices and herbs from Almas in Ksar Sghir. Order yours:",
+    "sh_saved": "Picture saved. Post it to your status or story.",
+    "as_addall": "Add all to the cart",
+    "as_added": "Added to the cart",
+    "as_checkout": "Complete my order",
+    "as_maps": "Google Maps directions",
+    "as_pro": "Businesses page",
+    "as_listen": "Listen"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -353,6 +386,17 @@
     "mic": "Buscar por voz",
     "mic_on": "Habla ahora…",
     "mic_no": "No se pudo escuchar. Revisa el permiso del micrófono.",
-    "as_sound": "Sonido del fuego de leña"
+    "as_sound": "Sonido del fuego de leña",
+    "sh_btn": "Compartir mis compras",
+    "sh_title": "Mis compras en Almas",
+    "sh_more": "y {n} productos más",
+    "sh_text": "Mis especias y hierbas de Almas, en Ksar Sghir. Pide las tuyas:",
+    "sh_saved": "Imagen guardada. Publícala en tu estado o historia.",
+    "as_addall": "Añadir todo a la cesta",
+    "as_added": "Añadido a la cesta",
+    "as_checkout": "Completar el pedido",
+    "as_maps": "Cómo llegar en Google Maps",
+    "as_pro": "Página de profesionales",
+    "as_listen": "Escuchar"
   }
 }

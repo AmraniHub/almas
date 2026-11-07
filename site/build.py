@@ -818,6 +818,7 @@ def cart_drawer(lang):
 <p data-done-body></p>
 <div data-done-bank hidden>{bank_box(lang)}</div>
 <a class="btn wa-btn" data-done-wa href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">{esc(t['done_wa'])}</a>
+<button type="button" class="btn share-buy" data-share-order><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></svg><span>{esc(t['sh_btn'])}</span></button>
 <div class="app-box" data-app-box hidden><b>{esc(t['app_title'])}</b><p>{esc(t['app_sub'])}</p>
 <button type="button" class="btn ghost" data-install>{esc(t['app_go'])}</button></div>
 </div>
@@ -874,7 +875,14 @@ def page_data(lang, products, cats):
                                 "copied", "copy", "q_send", "q_fail", "sending", "rv_count", "rv_verified", "rv_none",
                                 "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa", "my_orders", "cart", "mo_again",
                                 "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
-                                "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no")},
+                                "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no",
+                                "sh_btn", "sh_title", "sh_more", "sh_text", "sh_saved", "name", "kicker",
+                                "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen")},
+        "maps": CFG["maps_url"], "pro": url(lang, "pro/"),
+        "waze": (f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={CFG['geo'][0]}%2C{CFG['geo'][1]}&navigate=yes" if CFG.get("google_place_id")
+                 else f"https://waze.com/ul?ll={CFG['geo'][0]},{CFG['geo'][1]}&navigate=yes"),
+        "boxes": {k["id"]: k[lang] for k in PACKS["packs"]},
+        "site": BASE + url(lang)[len(PREFIX):], "insta": CFG.get("instagram", ""), "logo": f"{PREFIX}/img/logo-512.png",
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "t": p["t"], "fr": p["fr"], "en": p["en"], "es": p["es"],
                         "price": p["price"], "u": p["unit"],
                         "c": p["cat"], "r": p.get("rank") or 0, "i": src(p), "l": url(lang, "p/" + p["id"] + "/")} for p in products},

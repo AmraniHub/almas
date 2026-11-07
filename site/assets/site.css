@@ -514,6 +514,24 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
 .as-head .snd[aria-pressed="false"] .w1, .as-head .snd[aria-pressed="false"] .w2 { display: none; }
 .as-head .snd[aria-pressed="false"] .mute { display: inline; }
 
+/* share what I bought */
+.share-buy { width: 100%; margin-top: 8px; background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 80%); border: 0; color: #fff; }
+.share-buy svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.mo-acts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* the salesperson's next steps under its answer */
+.as-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.as-act { display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: .84rem; font-weight: 700; text-decoration: none; cursor: pointer; }
+.as-act.main { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+.as-act.waze { background: #33ccff; border-color: #33ccff; color: #05293a; }
+.as-act[disabled] { background: var(--wa); border-color: var(--wa); color: #fff; cursor: default; }
+.as-items .as-q { color: var(--terracotta); font-weight: 700; }
+
+/* the assistant speaks: a listen button under each answer, and the tagine's mouth moves while it talks */
+.as-listen { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; border: 0; background: none; color: var(--terracotta); font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; padding: 2px 0; }
+.talking .tagine .smile { transform-box: fill-box; transform-origin: 50% 0; animation: talk .32s ease-in-out infinite alternate; }
+@keyframes talk { from { transform: scaleY(.6); } to { transform: scaleY(1.9); } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }

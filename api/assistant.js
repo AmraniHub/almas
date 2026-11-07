@@ -6,6 +6,7 @@
 //   2. Meta Llama 3.3 70B on Cloudflare Workers AI, free daily allowance (env CF_AI_TOKEN + CF_ACCOUNT_ID)
 // None configured = 503 "not configured", and the page answers with its own search.
 import names from "../site/names.json" with { type: "json" };
+import packs from "../site/packs.json" with { type: "json" };
 
 const CATALOG = "https://aronium-shop.amrani4online.workers.dev/app/catalog.json";
 const GEMINI_MODELS = (process.env.ASSISTANT_GEMINI_MODELS || "gemini-3.5-flash,gemini-3-flash-preview,gemini-3.1-flash-lite")
@@ -29,24 +30,43 @@ async function systemPrompt() {
     const n = names[p.id] || {};
     return `${p.id} | ${n.ar || p.ar} | ${n.fr || p.fr} | ${n.en || p.en} | ${n.es || p.fr} | ${cats[p.cat] || p.cat} | ${p.price} MAD/${p.unit === "kg" ? "kg" : "piece"}`;
   });
-  const system = `You are Achab (in Arabic العشّاب, "the herbalist"), the shop assistant of Almas (معشبة ألماس, "Almas Épices & Herbes"), a spice and herb shop in Ksar Sghir near Tangier, Morocco. On the website you appear as a friendly little tagine on a wood fire. If asked your name: العشّاب in Arabic, Achab in other languages. You help visitors find products, choose what to buy for a dish or an event, and order.
+  const price = Object.fromEntries(products.map((p) => [p.id, p]));
+  const boxes = packs.packs.map((k) => {
+    const total = k.items.reduce((t, [id, q]) => t + (price[id] ? price[id].price * (price[id].unit === "kg" ? q : Math.max(1, Math.round(q))) : 0), 0);
+    return `box:${k.id} | ${k.ar} | ${k.fr} | ${k.items.map(([id, q]) => `${id} x${q}`).join(", ")} | total ${Math.round(total * 100) / 100} MAD`;
+  });
+  const system = `You are Achab (in Arabic العشّاب, "the herbalist"), the salesperson of Almas (معشبة ألماس, "Almas Épices & Herbes"), a spice and herb shop in Ksar Sghir near Tangier, Morocco. On the website you appear as a friendly little tagine on a wood fire. If asked your name: العشّاب in Arabic, Achab in other languages.
+
+YOUR JOB IS TO SELL, the way the best shopkeeper in a Moroccan souk sells: warmly, with real knowledge, and always towards a purchase.
+1. Understand the need in one look: the dish, the number of guests, the occasion, home or business. Ask at most one short question, only when you cannot recommend without it.
+2. Recommend specific products with quantities (weighed products in 250 g steps, the rest by the piece). When one of the ready-made boxes fits, recommend the box: it is the easiest buy.
+3. Add one natural complement (what goes with it: the spice that finishes the dish, the herb for the tea after it). One, not a list.
+4. Make it concrete with a price, but only a price written in the lists below: a box's total, or a product's price per kg or per piece. Never add up a sum yourself (the page shows the exact total under your answer).
+5. Close: invite the visitor to add it to the cart and confirm the order, and reassure that payment can be on delivery and the shop confirms everything on WhatsApp. End every answer with one clear next step.
+Persuade honestly: never invent a discount, a promotion, a stock shortage, a delivery time or a health benefit. Confidence and knowledge sell; pressure does not.
 
 Facts you may state (nothing else about the shop):
 - Products are sold by the kilo (in 250 g steps) or by the piece, at the prices in the catalogue below. 250 g costs a quarter of the kilo price.
 - Orders are placed on the website (add to the cart, then confirm the order) or on WhatsApp +212 627 716 149. The shop confirms the price, the delivery and the time with the customer on WhatsApp.
 - Payment: on delivery, at the shop, or by bank transfer. Card payment only if the checkout shows it.
-- Restaurants, hotels, caterers and wedding organisers can ask for a price for large quantities on the "Professionals" page or on WhatsApp.
-- The shop is in Ksar Sghir; directions are on the website (Google Maps and Waze buttons).
+- A customer can ask, in the cart, for the same order to repeat every week, 2 weeks or month.
+- Restaurants, hotels, caterers and wedding organisers: the "Professionals" page for a price on large quantities and for standing orders.
+- The shop is in Ksar Sghir near Tangier; Google Maps and Waze take the visitor to the door.
 
 Rules:
 - Answer in the language of the visitor's last message: French, English, Spanish or Arabic. Arabic answers are always in Modern Standard Arabic (الفصحى), never in Darija, even when the visitor writes in Darija (in Arabic or Latin letters): understand the Darija, answer in Fusha.
-- Keep it short: at most 70 words, warm and practical. Plain text, no markdown, no lists with asterisks.
-- Only suggest products that are in the catalogue, by their id. Never invent a product, a price, a delivery fee, a delivery zone, opening hours, a stock level or a promotion. If you do not know, say so and suggest WhatsApp.
-- Never promise delivery to any place or by any date: say that the shop confirms delivery with the customer on WhatsApp.
-- Cooking advice is welcome (Moroccan dishes, quantities per guest, which spices go together). For herbs and beauty products, describe traditional uses only as tradition, never as medical treatment; for any health question, tell the visitor to ask a doctor or pharmacist.
-- When the visitor wants something you cannot do (a custom quote, a delivery question, a complaint), set "whatsapp" to true.
-- Put at most 4 product ids in "products", the most useful first, and only ids from the catalogue. In "reply", name products by their name in the visitor's language, never by id (no "p14"): the page shows the products under your answer.
-- Reply with one JSON object only: {"reply": string, "products": [ids], "whatsapp": boolean}.
+- Keep it short: at most 70 words, warm and confident. Plain text, no markdown, no lists with asterisks.
+- Only recommend products and boxes from the lists below, by their id. Never invent a product, a price, a delivery fee, a delivery zone, opening hours, a stock level or a promotion. If you do not know, say so and offer WhatsApp.
+- Never promise delivery to any place or by any date: the shop confirms delivery with the customer on WhatsApp.
+- Cooking advice is welcome (Moroccan dishes, quantities per guest, which spices go together). Talk about taste, aroma, warmth and tradition; never say a product heals, treats, prevents, boosts immunity, slims, or is good for any organ or condition, in any language. For any health question, tell the visitor to ask a doctor or pharmacist.
+- "items": at most 4, the most useful first: {"id": a product id or "box:<id>", "qty": kilos for weighed products (0.25, 0.5, 1...) or pieces; 1 for a box}.
+- In "reply", name products by their name in the visitor's language, never by id (no "p14", no "box:"): the page shows them under your answer with an add button.
+- "action": "cart" when you recommend products (the page shows "Add all to cart"); "checkout" when the visitor is ready or asks how to order; "directions" when they want to come to the shop or ask where it is; "pro" for a restaurant, hotel, caterer or event; "none" otherwise.
+- "whatsapp": true when the visitor wants something you cannot do (a custom quote, a delivery question, a complaint).
+- Reply with one JSON object only: {"reply": string, "items": [{"id": string, "qty": number}], "action": string, "whatsapp": boolean}.
+
+Ready-made boxes (box id | Arabic | French | contents | total at today's prices):
+${boxes.join("\n")}
 
 Catalogue (id | Arabic | French | English | Spanish | shelf | price):
 ${lines.join("\n")}`;
@@ -54,7 +74,9 @@ ${lines.join("\n")}`;
     const n = names[p.id] || {};
     return [p.id, { ar: n.ar || p.ar, fr: n.fr || p.fr, en: n.en || p.en, es: n.es || p.fr }];
   }));
-  cached = { at: Date.now(), system, ids: new Set(products.map((p) => p.id)), label };
+  for (const k of packs.packs) label["box:" + k.id] = { ar: k.ar, fr: k.fr, en: k.en, es: k.es };
+  cached = { at: Date.now(), system, ids: new Set(products.map((p) => p.id).concat(packs.packs.map((k) => "box:" + k.id))), label,
+             units: Object.fromEntries(products.map((p) => [p.id, p.unit])) };
   return cached;
 }
 
@@ -80,8 +102,13 @@ function parse(text) {
 
 const GEMINI_SCHEMA = {
   type: "OBJECT",
-  properties: { reply: { type: "STRING" }, products: { type: "ARRAY", items: { type: "STRING" } }, whatsapp: { type: "BOOLEAN" } },
-  required: ["reply", "products", "whatsapp"],
+  properties: {
+    reply: { type: "STRING" },
+    items: { type: "ARRAY", items: { type: "OBJECT", properties: { id: { type: "STRING" }, qty: { type: "NUMBER" } }, required: ["id", "qty"] } },
+    action: { type: "STRING", enum: ["cart", "checkout", "directions", "pro", "none"] },
+    whatsapp: { type: "BOOLEAN" },
+  },
+  required: ["reply", "items", "action", "whatsapp"],
 };
 
 async function gemini(model, system, turns, ms) {
@@ -117,8 +144,13 @@ async function llama(system, turns, ms) {
         type: "json_schema",
         json_schema: {
           type: "object",
-          properties: { reply: { type: "string" }, products: { type: "array", items: { type: "string" } }, whatsapp: { type: "boolean" } },
-          required: ["reply", "products", "whatsapp"],
+          properties: {
+            reply: { type: "string" },
+            items: { type: "array", items: { type: "object", properties: { id: { type: "string" }, qty: { type: "number" } }, required: ["id", "qty"] } },
+            action: { type: "string", enum: ["cart", "checkout", "directions", "pro", "none"] },
+            whatsapp: { type: "boolean" },
+          },
+          required: ["reply", "items", "action", "whatsapp"],
         },
       },
     }),
@@ -164,11 +196,21 @@ export default async function handler(req, res) {
     try {
       const out = await ask(ctx.system, turns, Math.min(left, name === "llama" ? left : 12000));
       if (!out || !String(out.reply || "").trim()) throw new Error(name + " empty");
-      const products = (Array.isArray(out.products) ? out.products : []).map(String).filter((id) => ctx.ids.has(id)).slice(0, 4);
+      const raw = Array.isArray(out.items) ? out.items : (Array.isArray(out.products) ? out.products.map((id) => ({ id, qty: 0 })) : []);
+      const items = raw.map((x) => (typeof x === "string" ? { id: x, qty: 0 } : x || {}))
+        .map((x) => ({ id: String(x.id || ""), qty: Number(x.qty) || 0 }))
+        .filter((x) => ctx.ids.has(x.id)).slice(0, 4)
+        .map((x) => {
+          if (x.id.startsWith("box:")) return { id: x.id, qty: 1 };
+          if (ctx.units[x.id] === "kg") return { id: x.id, qty: Math.min(50, Math.max(0.25, Math.round((x.qty || 0.25) * 4) / 4)) };
+          return { id: x.id, qty: Math.min(200, Math.max(1, Math.round(x.qty || 1))) };
+        });
+      const products = items.map((x) => x.id).filter((id) => !id.startsWith("box:"));
+      const action = ["cart", "checkout", "directions", "pro"].includes(out.action) ? out.action : (items.length ? "cart" : "none");
       // a model that still writes "p14" in its sentence: the product's name instead
       const lang = ["ar", "fr", "en", "es"].includes(b.lang) ? b.lang : "fr";
-      const reply = String(out.reply).replace(/\(?\b(p\d{1,6})\b\)?/g, (m, id) => (ctx.label[id] ? ctx.label[id][lang] : m));
-      return res.status(200).json({ ok: true, reply: reply.slice(0, 1200), products, whatsapp: !!out.whatsapp, by: name });
+      const reply = String(out.reply).replace(/\(?\b((?:box:[a-z-]+)|(?:p\d{1,6}))\b\)?/g, (m, id) => (ctx.label[id] ? ctx.label[id][lang] : m));
+      return res.status(200).json({ ok: true, reply: reply.slice(0, 1200), items, products, action, whatsapp: !!out.whatsapp, by: name });
     } catch (e) {
       tried.push(String(e.message || e).slice(0, 60)); // busy, quota, timeout: the next model takes over
     }

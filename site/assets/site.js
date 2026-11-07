@@ -296,6 +296,7 @@
           input.value = text.trim();
           input.dispatchEvent(new Event("input", { bubbles: true }));
           if (ev.results[ev.results.length - 1].isFinal && b.getAttribute("data-mic").indexOf("as-form") >= 0 && input.value) {
+            askedByVoice = true;
             var form = input.form; if (form && form.requestSubmit) form.requestSubmit();
           }
         };
@@ -309,6 +310,87 @@
       };
     });
   }
+
+  /* "share what I bought": a story-sized picture (1080x1920) of the products, the shop's logo and name, its link and
+     Instagram, drawn here; no prices and nothing personal. A phone shares the picture itself (WhatsApp status,
+     Instagram story...); a computer downloads it. */
+  function loadImg(src) {
+    return new Promise(function (ok) { var im = new Image(); im.onload = function () { ok(im); }; im.onerror = function () { ok(null); }; im.src = src; });
+  }
+  function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function fitText(c, text, max) {
+    if (c.measureText(text).width <= max) return text;
+    while (text.length > 1 && c.measureText(text + "…").width > max) text = text.slice(0, -1);
+    return text + "…";
+  }
+  function shareCard(items) {
+    var W = 1080, H = 1920, cv = document.createElement("canvas"), c = cv.getContext("2d"), rtl = A.lang === "ar";
+    cv.width = W; cv.height = H;
+    var ids = items.map(function (x) { return x.id; }).filter(function (id) { return A.p[id]; });
+    var shown = ids.slice(0, 6);
+    var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load("800 60px Cairo"), document.fonts.load("600 40px Cairo")]).catch(function () {}) : Promise.resolve();
+    return fontsReady.then(function () { return Promise.all([loadImg(A.logo)].concat(shown.map(function (id) { return loadImg(A.p[id].i); }))); }).then(function (imgs) {
+      var bg = c.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, "#f3dfc0"); bg.addColorStop(0.35, "#f7f0e7"); bg.addColorStop(1, "#f7f0e7");
+      c.fillStyle = bg; c.fillRect(0, 0, W, H);
+      c.direction = rtl ? "rtl" : "ltr"; c.textAlign = "center"; c.textBaseline = "alphabetic";
+      // header: logo, shop name, where it is
+      c.fillStyle = "#fff"; roundRect(c, W / 2 - 95, 90, 190, 190, 48); c.fill();
+      if (imgs[0]) c.drawImage(imgs[0], W / 2 - 80, 105, 160, 160);
+      c.fillStyle = "#211a16"; c.font = "800 72px Cairo, sans-serif"; c.fillText(A.s.name, W / 2, 370);
+      c.fillStyle = "#65584d"; c.font = "600 38px Cairo, sans-serif"; c.fillText(A.s.kicker, W / 2, 425);
+      c.fillStyle = "#a14e33"; c.font = "800 54px Cairo, sans-serif"; c.fillText(A.s.sh_title, W / 2, 530);
+      // the products: up to 6 photos, two per row, with their names
+      var cols = shown.length === 1 ? 1 : 2, size = cols === 1 ? 640 : 440, gap = 40, top = 590;
+      var rows = Math.ceil(shown.length / cols), x0 = (W - (cols * size + (cols - 1) * gap)) / 2;
+      var rowH = size + 90;
+      if (rows === 3) { size = 380; rowH = size + 82; x0 = (W - (2 * size + gap)) / 2; }
+      shown.forEach(function (id, i) {
+        var col = i % cols, row = Math.floor(i / cols);
+        if (rtl) col = cols - 1 - col;
+        var x = x0 + col * (size + gap), y = top + row * rowH, im = imgs[i + 1];
+        c.save(); roundRect(c, x, y, size, size, 36); c.clip();
+        c.fillStyle = "#e8d5bc"; c.fillRect(x, y, size, size);
+        if (im) { var s = Math.max(size / im.width, size / im.height); c.drawImage(im, x + (size - im.width * s) / 2, y + (size - im.height * s) / 2, im.width * s, im.height * s); }
+        c.restore();
+        c.fillStyle = "#211a16"; c.font = "700 40px Cairo, sans-serif";
+        c.fillText(fitText(c, A.p[id].n, size - 10), x + size / 2, y + size + 56);
+      });
+      var after = top + rows * rowH;
+      if (ids.length > shown.length) {
+        c.fillStyle = "#65584d"; c.font = "600 38px Cairo, sans-serif";
+        c.fillText(A.s.sh_more.replace("{n}", ids.length - shown.length), W / 2, after + 10);
+      }
+      // footer: the shop's link and Instagram on the dark band
+      c.fillStyle = "#211a16"; c.fillRect(0, H - 250, W, 250);
+      c.direction = "ltr";
+      c.fillStyle = "#f3ebe0"; c.font = "700 46px Cairo, sans-serif";
+      c.fillText(A.site.replace(/^https?:\/\//, "").replace(/\/$/, ""), W / 2, H - 150);
+      if (A.insta) { c.fillStyle = "#d39a30"; c.font = "700 42px Cairo, sans-serif"; c.fillText("Instagram @" + A.insta, W / 2, H - 80); }
+      return new Promise(function (ok) { cv.toBlob(function (b) { ok(b); }, "image/png"); });
+    });
+  }
+  function shareOrder(items, btn) {
+    if (btn) btn.disabled = true;
+    var link = A.site + (A.site.indexOf("?") < 0 ? "?" : "&") + "utm_source=share_order";
+    shareCard(items).then(function (blob) {
+      if (btn) btn.disabled = false;
+      if (!blob) return;
+      var file = new File([blob], "almas.png", { type: "image/png" });
+      try { window.fbq("trackCustom", "ShareOrder"); } catch (e) {}
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], text: A.s.sh_text + " " + link }).catch(function () {});
+      } else {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "almas.png";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        alert(A.s.sh_saved);
+      }
+    }).catch(function () { if (btn) btn.disabled = false; });
+  }
+  var lastOrderItems = [];
+  $$("[data-share-order]").forEach(function (b) { b.onclick = function () { if (lastOrderItems.length) shareOrder(lastOrderItems, b); }; });
 
   /* back to the catalogue as it was left: the browser's own back when the visitor came from the catalogue (same
      shelf, same scroll, instantly), the catalogue link otherwise (an ad or a shared link landed them here) */
@@ -403,6 +485,7 @@
           $("[data-cart-lines]").hidden = true;
           $("[data-done]").hidden = false;
           remember(d.number, d.total, f, ids);
+          lastOrderItems = ids.map(function (id) { return { id: id, q: cart[id] }; });
           var ab = $("[data-app-box]"); if (ab) ab.hidden = isInstalled();
           cart = {}; save();
           var c = $("[data-cart-count]"); if (c) { c.textContent = ""; c.setAttribute("data-zero", ""); }
@@ -659,6 +742,44 @@
              toggle: function () { var v = !on(); try { localStorage.setItem(SKEY, v ? "on" : "off"); } catch (e) {} return v; } };
   })();
 
+  /* the assistant's voice: the phone's own speech engine (Google's voices on Android, the system's elsewhere), a
+     female voice where the device has one, in the page's language. It speaks by itself when the visitor asked by
+     voice, and on demand (the listen button) otherwise; the speaker button silences it with the other sounds. */
+  var Voice = (function () {
+    var synth = window.speechSynthesis, LANGV = { ar: "ar", fr: "fr", en: "en", es: "es" };
+    var FEMALE = /female|woman|femme|mujer|zira|hoda|salma|zariyah|amira|layla|hortense|julie|denise|amelie|aria|jenny|samantha|karen|helena|laura|elvira|monica|paulina|google/i;
+    var MALE = /\bmale\b|naayf|hamed|paul|claude|henri|david|mark|guy|pablo|jorge|alvaro|raul/i;
+    function pick() {
+      if (!synth) return null;
+      var want = LANGV[A.lang] || "ar", vs = synth.getVoices().filter(function (v) { return (v.lang || "").toLowerCase().indexOf(want) === 0; });
+      if (!vs.length) return null;
+      var score = function (v) {
+        var n = v.name || "", sc = 0;
+        if (FEMALE.test(n)) sc += 3;
+        if (MALE.test(n)) sc -= 4;
+        if (/google|natural|neural|online/i.test(n)) sc += 2;
+        if (A.lang === "ar" && /sa|ae|ma/i.test(v.lang.slice(3))) sc += 1;
+        return sc;
+      };
+      return vs.sort(function (a, b) { return score(b) - score(a); })[0];
+    }
+    if (synth && synth.onvoiceschanged !== undefined) synth.onvoiceschanged = function () {};
+    function say(text, onStart, onEnd) {
+      if (!synth || !Sound.on()) return false;
+      try {
+        synth.cancel();
+        var u = new SpeechSynthesisUtterance(String(text).replace(/\s+/g, " ").slice(0, 600));
+        var v = pick(); if (v) u.voice = v;
+        u.lang = v ? v.lang : ({ ar: "ar-SA", fr: "fr-FR", en: "en-US", es: "es-ES" })[A.lang];
+        u.rate = A.lang === "ar" ? 0.95 : 1; u.pitch = 1.08;
+        u.onstart = onStart; u.onend = onEnd; u.onerror = onEnd;
+        synth.speak(u);
+        return true;
+      } catch (e) { return false; }
+    }
+    return { ok: !!synth, say: say, stop: function () { if (synth) synth.cancel(); } };
+  })();
+
   /* Tajine, the assistant: answers from the shop's catalogue, suggests products that go straight into the cart */
   var as = $("[data-as]"), asOpen = $("[data-as-open]"), asBody = $("[data-as-body]"), asForm = $("[data-as-form]");
   var turns = [];
@@ -666,7 +787,7 @@
     if (!as) return;
     as.hidden = !open;
     if (asOpen) asOpen.classList.toggle("on", open);
-    if (open) Sound.bell();
+    if (open) Sound.bell(); else Voice.stop();
     if (open) { var i = $("input", asForm); if (i && window.innerWidth > 700) setTimeout(function () { i.focus(); }, 60); }
   }
   function bubble(cls, html) {
@@ -680,6 +801,57 @@
     return ids.length ? '<ul class="as-items">' + ids.map(function (id) { return miniItem(id, "data-asadd"); }).join("") + "</ul>" : "";
   }
   function wire(el) { $$("[data-asadd]", el).forEach(function (b) { b.onclick = function () { addFrom(b, "data-asadd"); }; }); }
+  /* the salesperson's answer: its products (with the quantity it advised) and boxes, then the next step as buttons:
+     add everything, go to checkout, the way to the shop, the businesses page */
+  function boxItem(id) {
+    var k = A.packs && A.packs[id], first = k && k.items.filter(function (x) { return A.p[x[0]]; })[0];
+    if (!k || !first) return "";
+    return '<li><a href="#packs"><img src="' + A.p[first[0]].i + '" alt="" width="56" height="56" loading="lazy"><span><b>' + esc(A.boxes[id] || id) +
+      "</b><small>" + money(packTotal(id)) + '</small></span></a><button type="button" class="add" data-asbox="' + esc(id) + '" aria-label="' + esc(A.s.add) + '">+</button></li>';
+  }
+  function itemsHtml(items) {
+    items = (items || []).filter(function (x) { return x.id.indexOf("box:") === 0 ? A.packs && A.packs[x.id.slice(4)] : A.p[x.id]; }).slice(0, 4);
+    if (!items.length) return "";
+    return '<ul class="as-items">' + items.map(function (x) {
+      if (x.id.indexOf("box:") === 0) return boxItem(x.id.slice(4));
+      var li = miniItem(x.id, "data-asadd");
+      return li.replace("<small>" + money(A.p[x.id].price), '<small class="as-q">' + esc(amount(x.id, x.qty)) + " · " + money(x.qty * A.p[x.id].price) + "</small><small>" + money(A.p[x.id].price));
+    }).join("") + "</ul>";
+  }
+  function addBox(id) {
+    var k = A.packs[id];
+    k.items.forEach(function (x) { if (A.p[x[0]]) cart[x[0]] = Math.round(((cart[x[0]] || 0) + packQty(x[0], x[1])) * 100) / 100; });
+    save(); render(); Sound.clink();
+    track("AddToCart", k.items.map(function (x) { return x[0]; }), packTotal(id));
+  }
+  function actionsHtml(d) {
+    var b = [];
+    var items = (d.items || []).filter(function (x) { return x.id.indexOf("box:") === 0 ? A.packs && A.packs[x.id.slice(4)] : A.p[x.id]; });
+    var sum = items.reduce(function (t, x) { return t + (x.id.indexOf("box:") === 0 ? packTotal(x.id.slice(4)) : A.p[x.id].price * x.qty); }, 0);
+    if (items.length > 1 || (items.length === 1 && d.action === "cart")) b.push('<button type="button" class="as-act main" data-as-all>' + esc(A.s.as_addall) + " · " + money(sum) + "</button>");
+    if (d.action === "checkout" || items.length) b.push('<button type="button" class="as-act" data-as-checkout>' + esc(A.s.as_checkout) + "</button>");
+    if (d.action === "directions") {
+      b.push('<a class="as-act" href="' + esc(A.maps) + '" rel="noopener" target="_blank">' + esc(A.s.as_maps) + "</a>");
+      b.push('<a class="as-act waze" href="' + esc(A.waze) + '" rel="noopener" target="_blank">' + esc(A.s.t_waze) + "</a>");
+    }
+    if (d.action === "pro") b.push('<a class="as-act" href="' + esc(A.pro) + '">' + esc(A.s.as_pro) + "</a>");
+    return b.length ? '<div class="as-acts">' + b.join("") + "</div>" : "";
+  }
+  function wireActions(el, d) {
+    $$("[data-asbox]", el).forEach(function (b) { b.onclick = function () { addBox(b.getAttribute("data-asbox")); b.classList.add("done"); b.textContent = "✓"; }; });
+    var all = $("[data-as-all]", el);
+    if (all) all.onclick = function () {
+      (d.items || []).forEach(function (x) {
+        if (x.id.indexOf("box:") === 0) { if (A.packs && A.packs[x.id.slice(4)]) addBox(x.id.slice(4)); }
+        else if (A.p[x.id]) { cart[x.id] = Math.round(((cart[x.id] || 0) + x.qty) * 100) / 100; }
+      });
+      save(); render(); Sound.clink();
+      track("AddToCart", (d.items || []).map(function (x) { return x.id; }), total());
+      all.textContent = "✓ " + A.s.as_added; all.disabled = true;
+    };
+    var co = $("[data-as-checkout]", el);
+    if (co) co.onclick = function () { asShow(false); showCart(); openCart(); track("InitiateCheckout", Object.keys(cart), total()); };
+  }
   function ask(q) {
     q = String(q || "").trim();
     if (!q || !asBody) return;
@@ -702,12 +874,26 @@
         wait.remove();
         cooking(false, true);
         turns.push({ role: "assistant", content: d.reply });
-        var el = bubble("bot", esc(d.reply).replace(/\n/g, "<br>") + productsHtml(d.products) +
+        var el = bubble("bot", esc(d.reply).replace(/\n/g, "<br>") + (d.items ? itemsHtml(d.items) : productsHtml(d.products)) + actionsHtml(d) +
           (d.whatsapp ? '<a class="as-wa-in" href="https://wa.me/' + A.wa + "?text=" + encodeURIComponent(q) + '" rel="noopener">' + esc(A.s.as_wa) + "</a>" : ""));
-        wire(el);
+        wire(el); wireActions(el, d);
+        if (Voice.ok) {
+          var lb = document.createElement("button");
+          lb.type = "button"; lb.className = "as-listen"; lb.innerHTML = "&#9654; " + esc(A.s.as_listen);
+          lb.onclick = function () { speak(d.reply); };
+          el.appendChild(lb);
+          if (askedByVoice) speak(d.reply);
+        }
+        askedByVoice = false;
         try { window.fbq("trackCustom", "AssistantQuestion"); } catch (e) {}
       })
       .catch(fallback);
+  }
+  var askedByVoice = false;
+  function speak(text) {
+    return Voice.say(text,
+      function () { [as, asOpen].forEach(function (el) { if (el) el.classList.add("talking"); }); },
+      function () { [as, asOpen].forEach(function (el) { if (el) el.classList.remove("talking"); }); });
   }
   function cooking(on, served) {
     [as, asOpen].forEach(function (el) {
@@ -723,6 +909,7 @@
     snd.onclick = function () {
       var on = Sound.toggle();
       snd.setAttribute("aria-pressed", on ? "true" : "false");
+      if (!on) Voice.stop();
       if (on) Sound.bell();
     };
   }
@@ -858,9 +1045,13 @@
       var items = o.items.filter(function (x) { return A.p[x.id]; }).map(function (x) { return esc(amount(x.id, x.q) + " " + A.p[x.id].n); }).join(" · ");
       var rep = o.rep ? '<span class="st-chip st-rep">🔁 ' + esc(A.s["rep_" + o.rep] || "") + "</span>" : "";
       return '<li><div class="mo-top"><b dir="ltr">' + esc(o.n) + "</b><span>" + esc(dateOf(o.at)) + "</span>" + chip + rep + "</div>" +
-        '<p class="mo-items">' + items + '</p><div class="mo-bot"><b>' + money(o.total) + '</b><button type="button" class="btn ghost" data-again="' + i + '">' +
-        esc(A.s.mo_again) + "</button></div></li>";
+        '<p class="mo-items">' + items + '</p><div class="mo-bot"><b>' + money(o.total) + '</b><span class="mo-acts">' +
+        '<button type="button" class="link-btn" data-share-past="' + i + '">' + esc(A.s.sh_btn) + "</button>" +
+        '<button type="button" class="btn ghost" data-again="' + i + '">' + esc(A.s.mo_again) + "</button></span></div></li>";
     }).join("");
+    $$("[data-share-past]", ul).forEach(function (b) {
+      b.onclick = function () { shareOrder(list[+b.getAttribute("data-share-past")].items, b); };
+    });
     $$("[data-again]", ul).forEach(function (b) {
       b.onclick = function () {
         var o = list[+b.getAttribute("data-again")];
