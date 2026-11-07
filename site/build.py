@@ -43,6 +43,12 @@ MONEY = {"ar": "{} درهم", "fr": "{} DH", "en": "{} MAD", "es": "{} DH"}
 # Customer-facing names: Modern Standard Arabic and Spanish (the till's own Arabic name stays in orders, as "t")
 NAMES = json.loads((HERE / "names.json").read_text(encoding="utf-8"))
 PACKS = json.loads((HERE / "packs.json").read_text(encoding="utf-8"))
+# a short description of every product in the 4 languages (natural product, aroma, use; no health claims)
+DESC = json.loads((HERE / "descriptions.json").read_text(encoding="utf-8")) if (HERE / "descriptions.json").exists() else {}
+
+
+def about(p, lang):
+    return (DESC.get(p["id"]) or {}).get(lang, "")
 MAD_PER_EUR = 10.9  # replaced at build time by the day's rate (open.er-api.com); this is only the fallback
 
 
@@ -1056,7 +1062,8 @@ def product_page(lang, p, products, cats):
     unit = t["kg"] if p["unit"] == "kg" else t["piece"]
     path = "p/" + p["id"] + "/"
     title = f"{n} – {money(lang, p['price'])} {unit} | {t['name']}"
-    desc = f"{n} ({p['ar'] if lang != 'ar' else p['fr']}), {money(lang, p['price'])} {unit}. {t['order_note']}"
+    desc = (f"{about(p, lang)} {money(lang, p['price'])} {unit}." if about(p, lang)
+            else f"{n} ({p['ar'] if lang != 'ar' else p['fr']}), {money(lang, p['price'])} {unit}. {t['order_note']}")
     names = "".join(f'<li lang="{l}"><span>{esc(T[l]["langname"])}</span> {esc(p[l])}</li>' for l in LANGS if p.get(l))
     same = [q for q in products if q["cat"] == p["cat"] and q["id"] != p["id"]][:8]
     related = "".join(card(lang, q, cats) for q in same)
@@ -1092,6 +1099,7 @@ def product_page(lang, p, products, cats):
 <p class="kicker">{esc(cat[lang])}</p>
 <h1>{esc(n)}</h1>
 <a class="stars-mini big" href="#reviews" data-stars="{p['id']}" hidden></a>
+{f'<p class="about">{esc(about(p, lang))}</p>' if about(p, lang) else ""}
 <ul class="names">{names}</ul>
 <p class="big-price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small> <small class="eur" data-eur-unit="{p['id']}"></small></p>
 <div class="qty-row"><div class="qty" data-qty-for="{p['id']}"><button type="button" data-step="-1" aria-label="-">−</button><output data-qty-label></output><button type="button" data-step="1" aria-label="+">+</button></div>
@@ -1227,7 +1235,7 @@ def feeds(products, cats):
             img, real = image_of(p)
             w.writerow([
                 p["id"], f"{p['fr']} {size}"[:150],
-                f"{p['fr']} ({p['ar']}), vendu {how} par Almas, herboristerie à Ksar Sghir près de Tanger. "
+                (about(p, "fr") + " ") + f"{p['fr']} ({p['ar']}), vendu {how} par Almas, herboristerie à Ksar Sghir près de Tanger. "
                 f"Commande en ligne ou sur WhatsApp ; paiement à la livraison, à la boutique ou par virement.",
                 "in stock", "new", f"{float(p['price']):.2f} MAD", BASE + url("fr", "p/" + p["id"] + "/")[len(PREFIX):],
                 img, ",".join(images_of(p)[1:]), "Almas", GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), cats[p["cat"]]["fr"],
@@ -1244,7 +1252,7 @@ def feeds(products, cats):
             w.writerow(["id", "override", "title", "description", "link"])
             for p in products:
                 how, size = units.get(p["unit"], units["piece"])
-                w.writerow([p["id"], code, title.format(size=size, **p)[:150], desc.format(how=how, **p),
+                w.writerow([p["id"], code, title.format(size=size, **p)[:150], (about(p, lang) + " " if about(p, lang) else "") + desc.format(how=how, **p),
                             BASE + url(lang, "p/" + p["id"] + "/")[len(PREFIX):]])
 
 

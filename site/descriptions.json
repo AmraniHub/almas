@@ -1,0 +1,770 @@
+{
+ "p13": {
+  "ar": "مسحوق طبيعي بلون أحمر زاهي ونكهة معتدلة يضفي لونا دافئا على الطواجن المغربية التقليدية والمشويات ويستخدم بكثرة في تتبيلات الأسماك واللحوم المتنوعة لتعزيز المذاق.",
+  "fr": "Cette poudre naturelle à la couleur rouge éclatante offre une saveur douce aux tajines marocains et aux grillades tout en colorant délicatement les marinades de poissons.",
+  "en": "This natural powder with a vibrant red color brings a mild flavor to traditional Moroccan tagines and grilled meats while adding warmth to fish marinades and stews.",
+  "es": "Este polvo natural de color rojo intenso aporta un sabor suave a los tajines marroquíes y carnes a la brasa mientras da color a los adobos de pescado."
+ },
+ "p2": {
+  "ar": "مسحوق طبيعي ذو لون أصفر ذهبي ورائحة ترابية خفيفة يعد ركيزة أساسية في المطبخ المغربي لتلوين المرق وتتبيل الدجاج واللحوم في الطواجن التقليدية العريقة والوصفات اليومية.",
+  "fr": "Une poudre naturelle à la couleur jaune dorée et au parfum terreux utilisée dans la cuisine marocaine pour colorer les sauces et assaisonner le poulet ou la viande.",
+  "en": "A natural powder with a golden yellow hue and earthy aroma used in Moroccan cooking to color sauces and season chicken or meat in traditional tagines and recipes.",
+  "es": "Un polvo natural de color amarillo dorado y aroma terroso utilizado en la cocina marroquí para dar color a las salsas y sazonar el pollo o la carne."
+ },
+ "p1": {
+  "ar": "توابل طبيعية ذات نكهة لاذعة وعطرية قوية تستخدم بشكل أساسي في طواجن الدجاج المغربية والحلويات التقليدية وتضاف أحيانا إلى الشاي المغربي لإضفاء دفء مميز على المشروبات الساخنة.",
+  "fr": "Cette épice naturelle au goût piquant et aromatique est essentielle pour les tajines de poulet et les pâtisseries traditionnelles apportant une chaleur caractéristique aux plats et boissons.",
+  "en": "This natural spice with a pungent and aromatic flavor is essential for chicken tagines and traditional pastries providing a characteristic warmth to many Moroccan savory dishes and tea.",
+  "es": "Esta especia natural de sabor picante y aromático es esencial para los tajines de pollo y la repostería tradicional aportando un calor característico a los platos y bebidas."
+ },
+ "p6": {
+  "ar": "بذور طبيعية مطحونة برائحة نفاذة ونكهة عميقة تميز الأطباق المغربية مثل الكامونية والقطاني وتعد رفيقا دائما للمشويات والبيض المسلوق على المائدة التقليدية في كل بيت مغربي.",
+  "fr": "Des graines naturelles moulues au parfum intense et à la saveur profonde qui caractérisent les plats marocains comme les légumineuses et les grillades de viande sur la table.",
+  "en": "Natural ground seeds with an intense aroma and deep flavor that characterize Moroccan dishes like legumes and grilled meats served with traditional salt and cumin on the table.",
+  "es": "Semillas naturales molidas de aroma intenso y sabor profundo que caracterizan los platos marroquíes como las legumbres y las carnes a la brasa en la mesa tradicional marroquí."
+ },
+ "p3": {
+  "ar": "حبات طبيعية مطحونة تمنح الأطباق حرارة متوازنة ونكهة حادة وتستخدم في تتبيل كافة أنواع اللحوم والخضروات والمرق في المطبخ المغربي اليومي والولائم الكبرى والمناسبات التقليدية المختلفة.",
+  "fr": "Des grains naturels moulus qui apportent une chaleur équilibrée et une saveur vive aux viandes aux légumes et aux bouillons de la cuisine marocaine quotidienne et des banquets.",
+  "en": "Natural ground peppercorns that provide balanced heat and a sharp flavor to meats vegetables and broths in daily Moroccan cooking and festive traditional banquets and special occasions.",
+  "es": "Granos naturales molidos que aportan un calor equilibrado y un sabor intenso a las carnes verduras y caldos de la cocina marroquí diaria y festiva en cada hogar."
+ },
+ "p52": {
+  "ar": "ثمرة طبيعية ذات رائحة عطرية دافئة ونكهة فريدة تبشر فوق الطواجن الفاخرة وتدخل في تركيبات توابل المروزية والحلويات المغربية التقليدية لإضفاء لمسة عطرية خاصة ومميزة جدا.",
+  "fr": "Un fruit naturel au parfum chaud et à la saveur unique râpé sur les tajines raffinés et utilisé dans les mélanges d épices pour pâtisseries et plats traditionnels.",
+  "en": "A natural fruit with a warm aroma and unique flavor grated over refined tagines and used in spice blends for traditional Moroccan pastries and sweets for a special touch.",
+  "es": "Un fruto natural de aroma cálido y sabor único rallado sobre tajines refinados y utilizado en mezclas de especias para la repostería tradicional de Marruecos y platos especiales."
+ },
+ "p9": {
+  "ar": "لحاء طبيعي ذو رائحة حلوة وعطرية يستخدم في المطبخ المغربي لتنسيم طواجن اللحم بالبرقوق والحلويات التقليدية ويضاف إلى الشاي والقهوة لنكهة دافئة ومميزة تذكرنا بالأجواء العائلية.",
+  "fr": "Une écorce naturelle au parfum doux et aromatique utilisée dans la cuisine marocaine pour les tajines sucrés salés et les pâtisseries ou dans le thé et le café chaud.",
+  "en": "A natural bark with a sweet and aromatic scent used in Moroccan cuisine for sweet and savory tagines pastries and added to tea or coffee for a warm flavor.",
+  "es": "Una corteza natural de aroma dulce y aromático utilizada en la cocina marroquí para tajines dulces y salados repostería o añadida al té y café para un sabor cálido."
+ },
+ "p130": {
+  "ar": "بذور طبيعية مجففة ذات نكهة ليمونية خفيفة ورائحة عطرية تدخل في تتبيلات اللحوم وصناعة النقانق التقليدية وتعد مكونا هاما في خلطات التوابل المغربية المتنوعة لتحضير أطباق شهية.",
+  "fr": "Des graines naturelles séchées au goût légèrement citronné et au parfum aromatique utilisées pour les marinades de viande et la confection des saucisses traditionnelles marocaines et des mélanges.",
+  "en": "Natural dried seeds with a light lemony taste and aromatic scent used for meat marinades and making traditional Moroccan sausages and various spice blends for savory cooking recipes.",
+  "es": "Semillas naturales secas de sabor ligeramente alimonado y aroma fragante utilizadas para adobos de carne y la elaboración de embutidos tradicionales y mezclas de especias en la cocina."
+ },
+ "p269": {
+  "ar": "نبات طبيعي ذو نكهة عطرية واضحة يستخدم في المطبخ المغربي لتنسيم المرق وتتبيل الأسماك واللحوم ويعد عنصرا أساسيا في تحضير الشرمولة التقليدية لمختلف الأطباق البحرية واللحوم المشوية.",
+  "fr": "Une plante naturelle à la saveur aromatique marquée utilisée dans la cuisine marocaine pour parfumer les bouillons les poissons et préparer la chermoula traditionnelle savoureuse pour les grillades.",
+  "en": "A natural plant with a distinct aromatic flavor used in Moroccan cooking to season broths fish and meats and as a key ingredient for traditional chermoula and marinades.",
+  "es": "Una planta natural de sabor aromático marcado utilizada en la cocina marroquí para perfumar caldos pescados y carnes y preparar la tradicional chermoula para diversos platos y asados."
+ },
+ "p282": {
+  "ar": "بذور طبيعية ذات رائحة قوية ونكهة مرة مميزة تعد مكونا رئيسيا في طبق الرفيسة المغربي التقليدي وتستخدم في بعض الوصفات الشعبية العريقة لإغناء المذاق بلمسة من الأصالة.",
+  "fr": "Des graines naturelles au parfum puissant et à la saveur amère caractéristique qui constituent un ingrédient essentiel du plat traditionnel marocain nommé la rfissa et divers ragoûts.",
+  "en": "Natural seeds with a powerful aroma and characteristic bitter flavor that are an essential ingredient in the traditional Moroccan dish known as rfissa and various ancient stews.",
+  "es": "Semillas naturales de aroma potente y sabor amargo característico que constituyen un ingrediente esencial del plato tradicional marroquí llamado rfissa y diversos guisos antiguos de la región."
+ },
+ "p92": {
+  "ar": "براعم زهرية طبيعية مجففة برائحة نفاذة وطعم دافئ تستخدم لتنسيم القهوة المغربية والشاي وتضاف بحذر إلى بعض طواجن اللحم والحلويات لمنحها عمقا عطريا قويا وفريدا من نوعه.",
+  "fr": "Des boutons floraux naturels séchés au parfum intense et goût chaud utilisés pour aromatiser le café marocain le thé et certains tajines de viande raffinés ou pâtisseries locales.",
+  "en": "Natural dried flower buds with an intense aroma and warm taste used to flavor Moroccan coffee tea and added carefully to certain meat tagines and sweets for depth.",
+  "es": "Capullos florales naturales secos de aroma intenso y sabor cálido utilizados para aromatizar el café marroquí el té y algunos tajines de carne y dulces tradicionales locales."
+ },
+ "p245": {
+  "ar": "حبات طبيعية مطحونة تمتاز بحرارة حادة ونكهة أخف من الفلفل الأسود تستخدم في الصلصات البيضاء والشوربات المغربية للحفاظ على لون الطبق مع إضافة لسعة حرارية محببة ومنعشة.",
+  "fr": "Des grains naturels moulus offrant une chaleur vive et une saveur plus subtile que le poivre noir parfaits pour les sauces blanches et les soupes marocaines traditionnelles claires.",
+  "en": "Natural ground peppercorns offering sharp heat and a subtler flavor than black pepper perfect for white sauces and Moroccan soups to maintain a light color and spicy kick.",
+  "es": "Granos naturales molidos que ofrecen un calor intenso y un sabor más sutil que la pimienta negra ideales para salsas blancas y sopas marroquíes tradicionales de color claro."
+ },
+ "p40": {
+  "ar": "تتميز بذور الشمر برائحتها العطرية ونكهتها الحلوة التي تشبه عرق السوس، وتستخدم بانتظام في تحضير الخبز المغربي التقليدي وفي تتبيل الأطباق المطهوة ببطء لإضفاء لمسة مميزة.",
+  "fr": "Les graines de fenouil offrent un arôme parfumé et une saveur douce rappelant la réglisse, idéales pour parfumer le pain traditionnel marocain et les plats mijotés lentement.",
+  "en": "Fennel seeds offer a fragrant aroma and a sweet flavor reminiscent of licorice, ideal for seasoning traditional Moroccan bread and dishes that are simmered slowly for depth.",
+  "es": "Las semillas de hinojo ofrecen un aroma fragante y un sabor dulce que recuerda al regaliz, ideales para sazonar el pan tradicional marroquí y platos cocinados a fuego lento."
+ },
+ "p64": {
+  "ar": "يضفي الزنجبيل المطحون نكهة لاذعة ومنعشة على الأطباق، وهو عنصر أساسي في المطبخ المغربي لتحضير الطواجن واللحوم المشوية، حيث يمنحها توازناً مثالياً بين الحرارة والعمق في المذاق.",
+  "fr": "Le gingembre moulu apporte une saveur piquante et fraîche aux plats. C'est un ingrédient essentiel de la cuisine marocaine pour les tajines et les viandes grillées.",
+  "en": "Ground ginger adds a pungent and fresh flavor to dishes. It is an essential ingredient in Moroccan cuisine for preparing tagines and various grilled meat recipes.",
+  "es": "El jengibre molido aporta un sabor picante y fresco a los platos. Es un ingrediente esencial de la cocina marroquí para preparar tajines y diversas carnes a la parrilla."
+ },
+ "p8": {
+  "ar": "يتميز مسحوق الفلفل الأحمر الحار بلونه القوي ونكهته اللاذعة، ويستخدم بكثرة في المطبخ المغربي لإضافة لمسة حارة ومميزة إلى الطواجن والمقبلات والصلصات التقليدية التي تتطلب مذاقاً قوياً.",
+  "fr": "La poudre de piment fort se distingue par sa couleur vive et sa saveur piquante, utilisée dans la cuisine marocaine pour relever les tajines et les sauces.",
+  "en": "Hot chili powder is distinguished by its vibrant color and pungent flavor, used in Moroccan cuisine to add a spicy and distinct touch to traditional tagines.",
+  "es": "El polvo de guindilla se distingue por su color vibrante y su sabor picante, utilizado en la cocina marroquí para dar un toque especiado a los tajines."
+ },
+ "p39": {
+  "ar": "تضفي بذور اليانسون الأخضر نكهة عطرية حلوة ومميزة، وتستخدم بشكل واسع في المخبوزات المغربية التقليدية وفي تحضير الحلويات، كما تضاف أحياناً إلى الشاي لإضفاء لمسة من الانتعاش العطري.",
+  "fr": "Les graines d'anis vert apportent une saveur aromatique douce. Elles sont largement utilisées dans les pâtisseries marocaines traditionnelles et ajoutées au thé pour une touche rafraîchissante.",
+  "en": "Green aniseed seeds provide a sweet aromatic flavor. They are widely used in traditional Moroccan pastries and added to tea for a refreshing and fragrant touch.",
+  "es": "Las semillas de anís verde aportan un sabor aromático dulce. Se utilizan ampliamente en la pastelería tradicional marroquí y se añaden al té para un toque refrescante."
+ },
+ "p43": {
+  "ar": "تتميز حبة البركة بنكهتها القوية التي تشبه البصل والفلفل، وتستخدم في المطبخ المغربي لتزيين الخبز التقليدي وإضافة نكهة مميزة للأطباق المطهوة، مما يمنحها طابعاً غنياً ومتوازناً في المذاق.",
+  "fr": "La nigelle possède une saveur forte rappelant l'oignon et le poivre. Elle est utilisée pour garnir le pain traditionnel marocain et parfumer les plats cuisinés avec caractère.",
+  "en": "Nigella seeds have a strong flavor reminiscent of onion and pepper. They are used to garnish traditional Moroccan bread and add character to various cooked dishes.",
+  "es": "Las semillas de nigella tienen un sabor fuerte que recuerda a la cebolla y la pimienta. Se usan para decorar el pan tradicional marroquí y dar carácter."
+ },
+ "p85": {
+  "ar": "يعتبر الزعفران الحر من أثمن التوابل، حيث يضفي لوناً ذهبياً ونكهة عطرية فاخرة على الطواجن والأطباق المغربية التقليدية، مما يجعله عنصراً لا غنى عنه في المناسبات والولائم الكبرى.",
+  "fr": "Le safran pur est une épice précieuse qui apporte une couleur dorée et un arôme luxueux aux tajines et plats marocains, indispensable pour les grandes occasions.",
+  "en": "Pure saffron is a precious spice that adds a golden color and a luxurious aroma to Moroccan tagines and dishes, making it essential for special occasions.",
+  "es": "El azafrán puro es una especia preciosa que aporta un color dorado y un aroma lujoso a los tajines y platos marroquíes, siendo esencial para ocasiones especiales."
+ },
+ "p79": {
+  "ar": "يتمتع الخولنجان بنكهة خشبية حارة وعطرية تشبه الزنجبيل، ويستخدم في المطبخ المغربي لإضافة عمق وتوازن فريد إلى خلطات التوابل التقليدية التي تدخل في تحضير اللحوم المطهوة ببطء.",
+  "fr": "Le galanga possède une saveur boisée, épicée et aromatique. Il est utilisé dans la cuisine marocaine pour ajouter de la profondeur aux mélanges d'épices pour viandes.",
+  "en": "Galangal has a woody, spicy, and aromatic flavor. It is used in Moroccan cuisine to add depth and balance to traditional spice blends for slow-cooked meats.",
+  "es": "El galanga tiene un sabor amaderado, especiado y aromático. Se utiliza en la cocina marroquí para añadir profundidad y equilibrio a las mezclas de especias tradicionales."
+ },
+ "p5": {
+  "ar": "يعد الثوم المطحون عنصراً أساسياً في المطبخ المغربي، حيث يضفي نكهة غنية وعميقة على الطواجن والصلصات والمشاوي، ويسهل استخدامه في التتبيلات بفضل قوامه الناعم وتوزيعه المتجانس في الأطباق.",
+  "fr": "L'ail en poudre est un ingrédient essentiel de la cuisine marocaine, apportant une saveur riche aux tajines, sauces et grillades grâce à sa texture fine et homogène.",
+  "en": "Garlic powder is an essential ingredient in Moroccan cuisine, adding a rich flavor to tagines, sauces, and grilled meats thanks to its fine and uniform texture.",
+  "es": "El ajo en polvo es un ingrediente esencial en la cocina marroquí, aportando un sabor rico a los tajines, salsas y carnes a la parrilla."
+ },
+ "p212": {
+  "ar": "تتميز القرفة الممتازة برائحتها الزكية ونكهتها الدافئة، وهي ركن أساسي في المطبخ المغربي، حيث تستخدم في تحضير الطواجن الحلوة والمالحة، وفي تزيين الحلويات التقليدية لإضفاء لمسة من الفخامة.",
+  "fr": "La cannelle spéciale offre un arôme parfumé et une saveur chaude. Incontournable dans la cuisine marocaine, elle agrémente les tajines et les pâtisseries traditionnelles avec élégance.",
+  "en": "Special cinnamon offers a fragrant aroma and a warm flavor. Essential in Moroccan cuisine, it enhances sweet and savory tagines and traditional pastries with elegance.",
+  "es": "La canela especial ofrece un aroma fragante y un sabor cálido. Esencial en la cocina marroquí, realza los tajines dulces y salados y la pastelería tradicional."
+ },
+ "p11": {
+  "ar": "يضفي البصل المطحون نكهة متوازنة وحلاوة خفيفة على الأطباق، وهو مثالي لتكثيف قوام الصلصات في الطواجن المغربية التقليدية، حيث يمتزج بسهولة مع التوابل الأخرى ليمنح مذاقاً متناغماً وغنياً.",
+  "fr": "L'oignon en poudre apporte une saveur équilibrée et une légère douceur. Idéal pour épaissir les sauces des tajines marocains, il se marie parfaitement avec les autres épices.",
+  "en": "Onion powder provides a balanced flavor and mild sweetness. It is ideal for thickening sauces in traditional Moroccan tagines, blending perfectly with other spices.",
+  "es": "El polvo de cebolla aporta un sabor equilibrado y un ligero dulzor. Es ideal para espesar las salsas de los tajines marroquíes, mezclándose perfectamente con otras especias."
+ },
+ "p48": {
+  "ar": "يتميز الهيل برائحته العطرية القوية ونكهته الفريدة، ويستخدم في المطبخ المغربي لإضافة لمسة مميزة إلى الحلويات التقليدية وبعض أنواع المشروبات الساخنة، مما يمنحها طابعاً عطرياً لا يقاوم.",
+  "fr": "La cardamome se distingue par son arôme puissant et sa saveur unique. Elle est utilisée dans la cuisine marocaine pour parfumer les pâtisseries et certaines boissons.",
+  "en": "Cardamom is distinguished by its powerful aroma and unique flavor. It is used in Moroccan cuisine to add a special touch to traditional pastries and beverages.",
+  "es": "El cardamomo se distingue por su potente aroma y sabor único. Se utiliza en la cocina marroquí para dar un toque especial a la pastelería tradicional."
+ },
+ "p73": {
+  "ar": "يضفي اليانسون نكهة عطرية حلوة ومميزة على المخبوزات والحلويات المغربية التقليدية، كما يستخدم في تحضير بعض أنواع الشاي لإضفاء لمسة من الانتعاش والعمق في المذاق العطري.",
+  "fr": "L'anis apporte une saveur aromatique douce aux pâtisseries marocaines traditionnelles. Il est également utilisé dans la préparation de certains thés pour une touche rafraîchissante.",
+  "en": "Aniseed adds a sweet aromatic flavor to traditional Moroccan pastries and sweets. It is also used in preparing certain teas for a refreshing and deep taste.",
+  "es": "El anís aporta un sabor aromático dulce a la pastelería tradicional marroquí. También se utiliza en la preparación de ciertos tés para un toque refrescante."
+ },
+ "p292": {
+  "ar": "بذور الكراوية الطبيعية تتميز بنكهتها الدافئة والمنعشة، تستخدم بشكل تقليدي في تحضير الحلويات المغربية والمخبوزات، وتضاف إلى أطباق الحساء لإضفاء لمسة عطرية فريدة ومميزة في المطبخ المحلي.",
+  "fr": "Le carvi naturel offre un arôme chaud et terreux, idéal pour parfumer les pains traditionnels marocains, les pâtisseries locales et certains ragoûts de légumes savoureux servis lors des repas.",
+  "en": "Natural caraway seeds feature a warm and earthy aroma, traditionally used in Moroccan baking, local pastries, and savory vegetable stews to provide a distinct fragrant touch to every dish.",
+  "es": "La alcaravea natural ofrece un aroma cálido y terroso, ideal para aromatizar panes tradicionales marroquíes, repostería local y ciertos guisos de verduras con un toque distintivo en la cocina diaria."
+ },
+ "p75": {
+  "ar": "الكمون الصوفي هو بذور طبيعية ذات رائحة عطرية قوية، يستخدم تقليديا في المطبخ المغربي لتنكيه المشروبات الساخنة والشوربات، ويعد عنصرا أساسيا في الوصفات الشعبية المتوارثة عبر الأجيال في المنطقة.",
+  "fr": "Le cumin velu est une graine naturelle au parfum aromatique puissant, traditionnellement utilisé dans la cuisine marocaine pour aromatiser les boissons chaudes et les soupes populaires dans les foyers.",
+  "en": "Hairy cumin is a natural seed with a powerful aromatic scent, traditionally used in Moroccan cuisine to flavor hot beverages and popular soups in many households across the northern region.",
+  "es": "El comino velloso es una semilla natural con un potente aroma, utilizada tradicionalmente en la cocina marroquí para aromatizar bebidas calientes y sopas populares en los hogares de la región."
+ },
+ "p49": {
+  "ar": "البسباسة هي القشرة الطبيعية المحيطة بجوزة الطيب، تتميز بلونها البرتقالي ونكهتها العطرية الرقيقة، وتستخدم في تتبيل اللحوم وتحضير خلطات التوابل المغربية الفاخرة مثل رأس الحانوت لإعطاء مذاق غني.",
+  "fr": "Le macis est l'enveloppe naturelle de la noix de muscade, apprécié pour sa couleur orangée et son parfum délicat dans les tajines de viande et le ras-el-hanout traditionnel du Maroc.",
+  "en": "Mace is the natural outer coating of nutmeg, valued for its orange color and delicate fragrance in meat tagines and complex Moroccan spice blends like ras-el-hanout for festive occasions.",
+  "es": "El macis es la cáscara natural de la nuez moscada, apreciado por su color naranja y su delicada fragancia en tajines de carne y mezclas de especias tradicionales de Marruecos."
+ },
+ "p46": {
+  "ar": "حب الرأس هو بذور طبيعية معروفة في التقاليد المغربية القديمة، تستخدم عادة في الوصفات التقليدية للعناية بالشعر وتحضير المستحضرات الطبيعية التي توارثتها الأجيال في المعشبات المحلية بمدينة القصر الصغير.",
+  "fr": "Les graines de staphisaigre sont des éléments naturels connus dans les traditions marocaines, souvent utilisées dans les préparations capillaires traditionnelles transmises de génération en génération chez l'herboriste local du village.",
+  "en": "Stavesacre seeds are natural elements known in Moroccan traditions, often used in traditional hair preparations passed down through generations in local herbal shops for various external uses in the community.",
+  "es": "Las semillas de estafisagria son elementos naturales conocidos en las tradiciones marroquíes, a menudo utilizados en preparaciones capilares tradicionales transmitidas de generación en generación en las herboristerías locales del pueblo."
+ },
+ "p128": {
+  "ar": "الثوم الطبيعي يتميز برائحته القوية ونكهته الحادة التي لا غنى عنها في المطبخ المغربي، حيث يضاف إلى الطواجن والمخللات والصلصات لإعطاء عمق ومذاق غني للأطباق التقليدية اليومية المتنوعة.",
+  "fr": "L'ail naturel se distingue par son arôme puissant et son goût vif indispensable dans la cuisine marocaine, utilisé dans les tajines, les marinades et les sauces savoureuses pour les repas.",
+  "en": "Natural garlic is distinguished by its powerful aroma and sharp taste essential in Moroccan cooking, used in tagines, marinades, and savory sauces to provide depth and flavor to daily meals.",
+  "es": "El ajo natural se distingue por su potente aroma y sabor intenso esencial en la cocina marroquí, utilizado en tajines, adobos y salsas sabrosas para aportar profundidad a los platos."
+ },
+ "p193": {
+  "ar": "الحلتيت هو صمغ طبيعي ذو رائحة نفاذة وقوية، يستخدم بكميات صغيرة جدا في التقاليد المغربية القديمة لإضافة نكهة فريدة لبعض الأطباق الخاصة أو في الاستخدامات البخورية التقليدية في المناسبات.",
+  "fr": "L'asa-fœtida est une résine naturelle à l'odeur forte et pénétrante, utilisée en petites quantités dans les traditions marocaines pour aromatiser certains plats spécifiques ou comme encens traditionnel lors des cérémonies.",
+  "en": "Asafoetida is a natural resin with a strong and pungent smell, used in small quantities in Moroccan traditions to flavor specific dishes or as a traditional incense during local ceremonies.",
+  "es": "La asafétida es una resina natural con un olor fuerte y penetrante, utilizada en pequeñas cantidades en las tradiciones marroquíes para aromatizar platos específicos o como incienso tradicional en ceremonias."
+ },
+ "p4": {
+  "ar": "خلطة توابل الدجاج التقليدية تجمع بين نكهات عطرية متوازنة، صممت خصيصا لتتبيل الدجاج المحمر أو الطواجن، مما يمنح اللحم لونا ذهبيا جميلا ومذاقا مغربيا أصيلا لا يقاوم في كل مائدة.",
+  "fr": "Ce mélange traditionnel pour poulet combine des saveurs aromatiques équilibrées, conçu pour mariner le poulet rôti ou les tajines, offrant une belle couleur dorée et un goût authentique aux repas.",
+  "en": "This traditional chicken spice blend combines balanced aromatic flavors, designed for marinating roasted chicken or tagines, providing a beautiful golden color and an authentic Moroccan taste for family meals.",
+  "es": "Esta mezcla tradicional para pollo combina sabores aromáticos equilibrados, diseñada para marinar pollo asado o tajines, aportando un hermoso color dorado y un sabor marroquí auténtico y delicioso."
+ },
+ "p10": {
+  "ar": "خلطة توابل السمك التقليدية تتميز بمزيج من الأعشاب والتوابل التي تناسب المأكولات البحرية، تستخدم في تحضير الشرمولة المغربية لتتبيل السمك المقلي أو المشوي أو طواجن الحوت اللذيذة في المطبخ.",
+  "fr": "Ce mélange traditionnel pour poisson associe des herbes et épices idéales pour les fruits de mer, utilisé dans la chermoula pour assaisonner les poissons frits, grillés ou ragoûts de mer.",
+  "en": "This traditional fish spice blend combines herbs and spices ideal for seafood, used in Moroccan chermoula to season fried or grilled fish and various seafood tagines for a rich flavor.",
+  "es": "Esta mezcla tradicional para pescado combina hierbas y especias ideales para mariscos, utilizada en la chermoula marroquí para sazonar pescados fritos, a la parrilla o guisos de pescado con sabor."
+ },
+ "p7": {
+  "ar": "رأس الحانوت هو مزيج تقليدي فاخر يجمع عشرات التوابل العطرية، يعد ركيزة أساسية في المطبخ المغربي لتحضير أطباق المروزية والكسكس، ويتميز برائحته المعقدة ونكهته الدافئة والعميقة التي تميز الأعياد.",
+  "fr": "Le ras-el-hanout est un mélange traditionnel prestigieux regroupant de nombreuses épices, essentiel pour la mrouzia et le couscous, offrant un arôme complexe et une saveur chaude et profonde aux plats.",
+  "en": "Ras el hanout is a prestigious traditional blend of numerous spices, essential for mrouzia and couscous, offering a complex aroma and a warm, deep flavor characteristic of Moroccan festive cooking.",
+  "es": "El ras el hanout es una mezcla tradicional prestigiosa de numerosas especias, esencial para la mrouzia y el cuscús, ofreciendo un aroma complejo y un sabor cálido y profundo en celebraciones."
+ },
+ "p12": {
+  "ar": "خلطة توابل اللحم التقليدية مكونة من توابل دافئة ومنتقاة بعناية، مثالية لتتبيل لحم الغنم أو البقر في الطواجن والمشويات، مما يضفي نكهة غنية وعميقة للأطباق المغربية التقليدية في كل مناسبة.",
+  "fr": "Ce mélange traditionnel pour viande se compose d'épices chaudes sélectionnées, idéal pour assaisonner l'agneau ou le bœuf dans les tajines et grillades, apportant une saveur riche et profonde aux plats.",
+  "en": "This traditional meat spice blend consists of selected warm spices, ideal for seasoning lamb or beef in tagines and grills, providing a rich and deep flavor to classic Moroccan dishes.",
+  "es": "Esta mezcla tradicional para carne consiste en especias cálidas seleccionadas, ideal para sazonar cordero o ternera en tajines y parrilladas, aportando un sabor rico y profundo a los platos tradicionales."
+ },
+ "p226": {
+  "ar": "خلطة البيت التقليدية هي مزيج خاص من التوابل العطرية المتنوعة، تستخدم بشكل يومي في المطبخ المغربي لتنكيه مختلف الأطباق والشوربات، مما يمنح طعامكم لمسة منزلية أصيلة ومميزة في كل وجبة.",
+  "fr": "Ce mélange maison traditionnel est une association spéciale d'épices aromatiques, utilisée quotidiennement dans la cuisine marocaine pour parfumer divers plats et soupes avec une touche domestique authentique et savoureuse.",
+  "en": "This traditional house blend is a special combination of aromatic spices, used daily in Moroccan cooking to flavor various dishes and soups with an authentic and distinctive homemade touch for families.",
+  "es": "Esta mezcla de la casa tradicional es una combinación especial de especias aromáticas, utilizada diariamente en la cocina marroquí para aromatizar diversos platos y sopas con un toque hogareño auténtico."
+ },
+ "p14": {
+  "ar": "خلطة توابل الحريرة التقليدية تجمع بين المكونات العطرية اللازمة لتحضير الشوربة المغربية الشهيرة، تضفي لونا رائعا ونكهة متوازنة تجعل من الحريرة طبقاً دافئاً ومميزاً في كل مائدة رمضانية أو يومية.",
+  "fr": "Ce mélange traditionnel pour harira réunit les ingrédients aromatiques nécessaires à la célèbre soupe marocaine, apportant une belle couleur et une saveur équilibrée pour un plat réconfortant et très apprécié.",
+  "en": "This traditional harira spice blend combines the aromatic ingredients needed for the famous Moroccan soup, providing a beautiful color and balanced flavor for a comforting and distinctive meal for everyone.",
+  "es": "Esta mezcla tradicional para harira reúne los ingredientes aromáticos necesarios para la famosa sopa marroquí, aportando un color hermoso y un sabor equilibrado para un plato reconfortante y distintivo."
+ },
+ "p15": {
+  "ar": "مزيج توابل تقليدي غني بالنكهات العطرية مصمم خصيصا لتحضير كفتة اللحم المغربية حيث يضفي طعما مميزا وعمقا فريدا على أطباق المشويات واللحم المفروم في المطبخ المنزلي.",
+  "fr": "Un mélange d'épices traditionnel riche en arômes conçu pour préparer la kefta marocaine, apportant une saveur distinctive et une profondeur unique à vos grillades et viandes hachées.",
+  "en": "A traditional spice blend rich in aromatic notes designed for Moroccan kefta, adding a distinctive flavor and unique depth to your grilled dishes and minced meat recipes.",
+  "es": "Una mezcla de especias tradicional rica en aromas diseñada para la kefta marroquí, aportando un sabor distintivo y una profundidad única a sus platos de carne picada."
+ },
+ "p185": {
+  "ar": "تتبيلة تقليدية متوازنة مخصصة للحوم تمنح الأطباق رائحة زكية ومذاقا شهيا، تستخدم في تتبيل مختلف أنواع اللحوم قبل الطهي لضمان تجربة طعام غنية بالنكهات المغربية الأصيلة.",
+  "fr": "Un assaisonnement traditionnel équilibré pour la viande qui donne aux plats un parfum délicat et un goût savoureux, utilisé pour mariner diverses viandes avant la cuisson traditionnelle.",
+  "en": "A balanced traditional seasoning for meat that gives dishes a delicate aroma and savory taste, used to marinate various meats before cooking for authentic Moroccan flavor.",
+  "es": "Un adobo tradicional equilibrado para carne que aporta a los platos un aroma delicado y un sabor sabroso, utilizado para marinar diversas carnes antes de la cocción."
+ },
+ "p36": {
+  "ar": "عشبة عطرية طبيعية ذات رائحة قوية ومميزة، تستخدم على نطاق واسع في المطبخ المغربي لتتبيل الزيتون، إضافة نكهة للأطباق المطهية، أو تحضير مشروبات دافئة تقليدية ذات طعم فريد.",
+  "fr": "Une herbe aromatique naturelle au parfum puissant et distinctif, largement utilisée dans la cuisine marocaine pour assaisonner les olives, aromatiser les plats mijotés ou préparer des infusions.",
+  "en": "A natural aromatic herb with a strong, distinctive scent, widely used in Moroccan cuisine to season olives, flavor slow-cooked dishes, or prepare traditional warm herbal infusions.",
+  "es": "Una hierba aromática natural con un aroma fuerte y distintivo, muy utilizada en la cocina marroquí para aliñar aceitunas, aromatizar guisos o preparar infusiones tradicionales."
+ },
+ "p35": {
+  "ar": "عشبة طبيعية ذات طابع عطري خاص، تشتهر في التقاليد المغربية بنكهتها الفريدة، وتستخدم غالبا في تحضير مشروبات دافئة تقليدية تضفي لمسة من الأصالة على الجلسات العائلية اليومية.",
+  "fr": "Une herbe naturelle au caractère aromatique particulier, célèbre dans les traditions marocaines pour sa saveur unique, souvent utilisée dans les infusions traditionnelles lors des moments conviviaux.",
+  "en": "A natural herb with a special aromatic character, famous in Moroccan traditions for its unique flavor, often used in traditional warm infusions during daily family gatherings.",
+  "es": "Una hierba natural con un carácter aromático especial, famosa en las tradiciones marroquíes por su sabor único, a menudo utilizada en infusiones tradicionales durante reuniones."
+ },
+ "p143": {
+  "ar": "زهور طبيعية عطرية تتميز برائحتها الهادئة والجميلة، تستخدم في المطبخ المغربي لإضافة لمسة زهرية رقيقة لبعض الحلويات أو لتحضير مشروبات دافئة تضفي أجواء من الهدوء والسكينة.",
+  "fr": "Fleurs de lavande naturelles au parfum doux et floral, utilisées en petite quantité dans certaines pâtisseries et pour préparer des infusions parfumées.",
+  "en": "Natural lavender flowers with a soft floral scent, used in small amounts in some pastries and to prepare fragrant herbal infusions.",
+  "es": "Flores aromáticas naturales con un aroma suave y agradable, utilizadas en la cocina marroquí para añadir una nota floral delicada a dulces o para preparar infusiones."
+ },
+ "p65": {
+  "ar": "زهور طبيعية ذات لون أحمر زاهي وطعم حامض منعش، تستخدم لتحضير مشروبات باردة أو دافئة، وتعد خيارا مثاليا لإضافة لمسة لونية ونكهة مميزة إلى مختلف الوصفات التقليدية.",
+  "fr": "Fleurs naturelles d'un rouge éclatant au goût acidulé rafraîchissant, utilisées pour préparer des boissons froides ou chaudes, idéales pour ajouter une touche de couleur et de saveur.",
+  "en": "Natural flowers with a vibrant red color and a refreshing tart taste, used to prepare cold or hot drinks, ideal for adding a touch of color and flavor.",
+  "es": "Flores naturales de un rojo vibrante y un sabor ácido refrescante, utilizadas para preparar bebidas frías o calientes, ideales para añadir un toque de color y sabor."
+ },
+ "p268": {
+  "ar": "أوراق طبيعية ذات طابع فريد، تستخدم في المطبخ المغربي لإضافة نكهة مميزة للأطباق، وتدخل في تحضير المشروبات الدافئة بفضل قوامها ونكهتها التي تضفي لمسة عصرية على التقاليد القديمة.",
+  "fr": "Feuilles naturelles au caractère unique, utilisées dans la cuisine marocaine pour aromatiser les plats et préparer des infusions, apportant une touche moderne aux traditions culinaires anciennes.",
+  "en": "Natural leaves with a unique character, used in Moroccan cuisine to flavor dishes and prepare warm infusions, adding a modern touch to ancient culinary traditions.",
+  "es": "Hojas naturales con un carácter único, utilizadas en la cocina marroquí para aromatizar platos y preparar infusiones, aportando un toque moderno a las tradiciones culinarias."
+ },
+ "p56": {
+  "ar": "براعم ورد طبيعية ذات رائحة عطرية فواحة، تستخدم في تزيين الحلويات المغربية التقليدية وإضافة نكهة زهرية راقية للمشروبات، مما يمنح الأطباق لمسة جمالية ومذاقا يبعث على البهجة.",
+  "fr": "Boutons de rose naturels au parfum enivrant, utilisés pour décorer les pâtisseries marocaines et aromatiser les boissons, apportant une touche esthétique et une saveur délicate aux préparations.",
+  "en": "Natural rose buds with an intoxicating aroma, used to decorate traditional Moroccan pastries and flavor drinks, giving dishes an aesthetic touch and a delightful taste.",
+  "es": "Capullos de rosa naturales con un aroma embriagador, utilizados para decorar dulces marroquíes y aromatizar bebidas, aportando un toque estético y un sabor delicioso."
+ },
+ "p55": {
+  "ar": "زهور طبيعية صغيرة ذات رائحة عطرية خفيفة، تستخدم في المطبخ المغربي لتحضير مشروبات دافئة تقليدية، وتعتبر جزءا لا يتجزأ من التقاليد العائلية للاستمتاع بلحظات هادئة خلال اليوم.",
+  "fr": "Petites fleurs naturelles au parfum doux et légèrement fruité, utilisées pour préparer des infusions traditionnelles servies en famille après le repas.",
+  "en": "Small natural flowers with a mild aromatic scent, used in Moroccan cuisine to prepare traditional warm infusions, being an integral part of family rituals for quiet moments.",
+  "es": "Pequeñas flores naturales con un aroma suave, utilizadas en la cocina marroquí para preparar infusiones tradicionales, siendo parte integral de los rituales familiares cotidianos."
+ },
+ "p68": {
+  "ar": "أوراق طبيعية عطرية ذات رائحة نفاذة ومميزة، تستخدم في التقاليد المغربية لتطييب بعض الأطباق أو في تحضير خلطات عطرية تقليدية تضفي لمسة من الانتعاش على المشروبات الدافئة.",
+  "fr": "Feuilles naturelles aromatiques au parfum puissant et distinctif, utilisées dans les traditions marocaines pour parfumer certains plats ou préparer des mélanges aromatiques pour les infusions chaudes.",
+  "en": "Natural aromatic leaves with a strong and distinctive scent, used in Moroccan traditions to flavor certain dishes or prepare aromatic blends for warm infusions.",
+  "es": "Hojas naturales aromáticas con un aroma fuerte y distintivo, utilizadas en las tradiciones marroquíes para aromatizar platos o preparar mezclas aromáticas para infusiones."
+ },
+ "p213": {
+  "ar": "مادة طبيعية ذات رائحة خشبية قوية ومميزة، تستخدم في التقاليد المغربية كعنصر عطري في بعض الخلطات التقليدية، وتتميز بطابعها الفريد الذي يعكس أصالة المكونات الطبيعية في المتجر.",
+  "fr": "Produit naturel au parfum boisé puissant et distinctif, utilisé dans les traditions marocaines comme élément aromatique dans certains mélanges, reflétant l'authenticité des ingrédients de notre boutique.",
+  "en": "A natural product with a strong and distinctive woody scent, used in Moroccan traditions as an aromatic element in certain blends, reflecting the authenticity of our ingredients.",
+  "es": "Un producto natural con un aroma amaderado fuerte y distintivo, utilizado en las tradiciones marroquíes como elemento aromático en ciertas mezclas, reflejando la autenticidad de los ingredientes."
+ },
+ "p63": {
+  "ar": "أوراق نعناع طبيعية مجففة بعناية للحفاظ على رائحتها المنعشة، تستخدم في تحضير الشاي المغربي التقليدي وتضفي نكهة غنية ومنعشة على مختلف الأطباق والمشروبات في المطبخ اليومي.",
+  "fr": "Feuilles de menthe naturelle séchées avec soin pour préserver leur parfum rafraîchissant, utilisées pour le thé marocain traditionnel et pour aromatiser divers plats et boissons au quotidien.",
+  "en": "Natural mint leaves carefully dried to preserve their refreshing scent, used for traditional Moroccan tea and to add a rich, fresh flavor to various daily dishes.",
+  "es": "Hojas de menta natural secadas cuidadosamente para preservar su aroma refrescante, utilizadas para el té marroquí tradicional y para añadir un sabor fresco a diversos platos."
+ },
+ "p91": {
+  "ar": "جذور عرق السوس الطبيعية تتميز بمذاقها الحلو والفريد وتستخدم تقليديا في تحضير المشروبات المنعشة والمميزة التي تحظى بشعبية كبيرة في التقاليد المغربية العريقة.",
+  "fr": "Les racines de réglisse naturelles offrent une saveur douce et unique, traditionnellement utilisées pour préparer des boissons rafraîchissantes très appréciées dans les coutumes marocaines authentiques.",
+  "en": "Natural licorice roots offer a sweet and unique flavor, traditionally used to prepare refreshing drinks that are highly appreciated within authentic Moroccan culinary customs.",
+  "es": "Las raíces de regaliz naturales ofrecen un sabor dulce y único, utilizadas tradicionalmente para preparar bebidas refrescantes muy apreciadas en las auténticas costumbres marroquíes."
+ },
+ "p50": {
+  "ar": "قشور الرمان المجففة ذات اللون الداكن والقوام الخشن تستخدم في المطبخ المغربي التقليدي لإضافة نكهة مميزة وصبغة طبيعية في العديد من الوصفات والتحضيرات المنزلية.",
+  "fr": "Les écorces de grenade séchées, à la couleur sombre et à la texture rugueuse, sont utilisées dans la cuisine marocaine pour apporter une saveur distincte et une teinte naturelle.",
+  "en": "Dried pomegranate peels with a dark color and rough texture are used in traditional Moroccan cooking to add a distinct flavor and natural dye to various recipes.",
+  "es": "Las cortezas de granada secas, de color oscuro y textura rugosa, se utilizan en la cocina marroquí para añadir un sabor distintivo y un tinte natural a diversas recetas."
+ },
+ "p62": {
+  "ar": "تتميز أوراق المريمية برائحتها العطرية القوية ونكهتها الترابية الدافئة، وتستخدم في المطبخ المغربي لإضفاء لمسة مميزة على الأطباق المطهية ببطء والمشروبات الساخنة التقليدية.",
+  "fr": "Les feuilles de sauge se distinguent par leur parfum aromatique puissant et leur saveur terreuse, utilisées dans la cuisine marocaine pour parfumer les plats mijotés et les boissons chaudes.",
+  "en": "Sage leaves are distinguished by their strong aromatic scent and warm earthy flavor, used in Moroccan cooking to add a distinct touch to slow-cooked dishes and hot drinks.",
+  "es": "Las hojas de salvia se distinguen por su potente aroma y su cálido sabor terroso, utilizadas en la cocina marroquí para dar un toque distintivo a guisos y bebidas calientes."
+ },
+ "p271": {
+  "ar": "نبات الفراسيون المعروف بمريوت يتميز برائحته القوية وطعمه المر المميز، ويستخدم في التقاليد المغربية لإضافة نكهة فريدة للمشروبات الساخنة والوصفات المنزلية التقليدية.",
+  "fr": "Le marrube, connu sous le nom de mariout, se distingue par son parfum puissant et son goût amer, utilisé dans les traditions marocaines pour aromatiser les boissons et recettes.",
+  "en": "Horehound, known as mariout, is distinguished by its strong scent and distinct bitter taste, used in Moroccan traditions to add a unique flavor to hot drinks and recipes.",
+  "es": "El marrubio, conocido como mariout, se distingue por su potente aroma y su sabor amargo, utilizado en las tradiciones marroquíes para dar un toque único a bebidas y recetas."
+ },
+ "p140": {
+  "ar": "تضفي أوراق المردقوش المجففة نكهة عطرية دافئة تشبه الزعتر، وتعد عنصرا أساسيا في المطبخ المغربي لتتبيل اللحوم والخضروات وإضفاء لمسة مميزة على الأطباق التقليدية.",
+  "fr": "Les feuilles de marjolaine séchées apportent une saveur aromatique chaude proche du thym, essentielles dans la cuisine marocaine pour assaisonner les viandes, légumes et plats traditionnels.",
+  "en": "Dried marjoram leaves provide a warm aromatic flavor similar to thyme, essential in Moroccan cooking for seasoning meats, vegetables, and adding a distinct touch to traditional dishes.",
+  "es": "Las hojas de mejorana secas aportan un sabor aromático cálido similar al tomillo, esenciales en la cocina marroquí para sazonar carnes, verduras y dar un toque distintivo a platos tradicionales."
+ },
+ "p37": {
+  "ar": "تعتبر أوراق الغار المجففة أساسية في المطبخ المغربي، حيث تضفي رائحة عطرية زكية ونكهة عميقة على الطواجن والشوربات واللحوم المطهية ببطء في الأواني الفخارية.",
+  "fr": "Les feuilles de laurier séchées sont essentielles dans la cuisine marocaine, apportant un parfum aromatique et une saveur profonde aux tajines, soupes et viandes mijotées en poterie.",
+  "en": "Dried bay leaves are essential in Moroccan cooking, adding an aromatic scent and deep flavor to tajines, soups, and meats slow-cooked in traditional earthenware pots.",
+  "es": "Las hojas de laurel secas son esenciales en la cocina marroquí, aportando un aroma fragante y un sabor profundo a los tajines, sopas y carnes cocinadas a fuego lento."
+ },
+ "p57": {
+  "ar": "يتميز فليو برائحته النفاذة والمنعشة، وهو عشب عطري يستخدم في المطبخ المغربي لإضفاء نكهة قوية ومميزة على الشوربات التقليدية وبعض أنواع المشروبات الساخنة.",
+  "fr": "Le menthe pouliot se distingue par son parfum puissant et rafraîchissant, une herbe aromatique utilisée dans la cuisine marocaine pour parfumer les soupes traditionnelles et certaines boissons chaudes.",
+  "en": "Pennyroyal is distinguished by its pungent and refreshing scent, an aromatic herb used in Moroccan cooking to add a strong and distinct flavor to traditional soups and drinks.",
+  "es": "El poleo se distingue por su aroma penetrante y refrescante, una hierba aromática utilizada en la cocina marroquí para dar un sabor fuerte y distintivo a sopas y bebidas calientes."
+ },
+ "p20": {
+  "ar": "بذور السمسم الطبيعية ذات القوام المقرمش والنكهة الغنية، تستخدم بكثرة في المطبخ المغربي لتزيين المخبوزات التقليدية وإضافة نكهة مميزة للحلويات والأطباق المغربية الأصيلة.",
+  "fr": "Les graines de sésame naturelles, au croquant et à la saveur riche, sont utilisées dans la cuisine marocaine pour décorer les pâtisseries et enrichir les desserts et plats traditionnels.",
+  "en": "Natural sesame seeds with a crunchy texture and rich flavor are used in Moroccan cooking to garnish traditional pastries and add a distinct taste to authentic desserts and dishes.",
+  "es": "Las semillas de sésamo naturales, de textura crujiente y sabor rico, se utilizan en la cocina marroquí para decorar pasteles y añadir un toque distintivo a postres y platos tradicionales."
+ },
+ "p26": {
+  "ar": "تتميز هذه الفواكه المجففة بطعمها الحلو الطبيعي وقوامها الطري، وتدخل في تحضير أطباق الطاجين المغربي والكسكس والمخبوزات التقليدية لتضفي نكهة متوازنة ولذيذة.",
+  "fr": "Ces fruits secs au goût naturellement sucré et à la texture tendre enrichissent les tajines marocains, le couscous et les pâtisseries traditionnelles avec une note douce.",
+  "en": "These naturally sweet dried fruits with a tender texture add a delicious fruity note to Moroccan tagines, savoury couscous dishes, and traditional sweet pastries.",
+  "es": "Estas frutas secas de sabor naturalmente dulce y textura tierna añaden un toque delicioso a los tajines marroquíes, al cuscús y a la repostería tradicional."
+ },
+ "p44": {
+  "ar": "تمتاز بذور الكتان برائحتها الخفيفة ونكهتها الشبيهة بالمكسرات، وتستخدم في إعداد الخبز المغربي التقليدي وحرشة الشعير، كما تضاف إلى مختلف المخبوزات والشوربات.",
+  "fr": "Les graines de lin possèdent un parfum subtil et une note de noisette, idéales pour enrichir le pain marocain traditionnel, la harcha et diverses préparations boulangères.",
+  "en": "Flaxseeds have a subtle aroma and a nutty flavour, making them ideal for enriching traditional Moroccan bread, harcha, and various baked goods or soups.",
+  "es": "Las semillas de lino poseen un aroma sutil y un sabor a nuez, ideales para enriquecer el pan tradicional marroquí, la harcha y diversas elaboraciones de panadería."
+ },
+ "p90": {
+  "ar": "يتميز العدس الأحمر بلونه المشرق وسرعة طهيه، ويعد مكونا رائعا للشوربات المغربية الدافئة ولحساء البيصارة والمقبلات التقليدية التي تتطلب قواما ناعما ونكهة غنية.",
+  "fr": "Ces lentilles corail à la couleur vive cuisent rapidement, apportant une texture onctueuse et une saveur douce aux soupes marocaines, veloutés et plats mijotés traditionnels.",
+  "en": "These vibrant red lentils cook quickly, bringing a smooth texture and mild flavour to warm Moroccan soups, traditional stews, and comforting purées.",
+  "es": "Estas lentejas rojas de color vivo se cocinan rápidamente, aportando una textura suave y un sabor delicado a las sopas marroquíes, cremas y guisos tradicionales."
+ },
+ "p16": {
+  "ar": "تتميز حبات اللوز بنكهتها الغنية وقوامها المقرمش، وتعتبر مكونا أساسيا في تحضير الحلويات المغربية ككعب الغزال وفي تزيين أطباق الطاجين والبسطلة الفاخرة.",
+  "fr": "Ces amandes au goût riche et à la texture croquante sont incontournables dans la pâtisserie marocaine comme les cornes de gazelle et le décor des tajines.",
+  "en": "Featuring a rich flavour and crunchy texture, these almonds are an essential ingredient in Moroccan pastries such as gazelle horns and savory tagine garnishes.",
+  "es": "Estas almendras de sabor rico y textura crujiente son indispensables en la repostería marroquí como los cuernos de gazela y en la decoración de tajines."
+ },
+ "p76": {
+  "ar": "تتميز بذور اليقطين بنكهتها المحمصة اللذيذة ولونها الأخضر الجذاب، وتستخدم في تزيين المخبوزات والسلاطات أو تؤكل كوجبة خفيفة ومقرمشة في التقاليد المغربية.",
+  "fr": "Les graines de courge offrent une saveur délicatement torréfiée et une couleur verte, parfaites pour agrémenter les pains, salades ou à déguster comme encas croquant.",
+  "en": "Pumpkin seeds offer a delicately roasted flavour and bright green colour, perfect for topping homemade breads, fresh salads, or enjoying as a crunchy traditional snack.",
+  "es": "Las semillas de calabaza ofrecen un sabor delicadamente tostado y un color verde, perfectas para espolvorear sobre panes, ensaladas o disfrutar como aperitivo crujiente."
+ },
+ "p47": {
+  "ar": "تمتاز بذور الرشاد بطعمها الحاد الشبيه بالحار، وتستخدم في المطبخ المغربي التقليدي لإضافة نكهة مميزة إلى الشوربات والحساء الساخن والمشروبات الدافئة.",
+  "fr": "Les graines de cresson possèdent une saveur piquante et peppery, traditionnellement utilisées dans la cuisine marocaine pour relever les soupes, bouillons et boissons chaudes.",
+  "en": "Garden cress seeds have a distinctive peppery bite, traditionally used in Moroccan cuisine to bring a warm spicy kick to rich soups, broths, and hot beverages.",
+  "es": "Las semillas de berro tienen un sabor picante característico, utilizadas tradicionalmente en la cocina marroquí para dar un toque especiado a sopas, caldos y bebidas calientes."
+ },
+ "p45": {
+  "ar": "تتميز بذور الصويا بقوامها الصلب ونكهتها المحايدة اللطيفة، وتستخدم في إعداد أطباق الحبوب المتنوعة والمخبوزات الشائعة أو طحنها لإضافتها إلى الخلطات التقليدية.",
+  "fr": "Les graines de soja possèdent une texture ferme et un goût neutre, idéales pour accompagner divers plats de céréales, mélanges moulus et recettes boulangères traditionnelles.",
+  "en": "Soybeans feature a firm texture and mild neutral flavour, perfect for adding to grain dishes, ground spice mixes, or various traditional baking recipes.",
+  "es": "Las semillas de soja presentan una textura firme y un sabor suave, ideales para incorporar en platos de cereales, mezclas molidas y elaboraciones tradicionales de panadería."
+ },
+ "p17": {
+  "ar": "يمتاز الجوز بنكهته الترابية الغنية وقوامه المقرمش، ويستخدم بكثرة في المخبوزات المغربية والحلويات التقليدية، بالإضافة إلى تزيين أطباق الطاجين والسلاطات.",
+  "fr": "Les noix offrent une saveur boisée et une texture croquante, couramment utilisées dans les gâteaux marocains, la pâtisserie traditionnelle et pour garnir les tajines.",
+  "en": "Walnuts deliver a rich earthy flavour and satisfying crunch, making them popular in traditional Moroccan pastries, artisan breads, and savory tagine garnishes.",
+  "es": "Las nueces ofrecen un sabor denso a frutos secos y una textura crujiente, muy empleadas en la repostería marroquí tradicional, panes y para decorar tajines."
+ },
+ "p267": {
+  "ar": "تتميز قشور السيليوم بقوامها الخفيف وقدرتها على امتصاص السوائل، وتستخدم في إعداد أنواع الخبز التقليدي الخالي من الغلوتين ولمنح المخبوزات قواما طريا ومتماسكا.",
+  "fr": "Le son de psyllium se distingue par sa texture légère et sa capacité d absorption, idéal pour la cuisson des pains traditionnels et pour l liant des pâtes.",
+  "en": "Psyllium husk is known for its light texture and binding qualities, widely used in traditional gluten-free baking to give bread a soft and cohesive structure.",
+  "es": "La cáscara de psyllium se caracteriza por su textura ligera y capacidad ligante, muy utilizada en la elaboración de panes tradicionales y recetas de repostería."
+ },
+ "p41": {
+  "ar": "يتميز حب العزيز بنكهته الحلوة الشبيهة بالمكسرات وقوامه المقرمش، ويؤكل طازجا أو مجففا كما يدخل في تحضير المشروبات التقليدية والخلطات العطرية للمخبوزات.",
+  "fr": "Le souchet se caractérise par sa saveur naturellement sucrée de noisette, consommé sec ou réhydraté, et sert dans la préparation de boissons et pâtisseries traditionnelles.",
+  "en": "Tiger nuts feature a naturally sweet, nutty flavor and chewy texture, enjoyed raw or soaked, and used in traditional sweet drinks and regional confectionery.",
+  "es": "La chufa destaca por su sabor naturalmente dulce a nuez y su textura crujiente, consumida seca o hidratada, e integrada en bebidas y dulces tradicionales."
+ },
+ "p25": {
+  "ar": "تمتاز هذه الفواكه المجففة الممتازة بحجمها الكبير وحلاوتها الغنية، وتستعمل في الأطباق المغربية الفاخرة مثل طاجين اللحم بالمشمش والزبيب والكسكس الحلو.",
+  "fr": "Ces raisins secs de qualité supérieure se distinguent par leur grosseur et douceur, idéaux pour les tajines raffinés et le couscous sucré traditionnels.",
+  "en": "These premium raisins are distinguished by their plump size and rich sweetness, perfect for celebratory Moroccan tagines, sweet couscous, and specialty baked goods.",
+  "es": "Estas pasas de calidad superior destacan por su tamaño grande y dulzura intensa, ideales para tajines festivos marroquíes, cuscús dulce y repostería especial."
+ },
+ "p21": {
+  "ar": "تمتاز بذور السمسم الممتازة بنكهتها المحمصة العطرة، وتعتبر عنصرا رئيسا في تحضير حلوية الشباكية المغربية والسلّو والمخبوزات التقليدية التي تزين الموائد.",
+  "fr": "Ces graines de sésame supérieures offrent un arôme torréfié intense, indispensables pour la confection de la chebakia, du sellou et divers pains traditionnels marocains.",
+  "en": "These premium sesame seeds deliver an intense nutty aroma, essential for preparing traditional Moroccan chebakia pastries, festive sellou, and decorative bread toppings.",
+  "es": "Estas semillas de sésamo superiores aportan un intenso aroma tostado, esenciales para la elaboración de la chebakia marroquí, el sellou y panes tradicionales."
+ },
+ "p94": {
+  "ar": "بذور طبيعية صغيرة تستخدم في المخبوزات التقليدية والحديثة لتعديل القوام وإضافة ملمس خاص للعجائن المختلفة وتعد عنصرا أساسيا في تحضير أنواع متنوعة من الخبز المنزلي.",
+  "fr": "Graines naturelles utilisées dans la boulangerie traditionnelle pour ajuster la texture des pâtes et apporter une consistance particulière aux préparations de pains faits maison à Ksar Sghir.",
+  "en": "Natural seeds used in traditional baking to adjust dough texture and provide a specific consistency to various homemade bread preparations and modern pastry recipes in Morocco.",
+  "es": "Semillas naturales utilizadas en la panadería tradicional para ajustar la textura de las masas y aportar una consistencia particular a las preparaciones de pan casero en Marruecos."
+ },
+ "p131": {
+  "ar": "مسحوق أساسي لتحضير الحلويات المغربية التقليدية مثل الغريبة والفقاص حيث يساعد على رفع العجين ومنحه قواما خفيفا وهشا يضمن نجاح الوصفات المنزلية في كل مرة.",
+  "fr": "Poudre essentielle pour la pâtisserie marocaine traditionnelle comme la ghriba permettant de faire lever la pâte et d'obtenir une texture légère et aérée pour vos gâteaux.",
+  "en": "Essential powder for traditional Moroccan pastries like ghriba helping the dough rise and achieve a light airy texture for all your homemade cake and biscuit recipes.",
+  "es": "Polvo esencial para la repostería tradicional marroquí como la ghriba permitiendo que la masa suba y obtenga una textura ligera y aireada para todos sus pasteles caseros."
+ },
+ "p135": {
+  "ar": "سائل عطري بعبير الزهور البيضاء يستخدم في تعطير الحلويات المغربية التقليدية والشاي بالنعناع ويضيف نكهة مميزة ومنعشة لمختلف الأطباق والمشروبات في المناسبات العائلية الخاصة ببلادنا.",
+  "fr": "Liquide aromatique au parfum de fleurs blanches utilisé pour parfumer les pâtisseries marocaines et le thé à la menthe apportant une note florale délicate aux recettes traditionnelles.",
+  "en": "Aromatic liquid with a white flower scent used to flavor Moroccan pastries and mint tea adding a delicate floral note to traditional recipes and festive family drinks.",
+  "es": "Líquido aromático con aroma de flores blancas utilizado para perfumar la repostería marroquí y el té con menta aportando una nota floral delicada a las recetas tradicionales."
+ },
+ "p223": {
+  "ar": "سائل طبيعي ذو رائحة زهرية نفاذة يستعمل في المطبخ المغربي لتعطير الحلويات والسلطات الباردة ويعد عنصرا تقليديا يضفي لمسة من الرقي على الأطباق المقدمة في المناسبات.",
+  "fr": "Liquide naturel au parfum floral intense utilisé dans la cuisine marocaine pour aromatiser les pâtisseries et salades froides apportant une touche de raffinement aux plats traditionnels.",
+  "en": "Natural liquid with an intense floral scent used in Moroccan cuisine to flavor pastries and cold salads bringing a touch of refinement to traditional dishes and celebrations.",
+  "es": "Líquido natural con un aroma floral intenso utilizado en la cocina marroquí para aromatizar repostería y ensaladas frías aportando un toque de refinamiento a los platos tradicionales."
+ },
+ "p263": {
+  "ar": "مكون ضروري لتحضير الخبز المغربي اليومي والمسمن والبطبوط حيث يضمن تخمير العجين بشكل مثالي للحصول على قوام طري وناعم يعكس تقاليد المخبوزات في منطقة القصر الصغير.",
+  "fr": "Ingrédient indispensable pour la préparation du pain marocain quotidien du msemmen et du batbout assurant une fermentation idéale pour obtenir une mie tendre et une texture moelleuse.",
+  "en": "Indispensable ingredient for preparing daily Moroccan bread msemmen and batbout ensuring ideal fermentation to obtain a tender crumb and soft texture reflecting local baking traditions in Morocco.",
+  "es": "Ingrediente indispensable para la preparación del pan marroquí diario msemmen y batbout asegurando una fermentación ideal para obtener una miga tierna y una textura suave y esponjosa."
+ },
+ "p133": {
+  "ar": "مسحوق رفع العجين في عبوة كبيرة مخصص لتحضير كميات وافرة من الحلويات التقليدية والكعك المنزلي مما يضمن الحصول على قوام هش وخفيف لجميع المخبوزات العائلية المتنوعة.",
+  "fr": "Poudre à lever en grand format destinée à la préparation de grandes quantités de pâtisseries traditionnelles et gâteaux maison garantissant une texture légère pour toutes vos créations.",
+  "en": "Leavening powder in a large format designed for preparing large quantities of traditional pastries and homemade cakes ensuring a light texture for all your diverse family baking.",
+  "es": "Levadura en polvo en formato grande diseñada para la preparación de grandes cantidades de repostería tradicional y pasteles caseros garantizando una textura ligera para todas sus creaciones."
+ },
+ "p138": {
+  "ar": "سكر ناعم جدا يستخدم لتزيين الحلويات المغربية مثل الغريبة وكعب الغزال ويذوب بسهولة ليمنح طبقة بيضاء رقيقة ومذاقا حلوا متوازنا يعزز جمالية الأطباق التقليدية المقدمة.",
+  "fr": "Sucre très fin utilisé pour décorer les pâtisseries marocaines comme la ghriba fondant facilement pour offrir une couche blanche délicate et une saveur sucrée équilibrée aux desserts.",
+  "en": "Very fine sugar used to decorate Moroccan pastries like ghriba melting easily to provide a delicate white layer and a balanced sweet flavor to enhance traditional dessert presentations.",
+  "es": "Azúcar muy fino utilizado para decorar la repostería marroquí como la ghriba fundiéndose fácilmente para ofrecer una capa blanca delicada y un sabor dulce equilibrado a los postres."
+ },
+ "p136": {
+  "ar": "سائل عطري مركز بعبير زهر البرتقال الفواح يستخدم في أرقى الحلويات المغربية والمشروبات التقليدية ليضفي نكهة زهرية عميقة ومميزة تعكس كرم الضيافة في منطقة القصر الصغير.",
+  "fr": "Liquide aromatique concentré au parfum intense de fleur d'oranger utilisé dans les pâtisseries fines et boissons traditionnelles apportant une note florale profonde aux recettes de fête.",
+  "en": "Concentrated aromatic liquid with an intense orange blossom scent used in fine pastries and traditional drinks providing a deep floral note to festive recipes and special occasions.",
+  "es": "Líquido aromático concentrado con aroma intenso de azahar utilizado en la repostería fina y bebidas tradicionales aportando una nota floral profunda a las recetas festivas y ocasiones especiales."
+ },
+ "p31": {
+  "ar": "قوالب ورقية كبيرة الحجم تستخدم لتقديم الحلويات والمخبوزات المغربية بشكل أنيق ومنظم مما يحافظ على شكل الحلوى ويضفي لمسة جمالية على موائد الضيافة في المناسبات المختلفة.",
+  "fr": "Caissettes en papier de grande taille utilisées pour présenter les pâtisseries marocaines de manière élégante préservant la forme des gâteaux tout en décorant vos tables de réception.",
+  "en": "Large paper cases used to present Moroccan pastries elegantly preserving the shape of the cakes while decorating your reception tables for various traditional celebrations and family gatherings.",
+  "es": "Cápsulas de papel de tamaño grande utilizadas para presentar la repostería marroquí de manera elegante preservando la forma de los dulces y decorando sus mesas de recepción tradicionales."
+ },
+ "p156": {
+  "ar": "سائل عطري في عبوة صغيرة بعبير الورد الطبيعي يستخدم لإضافة نكهة زهرية رقيقة للحلويات والمشروبات المغربية التقليدية ويعد مثاليا للاستخدام المنزلي اليومي في تحضير الوصفات العطرية.",
+  "fr": "Liquide aromatique en petit format au parfum de rose utilisé pour ajouter une note florale délicate aux pâtisseries et boissons marocaines traditionnelles lors de vos préparations quotidiennes.",
+  "en": "Aromatic liquid in a small format with a rose scent used to add a delicate floral note to traditional Moroccan pastries and drinks during your daily culinary preparations.",
+  "es": "Líquido aromático en formato pequeño con aroma de rosas utilizado para añadir una nota floral delicada a la repostería y bebidas marroquíes tradicionales en sus preparaciones culinarias diarias."
+ },
+ "p22": {
+  "ar": "جوز هند مبشور ذو قوام ناعم ورائحة استوائية يستخدم في تزيين الحلويات المغربية وتحضير كرات الثلج والبسكويت التقليدي مما يضيف نكهة مميزة وملمسا مقرمشا للمخبوزات المنزلية المتنوعة.",
+  "fr": "Noix de coco râpée à la texture fine et au parfum tropical utilisée pour décorer les pâtisseries marocaines et préparer des biscuits traditionnels apportant une saveur douce.",
+  "en": "Desiccated coconut with a fine texture and tropical scent used to decorate Moroccan pastries and prepare traditional biscuits adding a sweet flavor and crunchy texture to homemade baking.",
+  "es": "Coco rallado de textura fina y aroma tropical utilizado para decorar la repostería marroquí y preparar galletas tradicionales aportando un sabor dulce y una textura crujiente al hornear."
+ },
+ "p30": {
+  "ar": "قوالب ورقية صغيرة الحجم مثالية لتقديم حلويات اللوز والحلويات المغربية التقليدية الصغيرة مما يضمن عرضا مرتبا وجذابا يحافظ على جودة وشكل الحلوى فوق موائد التقديم العصرية.",
+  "fr": "Caissettes en papier de petite taille idéales pour présenter les pâtisseries aux amandes et douceurs traditionnelles marocaines assurant une présentation soignée et attrayante sur vos plateaux.",
+  "en": "Small paper cases ideal for presenting almond pastries and traditional Moroccan sweets ensuring a neat and attractive presentation on your serving trays for guests and family events.",
+  "es": "Cápsulas de papel de tamaño pequeño ideales para presentar repostería de almendra y dulces tradicionales marroquíes asegurando una presentación cuidada y atractiva en sus bandejas de servir."
+ },
+ "p24": {
+  "ar": "زبدة غنية مخصصة لتحضير الحلويات المغربية التقليدية والمخبوزات العصرية حيث تمنح العجين قواما طريا ونكهة دسمة مميزة تجعل الفطائر والحلويات لذيذة جدا في كل مناسبة.",
+  "fr": "Ce beurre onctueux est idéal pour la confection des pâtisseries marocaines traditionnelles et des gâteaux modernes apportant une texture fondante et un goût riche aux préparations.",
+  "en": "This rich pastry butter is perfect for preparing traditional Moroccan sweets and modern cakes providing a smooth texture and creamy flavor to all your baked goods.",
+  "es": "Esta mantequilla cremosa es ideal para la elaboración de repostería tradicional marroquí y pasteles modernos aportando una textura suave y un sabor rico a sus preparaciones."
+ },
+ "p28": {
+  "ar": "حبيبات شوكولاتة صغيرة تستخدم لتزيين الحلويات والكعك والمخبوزات حيث تضفي لمسة جمالية ونكهة حلوة محببة على الأطباق التقليدية والعصرية التي تقدم في المناسبات العائلية المختلفة.",
+  "fr": "Ces vermicelles de chocolat apportent une touche décorative et une saveur sucrée aux gâteaux et biscuits traditionnels marocains lors des fêtes et des moments de partage.",
+  "en": "These chocolate sprinkles add a decorative touch and sweet flavor to traditional Moroccan cakes and biscuits during festive celebrations and family gatherings in the kitchen.",
+  "es": "Estos fideos de chocolate aportan un toque decorativo y un sabor dulce a los pasteles y galletas tradicionales marroquíes durante las celebraciones y momentos familiares."
+ },
+ "p29": {
+  "ar": "فواكه مسكرة ملونة تستخدم في تزيين الحلويات المغربية والكعك والمخبوزات حيث تضفي ألوانا زاهية وقواما مطاطيا حلوا يعزز جمالية الأطباق التقليدية المقدمة في المناسبات السعيدة.",
+  "fr": "Ces fruits confits colorés sont utilisés pour décorer les pâtisseries marocaines et les cakes apportant des couleurs vives et une texture moelleuse aux desserts de fête.",
+  "en": "These colorful candied fruits are used to decorate Moroccan pastries and cakes adding bright colors and a chewy texture to traditional desserts served during special occasions.",
+  "es": "Estas frutas confitadas de colores se utilizan para decorar la repostería marroquí y los bizcochos aportando colores vivos y una textura suave a los postres festivos."
+ },
+ "p137": {
+  "ar": "مسحوق أبيض يستخدم في المطبخ لرفع العجين وتحسين قوام المخبوزات والحلويات كما يستعمل في تنظيف الخضروات والفواكه بطريقة تقليدية فعالة للحفاظ على جودة المكونات الغذائية.",
+  "fr": "Cette poudre blanche est utilisée en cuisine pour faire lever les pâtes et améliorer la texture des gâteaux ainsi que pour nettoyer les fruits et légumes.",
+  "en": "This white powder is used in the kitchen to help dough rise and improve the texture of cakes as well as for cleaning fruits and vegetables.",
+  "es": "Este polvo blanco se utiliza en la cocina para levar masas y mejorar la textura de los pasteles así como para limpiar frutas y verduras de forma tradicional."
+ },
+ "p54": {
+  "ar": "قهوة مطحونة بعناية تتميز برائحة قوية ونكهة عميقة تستخدم لتحضير القهوة المغربية التقليدية مع التوابل أو بدونها لتقديم مشروب دافئ ومنعش في الصباح والمساء.",
+  "fr": "Ce café moulu dégage un arôme intense et une saveur profonde idéal pour préparer le café marocain traditionnel nature ou épicé pour les moments de détente.",
+  "en": "Ground coffee with an intense aroma and deep flavour, for traditional Moroccan coffee served plain or with spices, at breakfast or with guests.",
+  "es": "Este café molido ofrece un aroma intenso y un sabor profundo ideal para preparar el café marroquí tradicional solo o con especias para momentos de relajación."
+ },
+ "p278": {
+  "ar": "خل سائل يستخدم في تتبيل السلطات المغربية وتحضير الصلصات المتنوعة كما يستعمل في غسل الخضروات وتنظيف المطبخ بطريقة تقليدية تضمن النظافة والجودة في كل منزل.",
+  "fr": "Ce vinaigre liquide est utilisé pour assaisonner les salades marocaines et préparer diverses sauces ainsi que pour le nettoyage traditionnel de la cuisine et des légumes.",
+  "en": "This liquid vinegar is used to season Moroccan salads and prepare various sauces as well as for the traditional cleaning of the kitchen and fresh vegetables.",
+  "es": "Este vinagre líquido se utiliza para aliñar ensaladas marroquíes y preparar diversas salsas así como para la limpieza tradicional de la cocina y las verduras frescas."
+ },
+ "p32": {
+  "ar": "عسل طبيعي يتميز بقوام لزوج ونكهة حلوة غنية يستخدم في تحلية الشاي المغربي ودهن الفطائر والحلويات التقليدية مثل الشباكية والمسمن لإضافة لمسة من الحلاوة الطبيعية.",
+  "fr": "Ce miel naturel possède une texture onctueuse et une saveur riche utilisé pour sucrer le thé marocain et napper les crêpes traditionnelles comme le msemen.",
+  "en": "This natural honey has a smooth texture and rich flavor used to sweeten Moroccan tea and coat traditional pancakes like msemen and various festive pastries.",
+  "es": "Esta miel natural tiene una textura suave y un sabor rico utilizada para endulzar el té marroquí y bañar los crepes tradicionales como el msemen."
+ },
+ "p154": {
+  "ar": "خل تفاح سائل يتميز برائحة فاكهية خفيفة ونكهة حامضة يستخدم في تحضير تتبيلات السلطات والصلصات المنزلية لإضافة طعم مميز ومنعش للأطباق الباردة في المطبخ المغربي.",
+  "fr": "Ce vinaigre de cidre possède un arôme fruité et une saveur acide utilisé pour préparer les vinaigrettes et les sauces maison apportant une touche de fraîcheur.",
+  "en": "This apple cider vinegar has a fruity aroma and acidic flavor used to prepare salad dressings and homemade sauces adding a touch of freshness to dishes.",
+  "es": "Este vinagre de manzana tiene un aroma frutado y un sabor ácido utilizado para preparar aliños y salsas caseras aportando un toque de frescura a los platos."
+ },
+ "p153": {
+  "ar": "خل تفاح سائل برائحة فاكهية ونكهة حامضة متوازنة يستخدم في المطبخ لتتبيل السلطات وتحضير المخللات والصلصات المتنوعة مما يضفي طعما منعشا ومميزا على الوجبات اليومية.",
+  "fr": "Ce vinaigre de cidre au parfum fruité et à la saveur acide équilibrée s'utilise en cuisine pour assaisonner les salades et préparer diverses marinades et sauces.",
+  "en": "This apple cider vinegar with a fruity scent and balanced acidic flavor is used in cooking to season salads and prepare various marinades and homemade sauces.",
+  "es": "Este vinagre de manzana con aroma frutado y sabor ácido equilibrado se utiliza en la cocina para aliñar ensaladas y preparar diversos adobos y salsas caseras."
+ },
+ "p132": {
+  "ar": "ملح صخري يتميز بلونه الوردي الجميل وقوامه البلوري يستخدم في تتبيل اللحوم والخضروات والأسماك لإضافة نكهة معدنية خفيفة ولمسة جمالية على الأطباق المغربية والعصرية.",
+  "fr": "Ce sel gemme se distingue par sa couleur rose et sa texture cristalline utilisé pour assaisonner les viandes et légumes apportant une saveur minérale subtile.",
+  "en": "This rock salt is distinguished by its pink color and crystalline texture used to season meats and vegetables providing a subtle mineral flavor to your dishes.",
+  "es": "Esta sal de roca se distingue por su color rosa y su textura cristalina utilizada para sazonar carnes y verduras aportando un sutil sabor mineral."
+ },
+ "p125": {
+  "ar": "ملح طعام أساسي في كل مطبخ يستخدم لتعزيز نكهات الأطباق المغربية المختلفة من طواجن وحساء ومخبوزات حيث يوازن المذاق ويبرز جودة المكونات المستخدمة في الطبخ.",
+  "fr": "Ce sel de cuisine est essentiel pour rehausser les saveurs des plats marocains comme les tajines et les soupes équilibrant le goût de chaque préparation culinaire.",
+  "en": "This cooking salt is essential for enhancing the flavors of Moroccan dishes like tagines and soups balancing the taste of every culinary preparation in the kitchen.",
+  "es": "Esta sal de cocina es esencial para realzar los sabores de los platos marroquíes como tajines y sopas equilibrando el gusto de cada preparación culinaria."
+ },
+ "p61": {
+  "ar": "حبوب لقاح طبيعية تتميز بقوام حبيبي ونكهة زهرية فريدة تستخدم كإضافة للزبادي أو العسل أو العصائر في التقاليد الغذائية المغربية لتزيين الأطباق وإضافة لمسة طبيعية.",
+  "fr": "Ce pollen d'abeille possède une texture granuleuse et une saveur florale unique utilisé comme ajout au yaourt ou au miel dans les traditions alimentaires marocaines.",
+  "en": "This bee pollen has a granular texture and unique floral flavor used as an addition to yogurt or honey in Moroccan food traditions to decorate dishes.",
+  "es": "Este polen de abeja tiene una textura granulada y un sabor floral único utilizado como adición al yogur o la miel en las tradiciones alimentarias marroquíes."
+ },
+ "p53": {
+  "ar": "مزيج تقليدي من القهوة المحمصة مع توابل عطرية دافئة يمنح مشروبك نكهة غنية ومميزة تعكس كرم الضيافة المغربية وتضفي لمسة خاصة على لحظات الاستراحة اليومية في كل الأوقات.",
+  "fr": "Un mélange traditionnel de café torréfié aux épices aromatiques chaudes offrant une saveur riche et distinctive qui reflète l hospitalité marocaine pour vos moments de pause au quotidien.",
+  "en": "A traditional blend of roasted coffee with warm aromatic spices offering a rich and distinctive flavor that reflects Moroccan hospitality for your daily coffee break moments.",
+  "es": "Una mezcla tradicional de café tostado con especias aromáticas cálidas que ofrece un sabor rico y distintivo que refleja la hospitalidad marroquí para sus momentos de pausa diaria."
+ },
+ "p72": {
+  "ar": "ثمار القبار الطبيعية ذات المذاق الحامض والمالح تعزز نكهة الأطباق المغربية التقليدية مثل السلطات والطواجن وتضيف لمسة مميزة من التوازن والعمق لكل وصفة تحضرها في مطبخك.",
+  "fr": "Les câpres naturelles au goût acidulé et salé rehaussent les plats marocains traditionnels comme les salades et les tajines en ajoutant une touche d équilibre à vos recettes.",
+  "en": "Natural capers with a tangy and salty taste enhance traditional Moroccan dishes like salads and tagines by adding a touch of balance to your kitchen recipes.",
+  "es": "Las alcaparras naturales de sabor ácido y salado realzan los platos tradicionales marroquíes como ensaladas y tajines añadiendo un toque de equilibrio a sus recetas de cocina."
+ },
+ "p34": {
+  "ar": "عسل طبيعي يتميز بقوام كثيف ولون ذهبي جذاب ونكهة غنية مستمدة من رحيق الأزهار المتنوعة يستخدم في تحضير الحلويات المغربية التقليدية أو يقدم كجزء أساسي من وجبة الإفطار.",
+  "fr": "Miel naturel à la texture épaisse et à la couleur dorée riche en arômes floraux utilisé dans la pâtisserie marocaine traditionnelle ou servi lors du petit déjeuner.",
+  "en": "Natural honey with a thick texture and golden color rich in floral aromas used in traditional Moroccan pastries or served as an essential part of breakfast.",
+  "es": "Miel natural de textura espesa y color dorado rica en aromas florales utilizada en la repostería tradicional marroquí o servida como parte esencial del desayuno."
+ },
+ "p33": {
+  "ar": "عسل طبيعي ذو قوام متماسك ونكهة متوازنة يضيف حلاوة طبيعية للأطباق والمشروبات المغربية التقليدية ويعد خيارا مثاليا للاستمتاع به مع الخبز الطازج في وجبات الصباح أو المساء.",
+  "fr": "Miel naturel à la texture onctueuse et au goût équilibré ajoutant une douceur naturelle aux plats marocains traditionnels idéal pour accompagner le pain frais au quotidien.",
+  "en": "Natural honey with a smooth texture and balanced taste adding natural sweetness to traditional Moroccan dishes ideal for enjoying with fresh bread at any time.",
+  "es": "Miel natural de textura suave y sabor equilibrado que añade dulzor natural a los platos tradicionales marroquíes ideal para disfrutar con pan fresco en cualquier momento."
+ },
+ "p163": {
+  "ar": "مسحوق حناء تمزورين الطبيعي يتميز بلونه الغني وقوامه الناعم يستخدم في النقوش التقليدية المغربية على اليدين والقدمين خلال المناسبات والأعياد ليضفي لمسة جمالية أصيلة وتراثية مميزة.",
+  "fr": "La poudre de henné Tamzourine se distingue par sa couleur riche et sa texture fine utilisée pour les motifs traditionnels marocains lors des fêtes et célébrations.",
+  "en": "Tamzourine henna powder features a rich color and fine texture used for traditional Moroccan patterns during celebrations and holidays to add an authentic aesthetic touch.",
+  "es": "El polvo de henna Tamzourine destaca por su color rico y textura fina utilizado para los patrones tradicionales marroquíes durante celebraciones y fiestas con un toque auténtico."
+ },
+ "p194": {
+  "ar": "الصابون البلدي التقليدي بقوامه الكريمي ولونه الداكن يستخلص من زيت الزيتون الطبيعي ويستخدم في طقوس الحمام المغربي لترك البشرة ناعمة ومنتعشة بفضل خصائصه التقليدية العريقة والمميزة.",
+  "fr": "Le savon noir beldi à la texture crémeuse et couleur sombre est issu de l huile d olive naturelle utilisé dans les rituels du hammam marocain traditionnel.",
+  "en": "Traditional black beldi soap with a creamy texture and dark color is derived from natural olive oil used in traditional Moroccan hammam rituals for soft skin.",
+  "es": "El jabón negro beldi de textura cremosa y color oscuro se obtiene del aceite de oliva natural utilizado en los rituales del hammam tradicional marroquí."
+ },
+ "p160": {
+  "ar": "زيت الأعشاب الطبيعي يجمع بين خلاصة نباتات متنوعة ذات رائحة عطرية فواحة يستخدم في العناية التقليدية بالشعر والجسم ليعزز من نعومته ولمعانه بفضل تركيبته الغنية والمستوحاة من التراث.",
+  "fr": "L huile aux herbes naturelle combine des extraits de plantes aux arômes parfumés utilisée pour le soin traditionnel des cheveux et du corps afin d apporter douceur.",
+  "en": "Natural herbal oil combines extracts of various plants with fragrant aromas used for traditional hair and body care to enhance softness and shine with its rich formula.",
+  "es": "El aceite de hierbas natural combina extractos de varias plantas con aromas fragantes utilizado para el cuidado tradicional del cabello y cuerpo para realzar su suavidad."
+ },
+ "p277": {
+  "ar": "حناء وادي الذهب الطبيعية تتميز بنقاوتها ولونها المميز الذي يمنح نقوشا دقيقة وجذابة تستخدم في المناسبات والاحتفالات المغربية التقليدية لإضفاء لمسة من الأناقة والتراث العريق على اليدين.",
+  "fr": "Le henné Oued Eddahab naturel se distingue par sa pureté et sa couleur permettant des motifs précis utilisés lors des fêtes marocaines pour une élégance traditionnelle.",
+  "en": "Natural Oued Eddahab henna is distinguished by its purity and unique color allowing for precise patterns used during Moroccan celebrations for traditional elegance and style.",
+  "es": "La henna natural Oued Eddahab se distingue por su pureza y color único permitiendo patrones precisos utilizados durante las celebraciones marroquíes para una elegancia tradicional."
+ },
+ "p208": {
+  "ar": "كيس حناء طبيعية مطحونة بعناية فائقة للحفاظ على جودتها ولونها الغني تستخدم في التقاليد المغربية العريقة لتزيين اليدين والقدمين بنقوش فنية تضفي جمالا وأناقة في مختلف المناسبات.",
+  "fr": "Sachet de henné naturel moulu avec soin pour préserver sa qualité et sa couleur riche utilisé dans les traditions marocaines pour décorer les mains et pieds.",
+  "en": "A sachet of natural henna ground with care to preserve its quality and rich color used in Moroccan traditions to decorate hands and feet with patterns.",
+  "es": "Un sobre de henna natural molida con cuidado para preservar su calidad y color rico utilizado en las tradiciones marroquíes para decorar manos y pies con patrones."
+ },
+ "p175": {
+  "ar": "مسحوق الحناء الطبيعي المطحون ناعما يتميز بلونه الجذاب ورائحته العشبية الخفيفة يستخدم في الطقوس المغربية التقليدية لتزيين البشرة بنقوش فنية تعكس التراث والجمال في كل المناسبات والاحتفالات.",
+  "fr": "La poudre de henné naturel finement moulue se distingue par sa couleur attrayante et son parfum herbacé léger utilisée dans les rituels marocains pour décorer la peau.",
+  "en": "Finely ground natural henna powder features an attractive color and light herbal scent used in traditional Moroccan rituals to decorate the skin with artistic patterns.",
+  "es": "El polvo de henna natural finamente molido destaca por su color atractivo y ligero aroma herbáceo utilizado en los rituales marroquíes para decorar la piel con patrones."
+ },
+ "p162": {
+  "ar": "زيت الأعشاب الممتاز بتركيبته المركزة من أجود النباتات الطبيعية يمنح شعرك وبشرتك عناية تقليدية فائقة بفضل رائحته العطرية الغنية التي تعكس أصالة وعراقة التقاليد المغربية في العناية الشخصية.",
+  "fr": "L huile aux herbes premium avec sa formule concentrée de plantes naturelles offre à vos cheveux et votre peau un soin traditionnel grâce à son parfum riche.",
+  "en": "Premium herbal oil with its concentrated formula of natural plants offers your hair and skin superior traditional care thanks to its rich aromatic scent.",
+  "es": "El aceite de hierbas premium con su fórmula concentrada de plantas naturales ofrece a su cabello y piel un cuidado tradicional superior gracias a su rico aroma."
+ },
+ "p51": {
+  "ar": "مسحوق السدر الطبيعي يتميز بقوامه الناعم ورائحته العشبية الهادئة يستخدم في التقاليد المغربية للعناية بالشعر والجسم ويعد عنصرا أساسيا في الوصفات التقليدية التي تعتمد على المكونات الطبيعية البسيطة.",
+  "fr": "La poudre de sidr naturelle se distingue par sa texture fine et son parfum herbacé doux utilisée dans les traditions marocaines pour le soin des cheveux.",
+  "en": "Natural sidr powder features a fine texture and mild herbal scent used in Moroccan traditions for hair and body care as an essential element in recipes.",
+  "es": "El polvo de sidr natural destaca por su textura fina y suave aroma herbáceo utilizado en las tradiciones marroquíes para el cuidado del cabello y cuerpo."
+ },
+ "p227": {
+  "ar": "مسحوق أحمر تقليدي من فاس معروف في طقوس الجمال المغربية القديمة، يُستعمل لإضفاء لون وردي طبيعي على الوجنتين والشفتين.",
+  "fr": "Poudre rouge traditionnelle de Fès, connue des rituels de beauté marocains anciens, utilisée pour donner une teinte rosée aux joues et aux lèvres.",
+  "en": "A traditional red powder from Fez, known in old Moroccan beauty rituals, used to give a rosy tint to the cheeks and lips.",
+  "es": "Polvo rojo tradicional de Fez, conocido en los antiguos rituales de belleza marroquíes, usado para dar un tono rosado a las mejillas y los labios."
+ },
+ "p69": {
+  "ar": "أقماع جاهزة تحتوي على عجينة الحناء الطبيعية، مصممة لتسهيل رسم النقوش والزخارف التقليدية المعقدة على اليدين والقدمين خلال المناسبات والأعراس المغربية بلمسة فنية دقيقة تعكس التراث العريق.",
+  "fr": "Ces cônes prêts à l'emploi contiennent une pâte de henné naturel pour dessiner des motifs traditionnels complexes sur les mains et les pieds lors des célébrations et mariages.",
+  "en": "These ready to use cones contain natural henna paste designed for drawing intricate traditional patterns on hands and feet during Moroccan celebrations and festive wedding ceremonies with artistic precision.",
+  "es": "Estos conos listos para usar contienen pasta de henna natural para crear diseños tradicionales complejos en manos y pies durante las celebraciones y bodas en Marruecos con precisión."
+ },
+ "p205": {
+  "ar": "طين طبيعي ناعم يستعمل تقليديًّا في الحمّام المغربي لغسل البشرة والشعر، يُخلط بالماء أو بماء الورد فيصير عجينة ناعمة ذات رائحة ترابية خفيفة.",
+  "fr": "Cette argile minérale naturelle est utilisée traditionnellement dans le hammam marocain pour nettoyer la peau et les cheveux, offrant une texture douce et un parfum terreux léger et rafraîchissant.",
+  "en": "This natural mineral clay is traditionally used in the Moroccan hammam to cleanse the skin and hair, featuring a smooth texture and a light earthy scent for freshness.",
+  "es": "Esta arcilla mineral natural se utiliza tradicionalmente en el hammam marroquí para limpiar la piel y el cabello, con una textura suave y un aroma terroso muy refrescante."
+ },
+ "p176": {
+  "ar": "عود طبيعي مستخلص من شجرة الأراك، يستخدم تقليديا في الثقافة العربية لتنظيف الأسنان وتطييب رائحة الفم، ويتميز بألياف طبيعية ناعمة تضمن عناية تقليدية فعالة وبسيطة تعكس العادات القديمة.",
+  "fr": "Ce bâtonnet naturel issu de l'arbre Salvadora persica est utilisé traditionnellement pour nettoyer les dents et rafraîchir l'haleine, offrant une méthode de soin ancestrale et simple au quotidien.",
+  "en": "This natural stick from the Salvadora persica tree is traditionally used to clean teeth and freshen breath, providing a simple and ancestral method of oral care and hygiene.",
+  "es": "Esta rama natural del árbol Salvadora persica se utiliza tradicionalmente para limpiar los dientes y refrescar el aliento, ofreciendo un método de cuidado ancestral y sencillo para todos."
+ },
+ "p126": {
+  "ar": "حجر الشبّة الطبيعي الشفاف، يُستعمل تقليديًّا في المغرب بعد الحلاقة وفي طقوس الحمّام، ويتميّز بملمس ناعم وبلّوري.",
+  "fr": "Cette pierre minérale naturelle et transparente est utilisée traditionnellement au Maroc après le rasage ou au hammam pour ses propriétés astringentes et sa sensation de fraîcheur sur la peau.",
+  "en": "This natural transparent mineral stone is traditionally used in Morocco after shaving or during hammam rituals for its astringent properties and its cooling effect on the skin after use.",
+  "es": "Esta piedra mineral natural y transparente se utiliza tradicionalmente en Marruecos después del afeitado o en el hammam por sus propiedades astringentes y su sensación refrescante en la piel."
+ },
+ "p198": {
+  "ar": "صابون تقليدي داكن القوام محضر من زيت الزيتون والأعشاب العطرية، يستخدم في الحمام المغربي لتقشير البشرة وتنعيمها، مما يمنح تجربة استحمام أصيلة برائحة الأعشاب المنعشة التي تدوم طويلا.",
+  "fr": "Ce savon traditionnel à base d'huile d'olive et d'herbes aromatiques est utilisé au hammam pour exfolier la peau, offrant une expérience authentique aux senteurs herbacées fraîches et agréables.",
+  "en": "This traditional soap made from olive oil and aromatic herbs is used in the hammam to exfoliate the skin, providing an authentic experience with fresh herbal scents and textures.",
+  "es": "Este jabón tradicional elaborado con aceite de oliva y hierbas aromáticas se utiliza en el hammam para exfoliar la piel, ofreciendo una experiencia auténtica con aromas herbales muy frescos."
+ },
+ "p211": {
+  "ar": "مسحوق أزرق تقليدي معروف في طقوس الحمّام والجمال المغربية، يُخلط عادةً مع مواد أخرى لتحضير الأقنعة التقليدية، ويتميز بلونه الأزرق النيلي العميق.",
+  "fr": "Poudre bleue traditionnelle connue dans les rituels du hammam et de beauté marocains, souvent mélangée à d'autres ingrédients pour préparer des masques traditionnels, d'un bleu indigo profond.",
+  "en": "A traditional blue powder known in Moroccan hammam and beauty rituals, usually mixed with other ingredients to prepare traditional masks, with a deep indigo-blue colour.",
+  "es": "Polvo azul tradicional conocido en los rituales de hammam y belleza marroquíes, que suele mezclarse con otros ingredientes para preparar mascarillas tradicionales, de un azul índigo intenso."
+ },
+ "p287": {
+  "ar": "مسحوق حناء ناعم يستخدم لتزيين اليدين والقدمين بنقوش تقليدية جميلة، أو لتلوين الشعر طبيعيا، مما يمنح لونا دافئا ولمعانا جذابا يعكس عراقة التقاليد الجمالية المغربية الأصيلة في كل مناسبة.",
+  "fr": "Cette poudre de henné fine est utilisée pour décorer les mains et les pieds ou colorer les cheveux, offrant une teinte chaude et un éclat traditionnel marocain lors des fêtes.",
+  "en": "This fine henna powder is used to decorate hands and feet or color hair naturally, providing a warm tint and a traditional glow reflecting Moroccan beauty traditions and culture.",
+  "es": "Este fino polvo de henna se utiliza para decorar manos y pies o teñir el cabello, aportando un tono cálido y un brillo tradicional de la cultura marroquí auténtica."
+ },
+ "p161": {
+  "ar": "مزيج طبيعي من زيوت نباتية وأعشاب عطرية مختارة، يستخدم تقليديا للعناية بالشعر والبشرة، ويتميز برائحة عشبية دافئة تضفي لمسة من النعومة والحيوية ضمن روتين العناية اليومي المعتاد في المغرب.",
+  "fr": "Mélange traditionnel d'huiles végétales et d'herbes aromatiques, utilisé dans les soins traditionnels des cheveux et de la peau, au parfum herbacé chaud et agréable.",
+  "en": "This natural blend of vegetable oils and aromatic herbs is traditionally used for hair and skin care, featuring a warm herbal scent that provides softness and vitality to the body.",
+  "es": "Esta mezcla natural de aceites vegetales y hierbas aromáticas se utiliza tradicionalmente para el cuidado del cabello y la piel, con un aroma herbal cálido y suavizante para el cuerpo."
+ },
+ "p237": {
+  "ar": "طين أبيض ناعم يستخدم كبديل لطيف للغاسول التقليدي، مثالي لتنظيف البشرة الحساسة في الحمام المغربي، ويتميز بقوام كريمي يترك الجلد ناعما ومنتعشا برائحة معدنية خفيفة جدا تمنح شعورا بالراحة.",
+  "fr": "Cette argile blanche fine est utilisée comme alternative douce au ghassoul traditionnel pour nettoyer la peau au hammam, offrant une texture crémeuse et une sensation de fraîcheur très délicate.",
+  "en": "This fine white clay is used as a gentle alternative to traditional ghassoul for cleansing the skin in the hammam, featuring a creamy texture and fresh feel for delicate care.",
+  "es": "Esta fina arcilla blanca se utiliza como alternativa suave al ghassoul tradicional para limpiar la piel en el hammam, ofreciendo una textura cremosa y una sensación fresca y muy delicada."
+ },
+ "p187": {
+  "ar": "زيت طبيعي مستخلص من ثمار شجرة الأركان، يستخدم تقليديا في المغرب للعناية بالبشرة والشعر، ويتميز بلونه الذهبي ورائحته الخفيفة التي تشبه الجوز، مما يمنح ملمسا ناعما وجذابا يعكس التراث.",
+  "fr": "Cette huile naturelle extraite des fruits de l'arganier est utilisée traditionnellement au Maroc pour le soin du corps, offrant une couleur dorée et un léger parfum de noix très caractéristique.",
+  "en": "This natural oil extracted from argan tree fruits is traditionally used in Morocco for skin and hair care, featuring a golden color and a light nutty aroma for smooth texture.",
+  "es": "Este aceite natural extraído de los frutos del argán se utiliza tradicionalmente en Marruecos para el cuidado corporal, con un color dorado y un ligero aroma a nuez muy característico."
+ },
+ "p86": {
+  "ar": "عطر تقليدي مركز يتميز برائحة دافئة وعميقة تدوم طويلا، يستخدم لتعطير الجسم والملابس أو في المناسبات الخاصة، مما يضفي لمسة من الفخامة والأناقة على التقاليد العطرية المغربية العريقة والجميلة.",
+  "fr": "Ce parfum traditionnel concentré possède une senteur chaude et profonde qui dure longtemps, utilisé pour parfumer le corps ou les vêtements lors des occasions spéciales et festives avec élégance.",
+  "en": "This concentrated traditional fragrance features a warm and deep scent that lasts long, used to perfume the body or clothes during special occasions for a luxurious and elegant touch.",
+  "es": "Esta fragancia tradicional concentrada tiene un aroma cálido y profundo de larga duración, utilizada para perfumar el cuerpo o la ropa en ocasiones especiales con un toque lujoso y elegante."
+ },
+ "p238": {
+  "ar": "أقراص فحم سريعة الاشتعال مصممة خصيصا لحرق البخور والراتنجات الطبيعية، توفر حرارة ثابتة ومستمرة لضمان انتشار الرائحة العطرية في أرجاء المكان بشكل مثالي وهادئ.",
+  "fr": "Disques de charbon à allumage rapide conçus pour brûler l'encens et les résines naturelles, offrant une chaleur constante pour diffuser les arômes dans toute la pièce.",
+  "en": "Quick-lighting charcoal discs designed for burning incense and natural resins, providing consistent heat to ensure the aromatic fragrance spreads perfectly throughout the entire room.",
+  "es": "Discos de carbón de encendido rápido diseñados para quemar incienso y resinas naturales, ofreciendo un calor constante para difundir el aroma por toda la habitación."
+ },
+ "p210": {
+  "ar": "مبخرة تقليدية مصنوعة يدويا تستخدم لحرق البخور والراتنجات، تتميز بتصميمها التراثي الذي يضفي لمسة جمالية وأصالة على طقوس تعطير المنزل في المناسبات واللقاءات العائلية.",
+  "fr": "Brûle-encens traditionnel fabriqué à la main, idéal pour diffuser les résines et l'encens, apportant une touche d'authenticité et d'élégance à vos rituels de parfumage domestique.",
+  "en": "Traditional handcrafted incense burner used for burning incense and resins, featuring a heritage design that adds an authentic touch to home fragrance rituals during gatherings.",
+  "es": "Quemador de incienso tradicional hecho a mano, ideal para quemar resinas e incienso, aportando un toque de autenticidad y elegancia a sus rituales de perfumado doméstico."
+ },
+ "p260": {
+  "ar": "قطعة مسك كبيرة ذات رائحة عميقة ومركزة، تستخدم تقليديا لتعطير الملابس والخزائن، وتتميز بثباتها العالي وقدرتها على نشر عبيرها الفواح في الأماكن المغلقة لفترات طويلة.",
+  "fr": "Morceau de musc de grande taille au parfum profond et concentré, utilisé pour parfumer les vêtements et les armoires, apprécié pour sa longue tenue et sa diffusion.",
+  "en": "Large piece of musk with a deep, concentrated scent, traditionally used to fragrance clothing and closets, known for its long-lasting aroma and steady diffusion in spaces.",
+  "es": "Trozo de almizcle de gran tamaño con un aroma profundo y concentrado, utilizado para perfumar ropa y armarios, apreciado por su larga duración y su difusión constante."
+ },
+ "p261": {
+  "ar": "مزيج بخور الأنوار التقليدي يجمع بين روائح عطرية مختارة بعناية، يستخدم في المناسبات الخاصة لتعطير الأجواء وإضفاء طابع من الفخامة والسكينة على مختلف أرجاء المنزل.",
+  "fr": "Le mélange d'encens Anouar associe des arômes sélectionnés avec soin pour parfumer les espaces lors d'occasions spéciales, apportant une touche de luxe et de sérénité.",
+  "en": "The traditional Anouar incense blend combines carefully selected aromatic notes to fragrance spaces during special occasions, bringing a touch of luxury and serenity to home.",
+  "es": "La mezcla de incienso Anouar combina aromas cuidadosamente seleccionados para perfumar espacios en ocasiones especiales, aportando un toque de lujo y serenidad a su hogar."
+ },
+ "p84": {
+  "ar": "قطعة مسك صغيرة ذات عبير فواح ومركز، تستخدم لتعطير الأماكن الصغيرة أو الملابس، وتتميز برائحتها التقليدية التي تضفي لمسة من الانتعاش والجمال على حياتك اليومية.",
+  "fr": "Petit morceau de musc au parfum concentré, idéal pour parfumer les petits espaces ou les vêtements, offrant une touche traditionnelle de fraîcheur et de raffinement quotidien.",
+  "en": "Small piece of musk with a concentrated scent, used to fragrance small spaces or clothing, featuring a traditional aroma that adds a touch of freshness daily.",
+  "es": "Pequeño trozo de almizcle con un aroma concentrado, ideal para perfumar espacios pequeños o ropa, ofreciendo un toque tradicional de frescura y refinamiento en su día."
+ },
+ "p127": {
+  "ar": "راتنج الجاوي الطبيعي ذو الرائحة الخشبية الدافئة، يوضع على الجمر في المبخرة فينشر عبيرًا غنيًّا في البيت، ويُستعمل تقليديًّا في المناسبات واستقبال الضيوف.",
+  "fr": "Résine de benjoin naturelle au parfum boisé et chaleureux, utilisée dans les brûle-encens pour diffuser une senteur riche qui apporte confort et quiétude à votre intérieur.",
+  "en": "Natural benzoin resin with a warm woody scent, placed on hot charcoal in a burner to fill the home with a rich fragrance, traditionally for occasions and guests.",
+  "es": "Resina natural de benjuí con un aroma cálido y amaderado; sobre las brasas del quemador perfuma la casa, tradicionalmente en celebraciones y para recibir a los invitados."
+ },
+ "p250": {
+  "ar": "الند هو بخور تقليدي ذو رائحة عطرية مميزة، يستخدم في المناسبات والاحتفالات لتعطير الأجواء، ويتميز بطريقة احتراقه البطيئة التي تضمن انتشار العبير في المكان بشكل متوازن.",
+  "fr": "Le Nadd est un encens traditionnel au parfum distinctif, utilisé lors des célébrations pour parfumer l'atmosphère, apprécié pour sa combustion lente et sa diffusion équilibrée.",
+  "en": "Nadd is a traditional incense with a distinctive aroma, used during celebrations to fragrance the atmosphere, known for its slow burn that ensures balanced diffusion.",
+  "es": "El Nadd es un incienso tradicional con un aroma distintivo, utilizado en celebraciones para perfumar el ambiente, apreciado por su combustión lenta y difusión equilibrada."
+ },
+ "p58": {
+  "ar": "مزيج بخور تقليدي يتكون من مكونات عطرية طبيعية، يستخدم لتعطير المنازل في المناسبات، ويتميز برائحته القوية التي تملأ المكان بعبير شرقي أصيل يعكس التراث المغربي العريق.",
+  "fr": "Mélange d'encens traditionnel composé d'ingrédients naturels, utilisé pour parfumer les maisons, offrant une senteur puissante qui imprègne l'espace d'un arôme oriental authentique et raffiné.",
+  "en": "Traditional incense blend made of natural aromatic ingredients, used to fragrance homes during occasions, featuring a powerful scent that fills the space with oriental notes.",
+  "es": "Mezcla de incienso tradicional compuesta por ingredientes naturales, utilizada para perfumar hogares en ocasiones especiales, ofreciendo un aroma potente que llena el espacio de notas orientales."
+ },
+ "p60": {
+  "ar": "أوراق إكليل الجبل الطبيعية المجففة ذات الرائحة الصنوبرية القوية، تُضاف إلى المشويات والدجاج والخضر المحمّرة، وتُستعمل أيضًا في المشروبات العشبية الدافئة.",
+  "fr": "Feuilles de romarin naturelles séchées au parfum puissant et résineux, pour les grillades, le poulet et les légumes rôtis, ainsi que pour les infusions chaudes.",
+  "en": "Natural dried rosemary leaves with a strong, resinous aroma, for grills, chicken and roasted vegetables, and for warm herbal infusions.",
+  "es": "Hojas naturales de romero secas con un aroma intenso y resinoso, para parrilladas, pollo y verduras asadas, y para infusiones calientes."
+ },
+ "p59": {
+  "ar": "أوراق اللويزة الطبيعية المجففة ذات العبير الليموني الرقيق، تُضاف إلى الشاي المغربي بالنعناع أو تُحضَّر وحدها مشروبًا عطريًّا دافئًا في المساء.",
+  "fr": "Feuilles naturelles de verveine séchées au délicat parfum citronné, ajoutées au thé à la menthe marocain ou préparées seules en infusion parfumée le soir.",
+  "en": "Natural dried lemon verbena leaves with a delicate lemony scent, added to Moroccan mint tea or brewed on their own as a fragrant evening infusion.",
+  "es": "Hojas naturales de hierbaluisa secas con un delicado aroma a limón, para añadir al té moruno con menta o preparar solas como infusión aromática por la tarde."
+ },
+ "p74": {
+  "ar": "بذور شوك الجمل الطبيعية، من البذور التقليدية المعروفة في محلات العشّابين بالمغرب، ذات قوام صلب ولون بنّي فاتح، تُطحن وتُستعمل في الوصفات التقليدية.",
+  "fr": "Graines naturelles de chardon (chouk jmal), un grand classique des herboristeries marocaines, à la texture ferme et brun clair, moulues pour les préparations traditionnelles.",
+  "en": "Natural thistle seeds (chouk jmal), a classic of Moroccan herbalists, firm and light brown, ground for traditional preparations.",
+  "es": "Semillas naturales de cardo (chouk jmal), un clásico de los herbolarios marroquíes, firmes y de color marrón claro, que se muelen para preparaciones tradicionales."
+ },
+ "p70": {
+  "ar": "ثمار العرعار الطبيعية ذات الرائحة الخشبية الحادة، تُستعمل بكميات قليلة لتتبيل اللحوم الحمراء، وتدخل في الخلطات العطرية والبخور التقليدي.",
+  "fr": "Baies naturelles de genévrier au parfum boisé et vif, utilisées en petite quantité pour relever les viandes rouges et dans les mélanges aromatiques et l'encens traditionnel.",
+  "en": "Natural juniper berries with a sharp, woody scent, used sparingly to season red meat and in aromatic blends and traditional incense.",
+  "es": "Bayas naturales de enebro con un aroma amaderado e intenso, usadas con moderación para sazonar carnes rojas y en mezclas aromáticas e incienso tradicional."
+ }
+}
