@@ -82,7 +82,11 @@
       "نراسلك قبل كل موعد لتأكيده أو تعديله، بأسعار المتجر يومها.",
       "الدفع عند الاستلام أو بالتحويل البنكي، والإيقاف متى شئت."
     ],
-    "st_cta": "كوّن سلتك"
+    "st_cta": "كوّن سلتك",
+    "mic": "ابحث بصوتك",
+    "mic_on": "تكلّم الآن…",
+    "mic_no": "لم نتمكن من الاستماع. تحقّق من إذن الميكروفون.",
+    "as_sound": "صوت نار الحطب"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -167,7 +171,11 @@
       "Nous vous écrivons avant chaque livraison pour la confirmer ou l'ajuster, aux prix du jour de la boutique.",
       "Paiement à la livraison ou par virement, arrêt à tout moment."
     ],
-    "st_cta": "Composer mon panier"
+    "st_cta": "Composer mon panier",
+    "mic": "Chercher à la voix",
+    "mic_on": "Parlez maintenant…",
+    "mic_no": "Écoute impossible. Vérifiez l'autorisation du micro.",
+    "as_sound": "Son du feu de bois"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -252,7 +260,11 @@
       "We message you before each delivery to confirm or adjust it, at the shop's prices of the day.",
       "Pay on delivery or by bank transfer, and stop any time."
     ],
-    "st_cta": "Build my basket"
+    "st_cta": "Build my basket",
+    "mic": "Search by voice",
+    "mic_on": "Speak now…",
+    "mic_no": "Could not listen. Check the microphone permission.",
+    "as_sound": "Wood fire sound"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -337,6 +349,10 @@
       "Te escribimos antes de cada entrega para confirmarla o ajustarla, a los precios del día de la tienda.",
       "Pago a la entrega o por transferencia, y paras cuando quieras."
     ],
-    "st_cta": "Preparar mi cesta"
+    "st_cta": "Preparar mi cesta",
+    "mic": "Buscar por voz",
+    "mic_on": "Habla ahora…",
+    "mic_no": "No se pudo escuchar. Revisa el permiso del micrófono.",
+    "as_sound": "Sonido del fuego de leña"
   }
 }

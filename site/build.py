@@ -126,7 +126,7 @@ T = {
         "biz_body": "اطلب بالكيلوغرام باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا عرض سعر عبر واتساب.",
         "biz_cta": "اطلب سعر الكميات الكبيرة",
         "biz_msg": "السلام عليكم، لديّ مؤسسة وأرغب في معرفة سعر كميات كبيرة من: ",
-        "nav_pro": "للمهنيين",
+        "nav_pro": "للمشاريع",
         "search_ph": "ابحث بالعربية أو الفرنسية أو الإنجليزية أو الإسبانية…",
         "search_none": "لا توجد نتائج. جرّب اسمًا آخر.",
         "search_pop": "الأكثر طلبًا",
@@ -524,7 +524,10 @@ def local(u):
 
 
 def src(p):
-    """The picture as a page uses it: our own images by site path (they work before publishing too)."""
+    """The picture as a page uses it: our own images by site path (they work before publishing too). Where a
+    400 px copy exists (thumb/), the small places use it: a card does not need the 800 px photo."""
+    if not p.get("img") and (STATIC / "img" / "thumb" / f"{p['id']}.jpg").exists():
+        return f"{PREFIX}/img/thumb/{p['id']}.jpg"
     img, real = image_of(p)
     return PREFIX + img[len(BASE):] if img.startswith(BASE) else img
 
@@ -578,7 +581,9 @@ def head(lang, title, desc, path, image, extra=""):
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Almas"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
+<script type="speculationrules">{{"prefetch":[{{"source":"document","where":{{"and":[{{"href_matches":"/*"}},{{"not":{{"href_matches":"/api/*"}}}}]}},"eagerness":"moderate"}}]}}</script>
 <link rel="stylesheet" href="{PREFIX}/assets/site.css?v={STAMP}">
 {pixel_head()}
 </head>"""
@@ -754,6 +759,7 @@ def cart_drawer(lang):
     t = T[lang]
     return widgets(lang) + f"""<div class="search" data-search-panel hidden role="dialog" aria-modal="true" aria-label="{esc(t['search_btn'])}">
 <div class="search-in wrap"><input type="search" data-search-input placeholder="{esc(t['search_ph'])}" aria-label="{esc(t['search_ph'])}" autocomplete="off">
+<button type="button" class="mic" data-mic="[data-search-input]" aria-label="{esc(t['mic'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button>
 <button type="button" class="x" data-close-search aria-label="×">×</button></div>
 <div class="wrap"><p class="search-head" data-search-head></p><ul class="results" data-search-results></ul></div>
 </div>
@@ -822,24 +828,33 @@ def cart_drawer(lang):
 
 
 def footer(lang):
+    """The footer as buttons, grouped: talk to us, find us, follow, your orders and the app; privacy as a small line."""
     t = T[lang]
-    play = f'<a href="{esc(CFG["play_url"])}" rel="noopener">{esc(t["app"])}</a>' if CFG.get("play_url") else ""
+    extra = {
+        "orders": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l3 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7z M4 7h16 M9 11h6 M9 15h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+        "app": '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v7m-3-3 3 3 3-3M10 18.5h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        "star": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z" fill="#f4b400"/></svg>',
+    }
+    ic = lambda k: extra.get(k) or ICON[k]
+    def a(kind, href, label, ltr=False):
+        d = ' dir="ltr"' if ltr else ""
+        return f'<a class="fb fb-{kind}" href="{esc(href)}" rel="noopener"><span class="fb-ic">{ic(kind)}</span><span{d}>{label}</span></a>'
+    insta = CFG.get("instagram")
+    play = f'<a class="fb" href="{esc(CFG["play_url"])}" rel="noopener"><span class="fb-ic">{ic("app")}</span><span>{esc(t["app"])}</span></a>' if CFG.get("play_url") else ""
+    groups = [
+        a("phone", "tel:" + CFG["phone"], esc(CFG["phone_display"]), True)
+        + a("wa", "https://wa.me/" + CFG["whatsapp"], "WhatsApp " + f'<bdi dir="ltr">{esc(CFG.get("whatsapp_display", ""))}</bdi>'),
+        a("pin", CFG["maps_url"], esc(t["map"])) + a("star", CFG.get("review_url") or CFG["maps_url"], esc(t["review"])),
+        (a("insta", f"https://www.instagram.com/{insta}/", "@" + esc(insta), True) if insta else "") + play
+        + f'<button type="button" class="fb" data-open-orders-foot><span class="fb-ic">{ic("orders")}</span><span>{esc(t["my_orders"])}</span></button>'
+        + f'<button type="button" class="fb fb-app" data-install><span class="fb-ic">{ic("app")}</span><span>{esc(t["app_link"])}</span></button>',
+    ]
     return f"""<footer class="foot">
 <div class="wrap foot-in">
-<div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p></div>
-<div class="foot-links">
-<a href="tel:{esc(CFG['phone'])}" dir="ltr">{esc(CFG['phone_display'])}</a>
-<a href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">WhatsApp <span dir="ltr">{esc(CFG.get('whatsapp_display', ''))}</span></a>
-<a href="{esc(CFG['maps_url'])}" rel="noopener">{esc(t['map'])}</a>
-<a href="{esc(CFG.get('review_url') or CFG['maps_url'])}" rel="noopener">★ {esc(t['review'])}</a>
-{f'<a href="https://www.instagram.com/{esc(CFG["instagram"])}/" rel="noopener">Instagram @{esc(CFG["instagram"])}</a>' if CFG.get("instagram") else ""}
-{play}
-<button type="button" class="foot-btn" data-open-orders-foot>{esc(t['my_orders'])}</button>
-<button type="button" class="foot-btn" data-install>{esc(t['app_link'])}</button>
-<a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a>
+<div class="foot-brand"><img src="{PREFIX}/img/logo-192.png" alt="" width="44" height="44" loading="lazy"><div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p></div></div>
+<div class="foot-groups">{"".join(f'<div class="fg">{g}</div>' for g in groups if g)}</div>
 </div>
-</div>
-<p class="wrap copyright">© {datetime.now().year} {esc(t['name'])}</p>
+<p class="wrap copyright">© {datetime.now().year} {esc(t['name'])} · <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a></p>
 </footer>"""
 
 
@@ -859,7 +874,7 @@ def page_data(lang, products, cats):
                                 "copied", "copy", "q_send", "q_fail", "sending", "rv_count", "rv_verified", "rv_none",
                                 "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa", "my_orders", "cart", "mo_again",
                                 "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
-                                "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30")},
+                                "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no")},
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "t": p["t"], "fr": p["fr"], "en": p["en"], "es": p["es"],
                         "price": p["price"], "u": p["unit"],
                         "c": p["cat"], "r": p.get("rank") or 0, "i": src(p), "l": url(lang, "p/" + p["id"] + "/")} for p in products},
@@ -868,9 +883,12 @@ def page_data(lang, products, cats):
     return data
 
 
+DATA_V = {}  # lang -> hash of that language's product file, set in main() before any page is written
+
+
 def data_tag(lang):
     """One shared file per language instead of the product list inlined in all 129 pages of that language."""
-    return f'<script src="{PREFIX}/assets/data-{lang}.js?v={STAMP}" defer></script>'
+    return f'<script src="{PREFIX}/assets/data-{lang}.js?v={DATA_V.get(lang, STAMP)}" defer></script>'
 
 
 def card(lang, p, cats):
@@ -959,9 +977,14 @@ def home(lang, products, cats, stamp_day):
 {packs_section(lang, products)}
 <section id="products" class="shop">
 <div class="wrap">
-<div class="tools">
-<input type="search" data-search-box placeholder="{esc(t['search'])}" aria-label="{esc(t['search'])}">
-<div class="chips" role="toolbar"><button type="button" data-filter="" aria-pressed="true">{esc(t['all'])}</button>{shelves}</div>
+<div class="tools" data-tools>
+<div class="tools-search"><div class="with-mic"><input type="search" data-search-box placeholder="{esc(t['search'])}" aria-label="{esc(t['search'])}">
+<button type="button" class="mic" data-mic="[data-search-box]" aria-label="{esc(t['mic'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button></div></div>
+<div class="chips-wrap" data-chips-wrap>
+<button type="button" class="chips-nav prev" data-chips-nav="-1" aria-label="‹" tabindex="-1">‹</button>
+<div class="chips" role="toolbar" data-chips><button type="button" data-filter="" aria-pressed="true">{esc(t['all'])}</button>{shelves}</div>
+<button type="button" class="chips-nav next" data-chips-nav="1" aria-label="›" tabindex="-1">›</button>
+</div>
 </div>
 <ul class="grid" data-grid>{grid}</ul>
 <p class="none" data-none hidden>{esc(t['none'])}</p>
@@ -988,7 +1011,7 @@ def home(lang, products, cats, stamp_day):
 def gallery(p, n, t):
     """Swipe between the pictures on a phone, thumbnails to pick one; a single picture shows alone."""
     imgs = images_of(p)
-    track = "".join(f'<img src="{esc(local(u))}" alt="{esc(n)}" width="800" height="800"{"" if i == 0 else " loading=lazy"}>'
+    track = "".join(f'<img src="{esc(local(u))}" alt="{esc(n)}" width="800" height="800"{" fetchpriority=high" if i == 0 else " loading=lazy"} decoding="async">'
                     for i, u in enumerate(imgs))
     if len(imgs) == 1:
         return f'<div class="product-img"><div class="ph"><div class="g-track">{track}</div></div></div>'
@@ -1051,7 +1074,8 @@ def product_page(lang, p, products, cats):
 <body data-product="{p['id']}">
 {header(lang, path)}
 <main>
-<div class="wrap crumbs"><a href="{url(lang)}#products">← {esc(t['back'])}</a> · <span style="color:{cat['color']}">{esc(cat[lang])}</span></div>
+<div class="wrap crumbs"><a class="back-btn" href="{url(lang)}#products" data-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>{esc(t['back'])}</span></a>
+<span class="crumb-cat" style="--c:{cat['color']}">{esc(cat[lang])}</span></div>
 <section class="wrap product" style="--c:{cat['color']}">
 {gallery(p, n, t)}
 <div class="product-info">
@@ -1112,7 +1136,14 @@ def widgets(lang):
     """On every page: the back-to-top arrow and Tajine, the shop assistant (a tagine with a face)."""
     t = T[lang]
     chips = "".join(f'<button type="button" data-as-chip>{esc(c)}</button>' for c in t["as_chips"])
-    tagine = ('<svg viewBox="0 0 64 64" aria-hidden="true" class="tagine">'
+    tagine = ('<svg viewBox="0 0 64 76" aria-hidden="true" class="tagine">'
+              '<g class="steam"><path d="M28 6c-2-2.5 2-4.5 0-7"/><path d="M36 6c-2-2.5 2-4.5 0-7"/></g>'
+              '<g class="fire"><path class="flame f1" d="M22 70c-3-4 0-8 2-11 0 3 2 4 3 2 1 4 1 7-1 9z"/>'
+              '<path class="flame f2" d="M30 71c-4-5 0-11 3-15 0 4 3 5 4 3 2 5 1 9-2 12z"/>'
+              '<path class="flame f3" d="M39 70c-3-4 0-8 2-11 0 3 2 4 3 2 1 4 1 7-1 9z"/>'
+              '<rect class="log" x="15" y="69" width="34" height="5" rx="2.5" transform="rotate(-8 32 71.5)"/>'
+              '<rect class="log" x="15" y="69" width="34" height="5" rx="2.5" transform="rotate(8 32 71.5)"/>'
+              '<circle class="ember e1" cx="24" cy="72" r="1.2"/><circle class="ember e2" cx="40" cy="71" r="1"/></g>'
               '<path class="base" d="M3 44h58c-1.5 6-8 10-16 10H19C11 54 4.5 50 3 44z"/>'
               '<path class="rim" d="M2 42.5h60v2.6H2z"/>'
               '<path class="dots" d="M14 48.5h2v2h-2zM24 49.5h2v2h-2zM38 49.5h2v2h-2zM48 48.5h2v2h-2z"/>'
@@ -1131,9 +1162,12 @@ def widgets(lang):
     return sheet + f"""<button type="button" class="to-top" data-to-top aria-label="{esc(t['top'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <button type="button" class="as-fab" data-as-open aria-label="{esc(t['as_open'])}">{tagine}<span class="as-tip">{esc(t['as_open'])}</span></button>
 <div class="as" data-as hidden role="dialog" aria-modal="false" aria-label="{esc(t['as_title'])}">
-<div class="as-head">{tagine}<div><b>{esc(t['as_title'])}</b><small>{esc(t['as_sub'])}</small></div><button type="button" class="x" data-as-close aria-label="×">×</button></div>
+<div class="as-head">{tagine}<div><b>{esc(t['as_title'])}</b><small>{esc(t['as_sub'])}</small></div>
+<button type="button" class="snd" data-as-sound aria-pressed="true" aria-label="{esc(t['as_sound'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="w1" d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path class="w2" d="M18 6.5a8 8 0 0 1 0 11"/><path class="mute" d="M16 9.5l5 5m0-5l-5 5"/></svg></button>
+<button type="button" class="x" data-as-close aria-label="×">×</button></div>
 <div class="as-body" data-as-body><div class="msg bot">{esc(t['as_hello'])}</div><div class="as-chips">{chips}</div></div>
 <form class="as-form" data-as-form><input name="q" maxlength="500" autocomplete="off" placeholder="{esc(t['as_ph'])}" aria-label="{esc(t['as_ph'])}" required>
+<button type="button" class="mic" data-mic="[data-as-form] input" aria-label="{esc(t['mic'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button>
 <button type="submit" aria-label="{esc(t['as_send'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-7z"/></svg></button></form>
 <a class="as-wa" href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener" data-as-wa>{esc(t['as_wa'])}</a>
 </div>"""
@@ -1258,8 +1292,9 @@ def main():
 
     for lang in LANGS:
         base = OUT if lang == "ar" else OUT / lang
-        write(OUT / "assets" / f"data-{lang}.js",
-              "window.ALMAS=" + json.dumps(page_data(lang, products, cats), ensure_ascii=False) + ";" + chr(10))
+        data_js = "window.ALMAS=" + json.dumps(page_data(lang, products, cats), ensure_ascii=False) + ";" + chr(10)
+        DATA_V[lang] = hashlib.sha256(data_js.encode("utf-8")).hexdigest()[:10]
+        write(OUT / "assets" / f"data-{lang}.js", data_js)
         write(base / "index.html", home(lang, products, cats, day[lang]))
         write(base / "merci" / "index.html", thanks(lang))
         write(base / "pro" / "index.html", pro_page(lang, products, cats))

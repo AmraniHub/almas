@@ -272,6 +272,78 @@
     track("ViewContent", [pid], A.p[pid].price);
   }
 
+  /* voice: the phone's own speech recognition, in the page's language (Moroccan Arabic on the Arabic pages, which
+     also understands Darija); the words land in the box and the results follow as if typed. No support, no button. */
+  var Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var VOICE_LANG = { ar: "ar-MA", fr: "fr-FR", en: "en-US", es: "es-ES" };
+  if (Speech) {
+    $$("[data-mic]").forEach(function (b) {
+      var input = $(b.getAttribute("data-mic"));
+      if (!input) return;
+      b.hidden = false;
+      var rec = null, placeholder = input.placeholder;
+      var stop = function () { b.classList.remove("on"); input.placeholder = placeholder; rec = null; };
+      b.onclick = function () {
+        if (rec) { try { rec.stop(); } catch (e) {} return; }
+        try { rec = new Speech(); } catch (e) { return; }
+        rec.lang = VOICE_LANG[A.lang] || "ar-MA";
+        rec.interimResults = true;
+        rec.maxAlternatives = 1;
+        rec.onresult = function (ev) {
+          var text = "";
+          for (var i = 0; i < ev.results.length; i++) text += ev.results[i][0].transcript;
+          input.value = text.trim();
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          if (ev.results[ev.results.length - 1].isFinal && b.getAttribute("data-mic").indexOf("as-form") >= 0 && input.value) {
+            var form = input.form; if (form && form.requestSubmit) form.requestSubmit();
+          }
+        };
+        rec.onerror = function (ev) { if (ev.error === "not-allowed" || ev.error === "service-not-allowed") alert(A.s.mic_no); };
+        rec.onend = stop;
+        b.classList.add("on");
+        input.value = "";
+        input.placeholder = A.s.mic_on;
+        try { rec.start(); } catch (e) { stop(); }
+        try { window.fbq("trackCustom", "VoiceSearch"); } catch (e) {}
+      };
+    });
+  }
+
+  /* back to the catalogue as it was left: the browser's own back when the visitor came from the catalogue (same
+     shelf, same scroll, instantly), the catalogue link otherwise (an ad or a shared link landed them here) */
+  $$("[data-back]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var ref = document.referrer;
+      if (ref && ref.indexOf(location.origin) === 0 && window.history.length > 1 && !/\/p\//.test(new URL(ref).pathname)) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  });
+  /* the catalogue remembers its shelf and scroll when a product is opened, for a back that lands where it left */
+  var HKEY = "almas-home";
+  if ($("[data-grid]")) {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest(".card-link");
+      if (!a) return;
+      var on = $("[data-filter][aria-pressed=true]");
+      try { sessionStorage.setItem(HKEY, JSON.stringify({ shelf: on ? on.getAttribute("data-filter") : "", y: window.pageYOffset, path: location.pathname })); } catch (err) {}
+    });
+    var nav = (performance.getEntriesByType && performance.getEntriesByType("navigation")[0]) || {};
+    var saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(HKEY) || "null"); } catch (err) {}
+    if (saved && saved.path === location.pathname && (nav.type === "back_forward" || location.hash === "#products")) {
+      setTimeout(function () {
+        var chip = saved.shelf ? $('[data-filter="' + saved.shelf + '"]') : null;
+        if (chip && chip.getAttribute("aria-pressed") !== "true") {
+          $$("[data-filter]").forEach(function (x) { x.setAttribute("aria-pressed", x === chip ? "true" : "false"); });
+          $$(".card", $("[data-grid]")).forEach(function (c) { c.hidden = c.getAttribute("data-cat") !== saved.shelf; });
+        }
+        window.scrollTo(0, saved.y);
+      }, 0);
+    }
+  }
+
   /* the order: sent to the shop (Telegram, through /api/order, priced again there from the till), then a
      confirmation; WhatsApp carries the same text, the app's layout with the till's Arabic name on every line */
   function orderText(f, number) {
@@ -394,13 +466,53 @@
     /* after a shelf or a search changes the list, show its first products just under the sticky header and shelf
        bar, instead of leaving the visitor far below a now-shorter list */
     var toGridTop = function () {
-      var bar = $(".tools"), head = $("header.top");
-      var y = grid.getBoundingClientRect().top + window.pageYOffset - (head ? head.offsetHeight : 0) - (bar ? bar.offsetHeight : 0) - 10;
+      var wrapEl = $("[data-chips-wrap]"), head = $("header.top");
+      // the bar is measured as it will be once inside the products: the shelf row alone, the search box tucked away
+      var barH = wrapEl ? wrapEl.offsetHeight + 16 : 60;
+      var y = grid.getBoundingClientRect().top + window.pageYOffset - (head ? head.offsetHeight : 0) - barH - 10;
       if (Math.abs(window.pageYOffset - y) > 4) window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
     };
     var sb = $("[data-search-box]");
     if (sb) sb.oninput = function () { term = norm(sb.value); apply(); if (window.pageYOffset > grid.offsetTop) toGridTop(); };
     // the shelf chip that was tapped scrolls into view inside its own row
+    /* the shelf row: one line that slides; faded edges and (with a mouse) arrows where shelves are hidden; the
+       mouse wheel slides it while there is more to see, then lets the page scroll as usual */
+    var chipsWrap = $("[data-chips-wrap]"), chipsRow = $("[data-chips]"), tools = $("[data-tools]");
+    var rtl = document.documentElement.dir === "rtl";
+    var edges = function () {
+      if (!chipsWrap) return;
+      var r = chipsRow.getBoundingClientRect(), kids = chipsRow.children, lo = Infinity, hi = -Infinity;
+      for (var i = 0; i < kids.length; i++) { var k = kids[i].getBoundingClientRect(); lo = Math.min(lo, k.left); hi = Math.max(hi, k.right); }
+      chipsWrap.classList.toggle("more-left", lo < r.left - 2);
+      chipsWrap.classList.toggle("more-right", hi > r.right + 2);
+    };
+    if (chipsWrap) {
+      chipsRow.addEventListener("scroll", edges, { passive: true });
+      window.addEventListener("resize", edges);
+      window.addEventListener("load", edges);
+      edges();
+      $$("[data-chips-nav]", chipsWrap).forEach(function (b) {
+        b.onclick = function () { chipsRow.scrollBy({ left: +b.getAttribute("data-chips-nav") * chipsRow.clientWidth * 0.7, behavior: reduce ? "auto" : "smooth" }); };
+      });
+      chipsRow.addEventListener("wheel", function (e) {
+        if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+        var forward = e.deltaY > 0, toLeft = rtl ? forward : !forward;
+        if (!chipsWrap.classList.contains(toLeft ? "more-left" : "more-right")) return; // at the end: the page scrolls
+        e.preventDefault();
+        chipsRow.scrollBy({ left: (rtl ? -1 : 1) * e.deltaY, behavior: "auto" });
+      }, { passive: false });
+    }
+    // inside the products, the search box tucks away (the header's search button stays): only the shelf row is pinned
+    var shop = $("#products"), compactTick = false;
+    var compact = function () {
+      compactTick = false;
+      if (!tools || !shop) return;
+      var sb2 = $("[data-search-box]");
+      var inside = window.pageYOffset > shop.offsetTop + 60 && document.activeElement !== sb2 && !(sb2 && sb2.value);
+      tools.classList.toggle("compact", inside);
+    };
+    window.addEventListener("scroll", function () { if (!compactTick) { compactTick = true; requestAnimationFrame(compact); } }, { passive: true });
+    compact();
     // (it scrolls the row itself, never the page, so it cannot cancel the jump to the products)
     $$("[data-filter]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -490,6 +602,63 @@
     };
   }
 
+  /* the wood fire under Tajine, as sound: made in the browser (filtered noise for the low roar, short bright bursts
+     for the crackles), so there is no file to download. It plays only while the chat is open (the visitor opened
+     it: browsers allow sound after a tap), very softly, a little louder while Tajine thinks, fades out when the chat
+     closes or the phone screen goes off. The speaker button mutes it, and the choice is remembered. */
+  var Fire = (function () {
+    var AC = window.AudioContext || window.webkitAudioContext, ctx = null, master = null, timer = null, level = 0;
+    var SKEY = "almas-sound";
+    function enabled() { try { return localStorage.getItem(SKEY) !== "off"; } catch (e) { return true; } }
+    function noise(seconds, brown) {
+      var len = Math.floor(ctx.sampleRate * seconds), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0), last = 0;
+      for (var i = 0; i < len; i++) {
+        var w = Math.random() * 2 - 1;
+        if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w;
+      }
+      return buf;
+    }
+    function crackle() {
+      if (!ctx || level <= 0) return;
+      var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
+      src.buffer = noise(0.04, false);
+      bp.type = "bandpass"; bp.frequency.value = 1400 + Math.random() * 3200; bp.Q.value = 0.9;
+      var peak = (0.25 + Math.random() * 0.75) * level * 2.2;
+      g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.015 + Math.random() * 0.05);
+      src.connect(bp); bp.connect(g); g.connect(master); src.start(t); src.stop(t + 0.08);
+    }
+    function loop() { crackle(); if (Math.random() < 0.25) setTimeout(crackle, 30 + Math.random() * 60); timer = setTimeout(loop, 70 + Math.random() * (level > 0.06 ? 160 : 380)); }
+    function start(to) {
+      if (!AC || !enabled() || reduce) return;
+      try {
+        if (!ctx) {
+          ctx = new AC();
+          master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+          var roar = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), rg = ctx.createGain();
+          roar.buffer = noise(3, true); roar.loop = true;
+          lp.type = "lowpass"; lp.frequency.value = 420; rg.gain.value = 0.9;
+          roar.connect(lp); lp.connect(rg); rg.connect(master); roar.start();
+        }
+        if (ctx.state === "suspended") ctx.resume();
+        set(to || 0.045);
+        if (!timer) loop();
+      } catch (e) { /* no sound, nothing else changes */ }
+    }
+    function set(v) {
+      level = v;
+      if (master) master.gain.setTargetAtTime(v, ctx.currentTime, 0.6);
+    }
+    function stop() {
+      if (!ctx) return;
+      set(0);
+      clearTimeout(timer); timer = null;
+      setTimeout(function () { if (level === 0 && ctx && ctx.state === "running") ctx.suspend(); }, 2500);
+    }
+    return { start: start, set: function (v) { if (ctx && level > 0) set(v); }, stop: stop, enabled: enabled,
+             toggle: function () { var on = !enabled(); try { localStorage.setItem(SKEY, on ? "on" : "off"); } catch (e) {} return on; } };
+  })();
+  document.addEventListener("visibilitychange", function () { if (document.hidden) Fire.stop(); else if (as && !as.hidden) Fire.start(); });
+
   /* Tajine, the assistant: answers from the shop's catalogue, suggests products that go straight into the cart */
   var as = $("[data-as]"), asOpen = $("[data-as-open]"), asBody = $("[data-as-body]"), asForm = $("[data-as-form]");
   var turns = [];
@@ -497,6 +666,7 @@
     if (!as) return;
     as.hidden = !open;
     if (asOpen) asOpen.classList.toggle("on", open);
+    if (open) Fire.start(); else Fire.stop();
     if (open) { var i = $("input", asForm); if (i && window.innerWidth > 700) setTimeout(function () { i.focus(); }, 60); }
   }
   function bubble(cls, html) {
@@ -517,8 +687,10 @@
     bubble("me", esc(q));
     turns.push({ role: "user", content: q });
     var wait = bubble("bot wait", esc(A.s.as_thinking));
+    cooking(true);
     var fallback = function () {
       wait.remove();
+      cooking(false);
       var el = bubble("bot", esc(A.s.as_error) + productsHtml(find(q).slice(0, 4)));
       wire(el);
       turns.pop();
@@ -528,6 +700,7 @@
       .then(function (d) {
         if (!d || !d.ok || !d.reply) return fallback();
         wait.remove();
+        cooking(false, true);
         turns.push({ role: "assistant", content: d.reply });
         var el = bubble("bot", esc(d.reply).replace(/\n/g, "<br>") + productsHtml(d.products) +
           (d.whatsapp ? '<a class="as-wa-in" href="https://wa.me/' + A.wa + "?text=" + encodeURIComponent(q) + '" rel="noopener">' + esc(A.s.as_wa) + "</a>" : ""));
@@ -535,6 +708,23 @@
         try { window.fbq("trackCustom", "AssistantQuestion"); } catch (e) {}
       })
       .catch(fallback);
+  }
+  function cooking(on, served) {
+    [as, asOpen].forEach(function (el) {
+      if (!el) return;
+      el.classList.toggle("cooking", on);
+      if (served) { el.classList.add("served"); setTimeout(function () { el.classList.remove("served"); }, 2600); }
+    });
+    Fire.set(on ? 0.1 : 0.045);
+  }
+  var snd = $("[data-as-sound]");
+  if (snd) {
+    snd.setAttribute("aria-pressed", Fire.enabled() ? "true" : "false");
+    snd.onclick = function () {
+      var on = Fire.toggle();
+      snd.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on) Fire.start(); else Fire.stop();
+    };
   }
   if (asOpen) asOpen.onclick = function () { asShow(as.hidden); };
   $$("[data-as-close]").forEach(function (b) { b.onclick = function () { asShow(false); }; });
@@ -601,12 +791,12 @@
   var OKEY = "almas-orders-v1", MEKEY = "almas-me-v1", YEAR = 365 * 864e5;
   function load(k, d) { try { return JSON.parse(localStorage.getItem(k) || "null") || d; } catch (e) { return d; } }
   function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
-  function history() {
+  function pastOrders() {
     var now = Date.now();
     return load(OKEY, []).filter(function (o) { return o && o.n && now - Date.parse(o.at) < YEAR; }).slice(0, 30);
   }
   function remember(number, totalPaid, f, ids) {
-    var list = history();
+    var list = pastOrders();
     list.unshift({ n: number, at: new Date().toISOString(), total: totalPaid, pay: f.get("pay"), rep: +f.get("repeat") || 0,
                    items: ids.map(function (id) { return { id: id, q: cart[id] }; }) });
     store(OKEY, list.slice(0, 30));
@@ -627,14 +817,14 @@
       note.hidden = true;
     };
   })();
-  function showOrdersBtn() { var b = $("[data-open-orders]"); if (b) b.hidden = !history().length; }
+  function showOrdersBtn() { var b = $("[data-open-orders]"); if (b) b.hidden = !pastOrders().length; }
   showOrdersBtn();
   function dateOf(iso) {
     try { return new Date(iso).toLocaleDateString(A.lang === "ar" ? "ar-MA" : A.lang, { day: "numeric", month: "short", year: "numeric" }); }
     catch (e) { return iso.slice(0, 10); }
   }
   function renderOrders(status) {
-    var list = history(), ul = $("[data-mo-list]"), none = $("[data-mo-none]");
+    var list = pastOrders(), ul = $("[data-mo-list]"), none = $("[data-mo-none]");
     if (!ul) return;
     none.hidden = list.length > 0;
     ul.innerHTML = list.map(function (o, i) {
@@ -661,7 +851,7 @@
     if (!ov) return;
     ov.hidden = false; cv.hidden = true; if (ob) ob.hidden = true; if (tt) tt.textContent = A.s.my_orders;
     renderOrders(null);
-    var m = me(), list = history();
+    var m = me(), list = pastOrders();
     if (A.cloud && m && m.phone && list.length) {
       fetch(A.cloud + "/public/my-orders", { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: m.phone, ids: list.map(function (o) { return o.n; }) }) })
@@ -725,7 +915,7 @@
   window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault(); deferred = e;
     var st = load(AKEY, {});
-    if (!isInstalled() && history().length && !(st.snoozed && Date.now() - st.snoozed < SNOOZE)) {
+    if (!isInstalled() && pastOrders().length && !(st.snoozed && Date.now() - st.snoozed < SNOOZE)) {
       setTimeout(function () { if (deferred && (!drawer || drawer.hidden)) openSheet(false); }, 8000);
     }
   });
