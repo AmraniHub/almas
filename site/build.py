@@ -452,7 +452,10 @@ def visit(lang):
     """Where the shop is: the map with its pin, directions from where the visitor stands, Google review, Instagram."""
     t = T[lang]
     lat, lng = CFG["geo"]
-    embed = f"https://maps.google.com/maps?q={lat},{lng}&z=16&hl={lang}&output=embed"
+    # the shop's own Google listing (its cid): the pin carries its name, address and an "open in Maps" card,
+    # where bare coordinates show an anonymous pin
+    cid = CFG["maps_url"].split("cid=", 1)[1].split("&", 1)[0]
+    embed = f"https://maps.google.com/maps?cid={cid}&z=16&hl={lang}&output=embed"
     # built outside the template: quotes nested inside an f-string need Python 3.12, Vercel's may be older
     tiles = [
         tile("pin", f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}", t["t_dir"], "Google Maps"),
