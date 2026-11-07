@@ -8,7 +8,7 @@
   "phone_display": "06 19 43 40 35",
   "whatsapp": "212627716149",
   "whatsapp_display": "06 27 71 61 49",
-  "order_api": "/api/order",
+  "order_api": "/api/order/",
   "bank": {
     "holder": "MONSIEUR ABDELALI EL AMRANI",
     "name": "CIH BANK",
