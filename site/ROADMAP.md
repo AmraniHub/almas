@@ -54,3 +54,12 @@ Each of these needs the shop PC updated, so it waits for a moment the owner choo
     published from the laptop on 2026-10-27; the till's `cloud.py` predates the `app_feed` push. Install the
     newer `cloud.py` on the shop PC (Aronium closed, backup first) so a price changed in Aronium reaches the
     site within minutes. New products still need a rebuild (one push) to get their own page.
+
+## Done 2026-11-07 (from this list)
+
+- Ramadan and Eid boxes (site/packs.json): sum of their items at shop prices, no discount unless `off` is set;
+  each seasonal box moves to the front with its badge inside its `when` dates.
+- Euro prices beside dirhams (rate read at build time from open.er-api.com, fallback 10.9), payment stays in MAD.
+- Ordering from Europe: collected in Morocco by a relative, or shipped once the shop confirms it can be and its cost.
+  Real shipping rates (Amana / DHL by weight) are still the owner's to set.
+- Reorder reminders: back office overview, "Due to reorder", from each customer's own rhythm, businesses first.

@@ -353,3 +353,38 @@ test("admin deletes order, customer and review", async () => {
   assert.equal(rows("select * from customers where phone_norm = '212612345678'").length, 0);
   assert.equal(rows("select * from reviews").length, 0);
 });
+
+test("my-orders shows status only when the order number and the phone both match", async () => {
+  await ingest("order", { ...ORDER, id: "AL-MINE-0001" });
+  const mine = (body) => call("/public/my-orders", { method: "POST", body, ip: "10.7.7.7", headers: { Origin: "https://almas-epices.vercel.app" } });
+  let r = await mine({ phone: "+212 612345678", ids: ["AL-MINE-0001", "AL-NOPE-0001"] });
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("Access-Control-Allow-Origin"), "https://almas-epices.vercel.app");
+  let d = await r.json();
+  assert.deepEqual(Object.keys(d.orders), ["AL-MINE-0001"]);
+  assert.equal(d.orders["AL-MINE-0001"].status, "new");
+  d = await (await mine({ phone: "0699999999", ids: ["AL-MINE-0001"] })).json();
+  assert.deepEqual(d.orders, {}); // a guessed number with another phone reveals nothing
+  assert.equal((await mine({ phone: "06", ids: ["AL-MINE-0001"] })).status, 400);
+  const pre = await call("/public/my-orders", { method: "OPTIONS", headers: { Origin: "https://almas-epices.vercel.app" } });
+  assert.match(pre.headers.get("Access-Control-Allow-Methods"), /POST/);
+});
+
+test("reorder reminders follow each customer's own rhythm; a single-order business is due after 30 days", async () => {
+  const ago = (d) => new Date(Date.now() - d * 864e5).toISOString();
+  const item = [{ product: "p6", name_till: "الكمون", name: "Cumin", qty: 1, unit: "kg", unit_price: 90, line: 90 }];
+  await ingest("order", { ...ORDER, id: "AL-RHY-0001", at: ago(45), phone: "0655500001", name: "Resto Rythme", items: item, total: 90 });
+  await ingest("order", { ...ORDER, id: "AL-RHY-0002", at: ago(25), phone: "0655500001", name: "Resto Rythme", items: item, total: 90 });
+  await ingest("order", { ...ORDER, id: "AL-NEW-0001", at: ago(2), phone: "0655500002", name: "Just ordered", items: item, total: 90 });
+  await ingest("quote", { id: "QT-RHY-0001", at: ago(40), phone: "0655500003", business: "Hotel Uno", contact: "M", items: "cumin" });
+  await ingest("order", { ...ORDER, id: "AL-PRO-0001", at: ago(35), phone: "0655500003", name: "Hotel Uno", items: item, total: 90 });
+  if (!sessionCookie) sessionCookie = (await adminLogin(KEY)).headers.get("Set-Cookie").split(";")[0];
+  const d = await (await admin("overview")).json();
+  const due = Object.fromEntries(d.reorder.map((r) => [r.phone_norm, r]));
+  assert.ok(due["212655500001"], "20-day rhythm, 25 days since: due");
+  assert.equal(due["212655500001"].gap, 20);
+  assert.equal(due["212655500001"].items[0].name, "الكمون");
+  assert.ok(due["212655500003"], "a hotel with one order 35 days ago: due");
+  assert.equal(d.reorder[0].kind, "pro", "businesses come first");
+  assert.ok(!due["212655500002"], "ordered 2 days ago: not due");
+});

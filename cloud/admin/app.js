@@ -99,6 +99,11 @@ function orderMessage(o) {
   return `السلام عليكم ${o.name || ""}، شكرا لطلبكم من ${SHOP_AR}. نؤكد استلام طلبكم رقم ${o.id} بمبلغ إجمالي قدره ${total} درهم. ` +
     "نرجو تأكيد العنوان والوقت المناسب للتوصيل. مع خالص التحية.";
 }
+function reorderMessage(r) {
+  const list = r.items.slice(0, 6).map((x) => qty(x.qty, x.unit) + " " + x.name).join("، ");
+  return `السلام عليكم ${r.business || r.name || ""}، نرجو أن تكونوا بخير. مضى ${r.days} يومًا على طلبكم الأخير من ${SHOP_AR}` +
+    (list ? ` (${list})` : "") + ". هل تودّون أن نجهّز لكم الطلب نفسه؟ يكفي أن تردّوا بـ«نعم» أو ترسلوا التعديلات.";
+}
 function quoteMessage(q) {
   return `السلام عليكم ${q.contact || ""}، شكرا لاهتمامكم بمنتجات ${SHOP_AR}. تلقّينا طلب عرض الأسعار الخاص بـ${q.business || "مؤسستكم"}، ` +
     "وسنرسل لكم العرض في أقرب وقت. هل يمكننا الاتصال بكم لتأكيد الكميات المطلوبة؟";
@@ -181,6 +186,14 @@ async function overviewView() {
       kpi("Unpaid bank transfers", d.unpaid_bank.orders, money(d.unpaid_bank.amount), "#orders?pay=bank&paid=0", d.unpaid_bank.orders > 0),
       kpi("Pending reviews", d.pending_reviews, "to publish or hide", "#reviews", d.pending_reviews > 0),
       kpi("New quote requests", d.new_quotes, "restaurants, hotels, events", "#quotes?status=new", d.new_quotes > 0)),
+    (d.reorder || []).length ? h("div", { class: "card" }, h("h2", {}, "Due to reorder"),
+      h("p", { class: "small muted" }, "From each customer's own rhythm: restaurants, hotels and event organisers first. One tap opens WhatsApp with a reminder naming their last order."),
+      h("div", { class: "rows" }, d.reorder.map((r) => h("div", { class: "row" },
+        h("div", { class: "main" },
+          h("div", {}, h("a", { href: "#customer/" + encodeURIComponent(r.phone_norm) }, h("b", { dir: "auto" }, r.business || r.name || "+" + r.phone_norm)), " ", chip(r.kind)),
+          h("div", { class: "small muted" }, r.days + " days since the last order" + (r.gap ? " · usually every " + r.gap + " days" : "") + " · " + r.orders + (r.orders === 1 ? " order" : " orders")),
+          h("div", { class: "small", dir: "rtl" }, r.items.map((x) => qty(x.qty, x.unit) + " " + x.name).join(" · "))),
+        h("div", { class: "side" }, waButton(r.phone_norm, reorderMessage(r), "WhatsApp reminder")))))) : null,
     h("div", { class: "grid2" },
       h("div", { class: "card" }, h("h2", {}, "Latest orders"),
         d.recent.length ? h("div", { class: "rows" }, d.recent.map(orderRow)) : h("p", { class: "empty" }, "No orders yet.")),

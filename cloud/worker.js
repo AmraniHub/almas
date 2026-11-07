@@ -310,7 +310,27 @@ const round1 = (x) => Math.round(Number(x || 0) * 10) / 10;
 async function publicApi(req, env, url) {
   const c = cors(req);
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: { ...c, "Access-Control-Allow-Methods": "GET", "Access-Control-Max-Age": "86400" } });
+    return new Response(null, { status: 204, headers: { ...c, "Access-Control-Allow-Methods": "GET, POST",
+      "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400" } });
+  }
+  // "My orders" on the visitor's phone: the status of orders it already knows the numbers of. Both the order number
+  // AND the phone it was placed with must match, so a guessed number reveals nothing. POST, so the phone never
+  // sits in a URL or a log line.
+  if (url.pathname === "/public/my-orders") {
+    if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405, c);
+    const b = await body(req);
+    const pn = phoneNorm(text(b.phone, 30));
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map((x) => text(x, 40)).filter((x) => ID_RE.test(x)).slice(0, 30);
+    if (pn.length < 9 || !ids.length) return json({ ok: false, error: "phone and ids" }, 400, c);
+    const iph = await ipHash(env, req.headers.get("CF-Connecting-IP") || "");
+    const t = nowSec(), k = "mine:" + iph;
+    const n = await first(env, "select count(*) n from hits where k = ? and at > ?", k, t - 3600);
+    if (n && n.n >= 60) return json({ ok: false, error: "slow down" }, 429, c);
+    await env.DB.prepare("insert into hits (k, at) values (?, ?)").bind(k, t).run();
+    const rows = await all(env, `select id, status, paid from orders where phone_norm = ? and id in (${ids.map(() => "?").join(",")})`, pn, ...ids);
+    const orders = {};
+    for (const r of rows) orders[r.id] = { status: r.status, paid: r.paid ? 1 : 0 };
+    return json({ ok: true, orders }, 200, { ...c, "Cache-Control": "no-store" });
   }
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
   if (url.pathname === "/public/reviews") {
@@ -385,6 +405,29 @@ function dayStart(daysAgo) {
   return new Date(d.getTime() - daysAgo * 86400000).toISOString();
 }
 
+// Customers who are due to order again, from their own rhythm: with 2+ orders, due once more days have passed than
+// their usual gap between orders (never under a week); a business (kind 'pro') with a single order, after 30 days.
+// Restaurants, hotels and wedding organisers first, then the most overdue. Each comes with its last order's items,
+// so the owner's WhatsApp reminder can name them.
+async function reorderDue(env, limit = 30) {
+  const rows = await all(env,
+    "select o.phone_norm, count(*) n, max(o.at) last_at, max(c.name) name, max(c.kind) kind, max(c.business) business, " +
+    "julianday('now') - julianday(max(o.at)) days, " +
+    "case when count(*) > 1 then (julianday(max(o.at)) - julianday(min(o.at))) / (count(*) - 1) end gap " +
+    "from orders o left join customers c on c.phone_norm = o.phone_norm where o.status <> 'cancelled' group by o.phone_norm " +
+    "having (n >= 2 and days >= max(7, gap)) or (n = 1 and max(c.kind) = 'pro' and days >= 30) " +
+    "order by (max(c.kind) = 'pro') desc, days - coalesce(gap, 30) desc limit ?", limit);
+  if (!rows.length) return [];
+  const last = await env.DB.batch(rows.map((r) => env.DB.prepare(
+    "select i.name_till, i.name, i.qty, i.unit from order_items i where i.order_id = " +
+    "(select id from orders where phone_norm = ? and status <> 'cancelled' order by at desc limit 1) order by i.idx").bind(r.phone_norm)));
+  return rows.map((r, i) => ({
+    phone_norm: r.phone_norm, name: r.name || "", kind: r.kind || "home", business: r.business || "", orders: r.n,
+    last_at: r.last_at, days: Math.floor(r.days), gap: r.gap == null ? null : Math.round(r.gap),
+    items: (last[i].results || []).map((x) => ({ name: x.name_till || x.name, qty: x.qty, unit: x.unit })),
+  }));
+}
+
 async function overview(env) {
   const today = dayStart(0);
   const d7 = dayStart(6);
@@ -418,6 +461,7 @@ async function overview(env) {
     new_quotes: (quotes.results || [])[0].n,
     top: top.results || [],
     recent: recent.results || [],
+    reorder: await reorderDue(env, 12),
   };
 }
 

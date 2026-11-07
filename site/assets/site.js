@@ -36,7 +36,22 @@
       var p = A.p[el.getAttribute("data-price")];
       if (p) el.textContent = money(p.price);
     });
+    $$("[data-pack-total]").forEach(function (el) { el.textContent = money(packTotal(el.getAttribute("data-pack-total"))); });
+    $$("[data-eur-pack]").forEach(function (el) { el.textContent = eur(packTotal(el.getAttribute("data-eur-pack"))); });
+    $$("[data-eur-unit]").forEach(function (el) { var p = A.p[el.getAttribute("data-eur-unit")]; if (p) el.textContent = eur(p.price); });
     if (showQty) showQty();
+  }
+  /* an approximate euro price beside the dirham one, for customers in Europe (payment stays in dirhams) */
+  function eur(mad) {
+    if (!A.eur || !(mad > 0)) return "";
+    var v = (Math.round(mad * A.eur * 100) / 100).toFixed(2);
+    if (A.lang === "fr" || A.lang === "es") v = v.replace(".", ",");
+    return A.lang === "ar" ? "≈ " + v + " يورو" : A.lang === "en" ? "≈ €" + v : "≈ " + v + " €";
+  }
+  function packQty(pid, q) { return A.p[pid] && A.p[pid].u !== "kg" ? Math.max(1, Math.round(q)) : q; }
+  function packTotal(id) {
+    var k = A.packs && A.packs[id];
+    return k ? k.items.reduce(function (s, x) { return s + (A.p[x[0]] ? A.p[x[0]].price * packQty(x[0], x[1]) : 0); }, 0) : 0;
   }
   try {
     fetch(A.feed, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
@@ -89,6 +104,8 @@
     if (form) form.hidden = !has;
     var t = $("[data-cart-total]");
     if (t) t.textContent = money(total());
+    var te = $("[data-eur-total]");
+    if (te) te.textContent = eur(total());
     renderUpsell();
   }
 
@@ -233,6 +250,7 @@
     var show = function () {
       if (lab) lab.textContent = amount(pid, q);
       if (qp) { qp.textContent = money(q * A.p[pid].price); qp.classList.remove("bump"); void qp.offsetWidth; qp.classList.add("bump"); }
+      var qe = $("[data-eur-qty]"); if (qe) qe.textContent = eur(q * A.p[pid].price);
     };
     showQty = show;
     if (box) $$("[data-step]", box).forEach(function (b) {
@@ -263,6 +281,7 @@
     lines.push(s.o_name + ": " + f.get("name"), s.o_phone + ": " + f.get("phone"));
     if (String(f.get("address") || "").trim()) lines.push(s.o_address + ": " + f.get("address"));
     lines.push(s.o_pay + ": " + (f.get("pay") === "bank" ? s.pay_bank : s.pay_cod));
+    if (f.get("dest") && f.get("dest") !== "ma") lines.push("🇪🇺 " + (f.get("dest") === "eu_ship" ? "→ " + (f.get("country") || "Europe") : "↩ " + (f.get("collector") || "")));
     if (String(f.get("notes") || "").trim()) lines.push(s.o_notes + ": " + String(f.get("notes")).trim());
     lines.push("", s.o_items + ":");
     ids.forEach(function (id) {
@@ -285,7 +304,8 @@
       if (btn) { btn.disabled = true; btn.textContent = A.s.sending; }
       track("InitiateCheckout", ids, value);
       var body = { lang: A.lang, name: f.get("name"), phone: f.get("phone"), address: f.get("address"), notes: f.get("notes"),
-                   pay: f.get("pay"), website: f.get("website"), items: ids.map(function (id) { return { id: id, q: cart[id] }; }) };
+                   pay: f.get("pay"), website: f.get("website"), dest: f.get("dest"), country: f.get("country"), collector: f.get("collector"),
+                   items: ids.map(function (id) { return { id: id, q: cart[id] }; }) };
       var fallback = function () {
         alert(A.s.fail);
         window.location.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, ""));
@@ -307,6 +327,8 @@
           $("[data-cart-form]").hidden = true;
           $("[data-cart-lines]").hidden = true;
           $("[data-done]").hidden = false;
+          remember(d.number, d.total, f, ids);
+          var ab = $("[data-app-box]"); if (ab) ab.hidden = isInstalled();
           cart = {}; save();
           var c = $("[data-cart-count]"); if (c) { c.textContent = ""; c.setAttribute("data-zero", ""); }
         })
@@ -342,7 +364,8 @@
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-copy]");
     if (!b) return;
-    var done = function () { var old = A.s.copy; b.textContent = A.s.copied; setTimeout(function () { b.textContent = old; }, 1500); };
+    var old = b.textContent;
+    var done = function () { b.textContent = A.s.copied; setTimeout(function () { b.textContent = old; }, 1500); };
     if (navigator.clipboard) navigator.clipboard.writeText(b.getAttribute("data-copy")).then(done, function () {});
   });
 
@@ -363,10 +386,28 @@
         shelf = b.getAttribute("data-filter");
         $$("[data-filter]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
         apply();
+        toGridTop();
       };
     });
+    /* after a shelf or a search changes the list, show its first products just under the sticky header and shelf
+       bar, instead of leaving the visitor far below a now-shorter list */
+    var toGridTop = function () {
+      var bar = $(".tools"), head = $("header.top");
+      var y = grid.getBoundingClientRect().top + window.pageYOffset - (head ? head.offsetHeight : 0) - (bar ? bar.offsetHeight : 0) - 10;
+      if (Math.abs(window.pageYOffset - y) > 4) window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
+    };
     var sb = $("[data-search-box]");
-    if (sb) sb.oninput = function () { term = norm(sb.value); apply(); };
+    if (sb) sb.oninput = function () { term = norm(sb.value); apply(); if (window.pageYOffset > grid.offsetTop) toGridTop(); };
+    // the shelf chip that was tapped scrolls into view inside its own row
+    // (it scrolls the row itself, never the page, so it cannot cancel the jump to the products)
+    $$("[data-filter]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var row = b.parentElement, br = b.getBoundingClientRect(), rr = row.getBoundingClientRect();
+        if (row.scrollWidth > row.clientWidth) {
+          row.scrollBy({ left: (br.left + br.width / 2) - (rr.left + rr.width / 2), behavior: reduce ? "auto" : "smooth" });
+        }
+      });
+    });
   }
 
   /* any WhatsApp link: tell the pixel someone reached out */
@@ -498,6 +539,197 @@
   $$("[data-as-chip]").forEach(function (b) { b.onclick = function () { ask(b.textContent); }; });
   if (asForm) asForm.onsubmit = function (e) { e.preventDefault(); var i = $("input", asForm); ask(i.value); i.value = ""; };
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && as && !as.hidden) asShow(false); });
+
+  /* packs: the whole box into the cart in one tap; the seasonal ones go first, with their badge, in their season */
+  var today = new Date().toISOString().slice(0, 10), row = $("[data-pk-row]");
+  if (row && A.packs) {
+    $$("[data-pack]", row).forEach(function (li) {
+      var k = A.packs[li.getAttribute("data-pack")];
+      if (k && k.when && k.when.length === 2 && today >= k.when[0] && today <= k.when[1]) {
+        var bd = $("[data-pk-badge]", li); if (bd) bd.hidden = false;
+        row.insertBefore(li, row.firstChild);
+      }
+    });
+  }
+  $$("[data-add-pack]").forEach(function (b) {
+    var label = b.textContent;
+    b.onclick = function () {
+      var k = A.packs[b.getAttribute("data-add-pack")];
+      if (!k) return;
+      k.items.forEach(function (x) { if (A.p[x[0]]) cart[x[0]] = Math.round(((cart[x[0]] || 0) + packQty(x[0], x[1])) * 100) / 100; });
+      save(); render();
+      track("AddToCart", k.items.map(function (x) { return x[0]; }), packTotal(b.getAttribute("data-add-pack")));
+      b.textContent = "✓"; setTimeout(function () { b.textContent = label; }, 1200);
+      setTimeout(openCart, 300);
+    };
+  });
+
+  /* share a product with a friend: the phone's own share menu (WhatsApp, Instagram, Messenger, SMS...) where the
+     browser has one; otherwise WhatsApp, Facebook and copy link */
+  $$("[data-share-box]").forEach(function (box) {
+    var btn = $("[data-share]", box), alt = $("[data-share-alt]", box);
+    var data = { title: box.getAttribute("data-title"), text: box.getAttribute("data-text"), url: box.getAttribute("data-url") };
+    btn.onclick = function () {
+      try { window.fbq("trackCustom", "Share", { content_ids: [pid], content_type: "product" }); } catch (e) {}
+      if (navigator.share && (!navigator.canShare || navigator.canShare(data))) {
+        navigator.share(data).catch(function () { /* closed by the visitor */ });
+      } else {
+        alt.hidden = !alt.hidden;
+      }
+    };
+  });
+
+  /* delivery: in Morocco, or ordered from Europe (collected by a relative, or shipped once the shop confirms) */
+  var destBox = $("[data-dest-eu]");
+  $$("input[name=dest]").forEach(function (r) {
+    r.onchange = function () {
+      var v = orderForm ? orderForm.dest.value : "ma";
+      if (!destBox) return;
+      destBox.hidden = v === "ma";
+      $("[data-dest-country]", destBox).hidden = v !== "eu_ship";
+      $("[data-dest-who]", destBox).hidden = v !== "eu_pickup";
+      if (orderForm.country) orderForm.country.required = v === "eu_ship";
+    };
+  });
+  applyPrices();
+
+  /* My orders: kept on this phone only (no account), the last 30 orders of the past 12 months, with the name, phone
+     and address of the last one to fill the form next time. The status comes from the shop's back office, which
+     answers only when the order number AND the phone match. */
+  var OKEY = "almas-orders-v1", MEKEY = "almas-me-v1", YEAR = 365 * 864e5;
+  function load(k, d) { try { return JSON.parse(localStorage.getItem(k) || "null") || d; } catch (e) { return d; } }
+  function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
+  function history() {
+    var now = Date.now();
+    return load(OKEY, []).filter(function (o) { return o && o.n && now - Date.parse(o.at) < YEAR; }).slice(0, 30);
+  }
+  function remember(number, totalPaid, f, ids) {
+    var list = history();
+    list.unshift({ n: number, at: new Date().toISOString(), total: totalPaid, pay: f.get("pay"),
+                   items: ids.map(function (id) { return { id: id, q: cart[id] }; }) });
+    store(OKEY, list.slice(0, 30));
+    store(MEKEY, { name: f.get("name"), phone: f.get("phone"), address: f.get("address"), at: new Date().toISOString() });
+    showOrdersBtn();
+  }
+  function me() { var m = load(MEKEY, null); return m && Date.now() - Date.parse(m.at) < YEAR ? m : null; }
+  var orderForm = $("[data-order-form]");
+  (function prefill() {
+    var m = me(), note = $("[data-saved-me]");
+    if (!m || !orderForm) return;
+    ["name", "phone", "address"].forEach(function (k) { if (orderForm[k] && !orderForm[k].value) orderForm[k].value = m[k] || ""; });
+    if (note) note.hidden = false;
+    var c = $("[data-clear-me]");
+    if (c) c.onclick = function () {
+      ["name", "phone", "address"].forEach(function (k) { if (orderForm[k]) orderForm[k].value = ""; });
+      try { localStorage.removeItem(MEKEY); } catch (e) {}
+      note.hidden = true;
+    };
+  })();
+  function showOrdersBtn() { var b = $("[data-open-orders]"); if (b) b.hidden = !history().length; }
+  showOrdersBtn();
+  function dateOf(iso) {
+    try { return new Date(iso).toLocaleDateString(A.lang === "ar" ? "ar-MA" : A.lang, { day: "numeric", month: "short", year: "numeric" }); }
+    catch (e) { return iso.slice(0, 10); }
+  }
+  function renderOrders(status) {
+    var list = history(), ul = $("[data-mo-list]"), none = $("[data-mo-none]");
+    if (!ul) return;
+    none.hidden = list.length > 0;
+    ul.innerHTML = list.map(function (o, i) {
+      var st = status && status[o.n], chip = st ? '<span class="st-chip st-' + esc(st.status) + '">' + esc(A.s["st_" + st.status] || st.status) + "</span>" +
+        (st.paid ? '<span class="st-chip st-paid">' + esc(A.s.st_paid) + "</span>" : "") : "";
+      var items = o.items.filter(function (x) { return A.p[x.id]; }).map(function (x) { return esc(amount(x.id, x.q) + " " + A.p[x.id].n); }).join(" · ");
+      return '<li><div class="mo-top"><b dir="ltr">' + esc(o.n) + "</b><span>" + esc(dateOf(o.at)) + "</span>" + chip + "</div>" +
+        '<p class="mo-items">' + items + '</p><div class="mo-bot"><b>' + money(o.total) + '</b><button type="button" class="btn ghost" data-again="' + i + '">' +
+        esc(A.s.mo_again) + "</button></div></li>";
+    }).join("");
+    $$("[data-again]", ul).forEach(function (b) {
+      b.onclick = function () {
+        var o = list[+b.getAttribute("data-again")];
+        o.items.forEach(function (x) { if (A.p[x.id]) cart[x.id] = x.q; });
+        save(); render(); showCart();
+        track("AddToCart", o.items.map(function (x) { return x.id; }), total());
+      };
+    });
+  }
+  function showOrders() {
+    openCart();
+    var ov = $("[data-orders]"), cv = $("[data-cart-view]"), tt = $("[data-drawer-title]"), ob = $("[data-open-orders]");
+    if (!ov) return;
+    ov.hidden = false; cv.hidden = true; if (ob) ob.hidden = true; if (tt) tt.textContent = A.s.my_orders;
+    renderOrders(null);
+    var m = me(), list = history();
+    if (A.cloud && m && m.phone && list.length) {
+      fetch(A.cloud + "/public/my-orders", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: m.phone, ids: list.map(function (o) { return o.n; }) }) })
+        .then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.orders) renderOrders(d.orders); }).catch(function () {});
+    }
+  }
+  function showCart() {
+    var ov = $("[data-orders]"), cv = $("[data-cart-view]"), tt = $("[data-drawer-title]");
+    if (ov) ov.hidden = true; if (cv) cv.hidden = false; if (tt) tt.textContent = A.s.cart;
+    showOrdersBtn();
+  }
+  $$("[data-open-orders], [data-open-orders-foot]").forEach(function (b) { b.onclick = showOrders; });
+  $$("[data-back-cart]").forEach(function (b) { b.onclick = showCart; });
+  $$("[data-open-cart]").forEach(function (b) { b.addEventListener("click", showCart); });
+  var fg = $("[data-forget]");
+  if (fg) fg.onclick = function () {
+    try { localStorage.removeItem(OKEY); localStorage.removeItem(MEKEY); } catch (e) {}
+    renderOrders(null); fg.textContent = A.s.mo_forgot; fg.disabled = true;
+  };
+  if (/[?&]orders=1/.test(location.search)) setTimeout(showOrders, 50);
+
+  /* the app: installable from any page (footer link, after an order); the sheet offers itself once to a returning
+     customer, never to a first-time visitor who came from an ad. "Not now" is remembered for 30 days. */
+  var deferred = null, AKEY = "almas-app", SNOOZE = 30 * 864e5;
+  function isInstalled() {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true ||
+      load(AKEY, {}).installed === true;
+  }
+  function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+  var sheetEl = $("[data-app-sheet]");
+  function hideInstall() { $$("[data-install]").forEach(function (b) { b.hidden = true; }); if (sheetEl) sheetEl.hidden = true; }
+  function openSheet(howOnly) {
+    if (!sheetEl) return;
+    var how = $("[data-app-how]", sheetEl), go = $("[data-app-go]", sheetEl);
+    if (howOnly) {
+      how.textContent = isIOS() ? how.getAttribute("data-ios") : how.getAttribute("data-manual");
+      how.hidden = false; go.hidden = true;
+      $$("[data-app-no]", sheetEl)[1].textContent = A.s.app_got;
+    }
+    sheetEl.hidden = false;
+    requestAnimationFrame(function () { sheetEl.classList.add("in"); });
+  }
+  function closeSheet(snooze) {
+    if (!sheetEl) return;
+    sheetEl.classList.remove("in"); setTimeout(function () { sheetEl.hidden = true; }, 300);
+    if (snooze) store(AKEY, { snoozed: Date.now() });
+  }
+  function install() {
+    if (deferred) {
+      deferred.prompt();
+      deferred.userChoice.then(function (c) { if (c && c.outcome === "accepted") { store(AKEY, { installed: true }); hideInstall(); } closeSheet(false); });
+      deferred = null;
+    } else openSheet(true);
+  }
+  if (isInstalled()) hideInstall();
+  $$("[data-install]").forEach(function (b) { b.onclick = install; });
+  if (sheetEl) {
+    $("[data-app-go]", sheetEl).onclick = install;
+    $$("[data-app-no]", sheetEl).forEach(function (b) { b.onclick = function () { closeSheet(true); }; });
+  }
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferred = e;
+    var st = load(AKEY, {});
+    if (!isInstalled() && history().length && !(st.snoozed && Date.now() - st.snoozed < SNOOZE)) {
+      setTimeout(function () { if (deferred && (!drawer || drawer.hidden)) openSheet(false); }, 8000);
+    }
+  });
+  window.addEventListener("appinstalled", function () { store(AKEY, { installed: true }); hideInstall(); });
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register((A.root || "") + "/sw.js").catch(function () {}); });
+  }
 
   render();
 })();

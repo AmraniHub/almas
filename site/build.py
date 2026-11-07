@@ -42,6 +42,19 @@ LOCALE = {"ar": "ar_MA", "fr": "fr_MA", "en": "en_US", "es": "es_ES"}
 MONEY = {"ar": "{} درهم", "fr": "{} DH", "en": "{} MAD", "es": "{} DH"}
 # Customer-facing names: Modern Standard Arabic and Spanish (the till's own Arabic name stays in orders, as "t")
 NAMES = json.loads((HERE / "names.json").read_text(encoding="utf-8"))
+PACKS = json.loads((HERE / "packs.json").read_text(encoding="utf-8"))
+MAD_PER_EUR = 10.9  # replaced at build time by the day's rate (open.er-api.com); this is only the fallback
+
+
+def fetch_rate():
+    global MAD_PER_EUR
+    try:
+        r = subprocess.run(["curl", "-s", "--max-time", "20", "https://open.er-api.com/v6/latest/EUR"], capture_output=True, timeout=40)
+        rate = float(json.loads(r.stdout.decode("utf-8"))["rates"]["MAD"])
+        if 8 < rate < 15:
+            MAD_PER_EUR = rate
+    except Exception as e:
+        print("euro rate unavailable, using", MAD_PER_EUR, e)
 
 # Shelf -> Google product category (Meta reads it to place items; text paths are accepted)
 GOOGLE_CAT = {
@@ -114,7 +127,7 @@ T = {
         "biz_cta": "اطلب سعر الكميات الكبيرة",
         "biz_msg": "السلام عليكم، لديّ مؤسسة وأرغب في معرفة سعر كميات كبيرة من: ",
         "nav_pro": "للمهنيين",
-        "search_ph": "ابحث بالعربية أو الفرنسية أو الإنجليزية…",
+        "search_ph": "ابحث بالعربية أو الفرنسية أو الإنجليزية أو الإسبانية…",
         "search_none": "لا توجد نتائج. جرّب اسمًا آخر.",
         "search_pop": "الأكثر طلبًا",
         "search_btn": "بحث",
@@ -209,7 +222,7 @@ T = {
         "biz_body": "Commandez au kilo avec le nom et l'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.",
         "biz_cta": "Demander un prix pour de grandes quantités",
         "biz_msg": "Bonjour Almas, j'ai un établissement et je voudrais un prix pour de grandes quantités de : ",
-        "nav_pro": "Professionnels", "search_ph": "Chercher en arabe, en français ou en anglais…", "search_none": "Aucun résultat. Essayez un autre nom.", "search_pop": "Les plus demandés", "search_btn": "Rechercher", "upsell": "Complétez votre commande", "photo": "Photo", "t_waze": "Waze", "t_waze_sub": "Y aller en voiture", "t_dir": "Itinéraire", "t_call": "Appeler", "t_wa": "WhatsApp", "t_review": "Avis Google", "t_insta": "Instagram",
+        "nav_pro": "Professionnels", "search_ph": "Chercher en arabe, français, anglais ou espagnol…", "search_none": "Aucun résultat. Essayez un autre nom.", "search_pop": "Les plus demandés", "search_btn": "Rechercher", "upsell": "Complétez votre commande", "photo": "Photo", "t_waze": "Waze", "t_waze_sub": "Y aller en voiture", "t_dir": "Itinéraire", "t_call": "Appeler", "t_wa": "WhatsApp", "t_review": "Avis Google", "t_insta": "Instagram",
         "review": "Notez Almas sur Google",
         "insta": "Instagram",
         "directions": "Itinéraire vers la boutique",
@@ -279,7 +292,7 @@ T = {
         "biz_body": "Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.",
         "biz_cta": "Ask for a bulk price",
         "biz_msg": "Hello Almas, I run a business and would like a price for large quantities of: ",
-        "nav_pro": "Businesses", "search_ph": "Search in Arabic, French or English…", "search_none": "No result. Try another name.", "search_pop": "Most ordered", "search_btn": "Search", "upsell": "Complete your order", "photo": "Photo", "t_waze": "Waze", "t_waze_sub": "Drive there", "t_dir": "Directions", "t_call": "Call", "t_wa": "WhatsApp", "t_review": "Google review", "t_insta": "Instagram",
+        "nav_pro": "Businesses", "search_ph": "Search in Arabic, French, English or Spanish…", "search_none": "No result. Try another name.", "search_pop": "Most ordered", "search_btn": "Search", "upsell": "Complete your order", "photo": "Photo", "t_waze": "Waze", "t_waze_sub": "Drive there", "t_dir": "Directions", "t_call": "Call", "t_wa": "WhatsApp", "t_review": "Google review", "t_insta": "Instagram",
         "review": "Rate Almas on Google",
         "insta": "Instagram",
         "directions": "Directions to the shop",
@@ -560,7 +573,10 @@ def head(lang, title, desc, path, image, extra=""):
 <meta name="twitter:card" content="summary_large_image">{extra}
 <meta name="theme-color" content="#211a16">
 <link rel="icon" href="{PREFIX}/img/favicon.png">
-<link rel="apple-touch-icon" href="{PREFIX}/img/logo-192.png">
+<link rel="apple-touch-icon" href="{PREFIX}/img/icon-maskable-192.png">
+<link rel="manifest" href="{PREFIX}/manifest-{lang}.webmanifest">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Almas"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{PREFIX}/assets/site.css?v={STAMP}">
@@ -739,18 +755,38 @@ def cart_drawer(lang):
 <div class="drawer" data-drawer hidden>
 <div class="drawer-bg" data-close-cart></div>
 <aside class="drawer-in" role="dialog" aria-modal="true" aria-label="{esc(t['cart'])}">
-<div class="drawer-head"><h2>{esc(t['cart'])}</h2><button type="button" class="x" data-close-cart aria-label="×">×</button></div>
+<div class="drawer-head"><h2 data-drawer-title>{esc(t['cart'])}</h2>
+<button type="button" class="mo-btn" data-open-orders hidden>{esc(t['my_orders'])}</button>
+<button type="button" class="x" data-close-cart aria-label="×">×</button></div>
 <div class="drawer-body">
+<div class="orders" data-orders hidden>
+<button type="button" class="back" data-back-cart>← {esc(t['back_cart'])}</button>
+<ul class="mo-list" data-mo-list></ul>
+<p class="mo-none" data-mo-none>{esc(t['mo_none'])}</p>
+<p class="note">{esc(t['mo_note'])}</p>
+<button type="button" class="link-btn" data-forget>{esc(t['mo_forget'])}</button>
+</div>
+<div data-cart-view>
 <div data-cart-empty class="empty"><p><b>{esc(t['cart_empty'])}</b></p><p>{esc(t['cart_empty_sub'])}</p></div>
 <ul class="lines" data-cart-lines></ul>
 <div class="upsell" data-upsell hidden><h3>{esc(t['upsell'])}</h3><ul data-upsell-list></ul></div>
 <div data-cart-form hidden>
-<p class="total"><span>{esc(t['subtotal'])}</span><b data-cart-total></b></p>
+<p class="total"><span>{esc(t['subtotal'])}</span><span class="tot-r"><b data-cart-total></b><small class="eur" data-eur-total title="{esc(t['eur_note'])}"></small></span></p>
 <form data-order-form>
+<p class="saved-me" data-saved-me hidden>{esc(t['saved_me'])} <button type="button" class="link-btn" data-clear-me>{esc(t['clear_me'])}</button></p>
 <label>{esc(t['f_name'])}<input name="name" autocomplete="name" required></label>
 <label>{esc(t['f_phone'])}<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
 <label>{esc(t['f_address'])}<input name="address" autocomplete="street-address"></label>
 <label>{esc(t['f_notes'])}<textarea name="notes" rows="2"></textarea></label>
+<fieldset class="pay dest"><legend>{esc(t['dest_title'])}</legend>
+<label class="opt"><input type="radio" name="dest" value="ma" checked> {esc(t['dest_ma'])}</label>
+<label class="opt"><input type="radio" name="dest" value="eu_pickup"> {esc(t['dest_pickup'])}</label>
+<label class="opt"><input type="radio" name="dest" value="eu_ship"> {esc(t['dest_ship'])}</label>
+<div class="dest-eu" data-dest-eu hidden>
+<label data-dest-country>{esc(t['dest_country'])}<input name="country" autocomplete="country-name" maxlength="40"></label>
+<label data-dest-who>{esc(t['dest_who'])}<input name="collector" maxlength="80"></label>
+<p class="note">{esc(t['dest_note'])}</p></div>
+</fieldset>
 <fieldset class="pay"><legend>{esc(t['pay_title'])}</legend>
 <label class="opt"><input type="radio" name="pay" value="cod" checked> {esc(t['pay_cod'])}</label>
 <label class="opt"><input type="radio" name="pay" value="bank"> {esc(t['pay_bank'])}</label>
@@ -767,6 +803,9 @@ def cart_drawer(lang):
 <p data-done-body></p>
 <div data-done-bank hidden>{bank_box(lang)}</div>
 <a class="btn wa-btn" data-done-wa href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">{esc(t['done_wa'])}</a>
+<div class="app-box" data-app-box hidden><b>{esc(t['app_title'])}</b><p>{esc(t['app_sub'])}</p>
+<button type="button" class="btn ghost" data-install>{esc(t['app_go'])}</button></div>
+</div>
 </div>
 </div>
 </aside>
@@ -786,10 +825,12 @@ def footer(lang):
 <a href="{esc(CFG.get('review_url') or CFG['maps_url'])}" rel="noopener">★ {esc(t['review'])}</a>
 {f'<a href="https://www.instagram.com/{esc(CFG["instagram"])}/" rel="noopener">Instagram @{esc(CFG["instagram"])}</a>' if CFG.get("instagram") else ""}
 {play}
+<button type="button" class="foot-btn" data-open-orders-foot>{esc(t['my_orders'])}</button>
+<button type="button" class="foot-btn" data-install>{esc(t['app_link'])}</button>
 <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a>
 </div>
 </div>
-<p class="wrap copy">© {datetime.now().year} {esc(t['name'])}</p>
+<p class="wrap copyright">© {datetime.now().year} {esc(t['name'])}</p>
 </footer>"""
 
 
@@ -799,14 +840,17 @@ def page_data(lang, products, cats):
     data = {
         "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"], "api": CFG.get("order_api", ""),
         "qapi": CFG.get("quote_api", ""), "rapi": CFG.get("review_api", ""), "aapi": CFG.get("assistant_api", ""),
-        "cloud": CFG.get("cloud_url", ""),
+        "cloud": CFG.get("cloud_url", ""), "eur": round(1 / MAD_PER_EUR, 5),
+        "packs": {k["id"]: {"items": k["items"], "when": k["when"], "badge": k["badge"]} for k in PACKS["packs"]},
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
                                 "o_from", "add", "added", "remove", "kg", "piece", "one_msg", "o_pay", "o_number",
                                 "pay_cod", "pay_bank", "pay_card", "card_fail", "sending", "send", "done_body", "fail",
                                 "search_none", "search_pop", "upsell",
                                 "copied", "copy", "q_send", "q_fail", "sending", "rv_count", "rv_verified", "rv_none",
-                                "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa")},
+                                "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa", "my_orders", "cart", "mo_again",
+                                "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
+                                "app_go", "app_got")},
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "t": p["t"], "fr": p["fr"], "en": p["en"], "es": p["es"],
                         "price": p["price"], "u": p["unit"],
                         "c": p["cat"], "r": p.get("rank") or 0, "i": src(p), "l": url(lang, "p/" + p["id"] + "/")} for p in products},
@@ -836,6 +880,30 @@ def card(lang, p, cats):
 <div class="card-buy"><span class="price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small></span>
 <button type="button" class="add" data-add="{p['id']}" aria-label="{esc(t['add'])} {esc(name(p, lang))}">+</button></div>
 </li>"""
+
+
+def packs_section(lang, products):
+    """Ready-made boxes: the shop's own products that go together, priced as the sum of their items."""
+    st = PACKS["strings"][lang]
+    by = {p["id"]: p for p in products}
+    cards = []
+    for k in PACKS["packs"]:
+        items = [(by[i], q) for i, q in k["items"] if i in by]
+        if len(items) < 3:
+            continue
+        items = [(p, q if p["unit"] == "kg" else max(1, int(q))) for p, q in items]
+        total = sum(p["price"] * q for p, q in items)
+        art = "".join(f'<img src="{esc(src(p))}" alt="" width="120" height="120" loading="lazy">' for p, _ in items[:3])
+        lines = "".join(f'<li><span>{esc(name(p, lang))}</span> <small dir="ltr">{"%g g" % (q * 1000) if p["unit"] == "kg" and q < 1 else ("%g kg" % q if p["unit"] == "kg" else "× %d" % q)}</small></li>' for p, q in items)
+        badge = f'<span class="pk-badge" data-pk-badge hidden>{esc(st[k["badge"]])}</span>' if k["badge"] else ""
+        cards.append(f'<li class="pack" data-pack="{k["id"]}"><div class="pk-art">{art}{badge}</div><div class="pk-body"><h3>{esc(k[lang])}</h3>'
+                     f'<ul class="pk-items">{lines}</ul><div class="pk-buy"><span><b data-pack-total="{k["id"]}">{esc(money(lang, total))}</b>'
+                     f'<small class="eur" data-eur-pack="{k["id"]}"></small></span>'
+                     f'<button type="button" class="btn" data-add-pack="{k["id"]}">{esc(st["add"])}</button></div></div></li>')
+    if not cards:
+        return ""
+    return (f'<section class="packs" id="packs"><div class="wrap"><h2>{esc(st["title"])}</h2><p class="lead">{esc(st["sub"])}</p>'
+            f'<ul class="pk-row" data-pk-row>{"".join(cards)}</ul></div></section>')
 
 
 def home(lang, products, cats, stamp_day):
@@ -879,6 +947,7 @@ def home(lang, products, cats, stamp_day):
 <div class="hero-art" aria-hidden="true">{art}</div>
 </div>
 </section>
+{packs_section(lang, products)}
 <section id="products" class="shop">
 <div class="wrap">
 <div class="tools">
@@ -917,6 +986,24 @@ def gallery(p, n, t):
     thumbs = "".join(f'<button type="button" data-g="{i}" aria-label="{esc(t["photo"])} {i + 1}"{" aria-current=true" if i == 0 else ""}>'
                      f'<img src="{esc(local(u))}" alt="" width="80" height="80" loading="lazy"></button>' for i, u in enumerate(imgs))
     return f'<div class="product-img" data-gallery><div class="ph"><div class="g-track">{track}</div></div><div class="g-thumbs">{thumbs}</div></div>'
+
+
+def share_box(lang, p, n):
+    """Share with a friend: the phone's own share menu where there is one, else WhatsApp, Facebook and copy link."""
+    t = T[lang]
+    link = BASE + url(lang, "p/" + p["id"] + "/")[len(PREFIX):] + "?utm_source=share"
+    msg = t["share_msg"].format(n=n, p=money(lang, p["price"]) + " " + (t["kg"] if p["unit"] == "kg" else t["piece"]))
+    wa = "https://wa.me/?text=" + urllib.parse.quote(msg + " " + link)
+    fb = "https://www.facebook.com/sharer/sharer.php?u=" + urllib.parse.quote(link)
+    icon = ('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/>'
+            '<circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></svg>')
+    return (f'<div class="share" data-share-box data-title="{esc(n)}" data-text="{esc(msg)}" data-url="{esc(link)}">'
+            f'<button type="button" class="share-btn" data-share>{icon}<span>{esc(t["share"])}</span></button>'
+            f'<div class="share-alt" data-share-alt hidden>'
+            f'<a class="sh-wa" href="{esc(wa)}" rel="noopener" target="_blank">WhatsApp</a>'
+            f'<a class="sh-fb" href="{esc(fb)}" rel="noopener" target="_blank">Facebook</a>'
+            f'<button type="button" class="sh-copy" data-copy="{esc(link)}" data-copy-label="{esc(t["share_copy"])}">{esc(t["share_copy"])}</button>'
+            f'</div></div>')
 
 
 def product_page(lang, p, products, cats):
@@ -963,11 +1050,12 @@ def product_page(lang, p, products, cats):
 <h1>{esc(n)}</h1>
 <a class="stars-mini big" href="#reviews" data-stars="{p['id']}" hidden></a>
 <ul class="names">{names}</ul>
-<p class="big-price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small></p>
+<p class="big-price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small> <small class="eur" data-eur-unit="{p['id']}"></small></p>
 <div class="qty-row"><div class="qty" data-qty-for="{p['id']}"><button type="button" data-step="-1" aria-label="-">−</button><output data-qty-label></output><button type="button" data-step="1" aria-label="+">+</button></div>
-<p class="qty-price"><small>{esc(t['qty_for'])}</small><b data-qty-price></b></p></div>
+<p class="qty-price"><small>{esc(t['qty_for'])}</small><b data-qty-price></b><small class="eur" data-eur-qty></small></p></div>
 <div class="cta"><button type="button" class="btn" data-add-qty="{p['id']}">{esc(t['add'])}</button>
 <a class="btn ghost wa-link" data-order-one="{p['id']}" href="{esc(one)}" rel="noopener">{esc(t['order_one'])}</a></div>
+{share_box(lang, p, n)}
 <p class="note">{esc(t['order_note'])}<br>{esc(t['pay_note'])}</p>
 </div>
 </section>
@@ -1024,7 +1112,14 @@ def widgets(lang):
               '<circle class="knob" cx="32" cy="7" r="3.6"/>'
               '<circle class="eye" cx="27.5" cy="27" r="2.1"/><circle class="eye" cx="36.5" cy="27" r="2.1"/>'
               '<path class="smile" d="M28 30.8c2.3 2.2 5.7 2.2 8 0"/></svg>')
-    return f"""<button type="button" class="to-top" data-to-top aria-label="{esc(t['top'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    sheet = (f'<div class="app-sheet" data-app-sheet hidden role="dialog" aria-label="{esc(t["app_title"])}"><div class="app-card">'
+             f'<div class="app-top"><img src="{PREFIX}/img/icon-maskable-192.png" alt="" width="52" height="52">'
+             f'<div><b>{esc(t["app_title"])}</b><p>{esc(t["app_sub"])}</p></div>'
+             f'<button type="button" class="x" data-app-no aria-label="×">×</button></div>'
+             f'<p class="app-how" data-app-how hidden data-ios="{esc(t["app_ios"])}" data-manual="{esc(t["app_manual"])}"></p>'
+             f'<div class="app-act"><button type="button" class="btn" data-app-go>{esc(t["app_go"])}</button>'
+             f'<button type="button" class="link-btn" data-app-no>{esc(t["app_not_now"])}</button></div></div></div>')
+    return sheet + f"""<button type="button" class="to-top" data-to-top aria-label="{esc(t['top'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <button type="button" class="as-fab" data-as-open aria-label="{esc(t['as_open'])}">{tagine}<span class="as-tip">{esc(t['as_open'])}</span></button>
 <div class="as" data-as hidden role="dialog" aria-modal="false" aria-label="{esc(t['as_title'])}">
 <div class="as-head">{tagine}<div><b>{esc(t['as_title'])}</b><small>{esc(t['as_sub'])}</small></div><button type="button" class="x" data-as-close aria-label="×">×</button></div>
@@ -1033,6 +1128,23 @@ def widgets(lang):
 <button type="submit" aria-label="{esc(t['as_send'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-7z"/></svg></button></form>
 <a class="as-wa" href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener" data-as-wa>{esc(t['as_wa'])}</a>
 </div>"""
+
+
+def manifest(lang):
+    """The installed app: one app ("id"), opening in the language it was installed from."""
+    t = T[lang]
+    return {
+        "id": PREFIX + "/", "name": t["name"], "short_name": "Almas", "description": t["desc"],
+        "start_url": url(lang) + "?src=app", "scope": PREFIX + "/", "display": "standalone", "orientation": "portrait-primary",
+        "background_color": "#f7f0e7", "theme_color": "#211a16", "lang": lang, "dir": t["dir"],
+        "categories": ["shopping", "food"],
+        "icons": [{"src": f"{PREFIX}/img/logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+                  {"src": f"{PREFIX}/img/logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+                  {"src": f"{PREFIX}/img/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+                  {"src": f"{PREFIX}/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
+        "shortcuts": [{"name": t["my_orders"], "url": url(lang) + "?orders=1&src=app", "icons": [{"src": f"{PREFIX}/img/logo-192.png", "sizes": "192x192"}]},
+                      {"name": t["nav_pro"], "url": url(lang, "pro/") + "?src=app", "icons": [{"src": f"{PREFIX}/img/logo-192.png", "sizes": "192x192"}]}],
+    }
 
 
 def not_found():
@@ -1105,6 +1217,8 @@ STAMP = hashlib.sha256(b"".join((HERE / "assets" / n).read_bytes() for n in ("si
 
 def main():
     data, source = fetch_catalog("--offline" in sys.argv)
+    if "--offline" not in sys.argv:
+        fetch_rate()
     cats = {c["id"]: c for c in data["categories"]}
     for c, names in NAMES["_shelves"].items():
         if c in cats:
@@ -1142,6 +1256,9 @@ def main():
         write(base / "pro" / "index.html", pro_page(lang, products, cats))
         for p in products:
             write(base / "p" / p["id"] / "index.html", product_page(lang, p, products, cats))
+    for lang in LANGS:
+        write(OUT / f"manifest-{lang}.webmanifest", json.dumps(manifest(lang), ensure_ascii=False, indent=1))
+    shutil.copyfile(HERE / "assets" / "sw.js", OUT / "sw.js")
     write(OUT / "404.html", not_found())
     feeds(products, cats)
     write(OUT / "sitemap.xml", sitemap(products))

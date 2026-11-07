@@ -44,6 +44,11 @@ export default async function handler(req, res) {
 
   const name = clean(b.name, 80), phone = clean(b.phone, 30), address = clean(b.address, 200), notes = clean(b.notes, 300);
   const pay = b.pay === "bank" ? "bank" : b.pay === "card" && process.env.STRIPE_SECRET_KEY ? "card" : "cod";
+  // ordered from Europe: collected in Morocco by a relative, or shipped once the shop has confirmed it can be
+  const dest = ["eu_pickup", "eu_ship"].includes(b.dest) ? b.dest : "ma";
+  const country = dest === "eu_ship" ? clean(b.country, 40) : "", collector = dest === "eu_pickup" ? clean(b.collector, 80) : "";
+  const destLine = dest === "eu_ship" ? `🇪🇺 إرسال إلى أوروبا: ${country || "؟"} (أكِّد إمكانية الشحن وتكلفته مع الزبون قبل الدفع)`
+    : dest === "eu_pickup" ? `🇪🇺 الزبون في أوروبا، يستلم الطلب في المغرب: ${collector || "؟"}` : "";
   const lang = Object.keys(LANG).includes(b.lang) ? b.lang : "ar";
   const digits = phone.replace(/\D/g, "");
   if (!name || digits.length < 9 || digits.length > 15) return res.status(400).json({ ok: false, error: "name and phone" });
@@ -79,6 +84,7 @@ export default async function handler(req, res) {
     `📞 ${phone}${wa ? `  →  https://wa.me/${wa}` : ""}`,
     address ? `📍 ${address}` : "",
     `💳 ${PAY[pay]}`,
+    destLine,
     notes ? `📝 ${notes}` : "",
     "",
     ...lines.map((l) => `• ${amount(l.unit, l.q)} ${l.ar} (${l.fr}) — ${money(l.line)}`),
@@ -119,7 +125,9 @@ export default async function handler(req, res) {
   const sent = await telegram(text + (pay === "card" ? "\n⏳ في انتظار الأداء بالبطاقة" : ""));
   if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
   await cloud("/ingest/order", {
-    id: number, at: now.toISOString(), lang, name, phone, address, notes, pay, source: "web",
+    id: number, at: now.toISOString(), lang, name, phone, address, pay, source: dest === "ma" ? "web" : "web-europe",
+    notes: [dest === "eu_ship" ? `[Europe: ship to ${country || "?"}]` : dest === "eu_pickup" ? `[Europe: collected in Morocco by ${collector || "?"}]` : "", notes]
+      .filter(Boolean).join(" "),
     total: Math.round(total * 100) / 100,
     items: lines.map((l) => ({ product: l.id, name_till: l.ar, name: l.fr, qty: l.q, unit: l.unit, unit_price: l.price,
                                line: Math.round(l.line * 100) / 100 })),

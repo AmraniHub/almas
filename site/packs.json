@@ -1,0 +1,41 @@
+{
+  "_note": "Ready-made packs from the shop's own products, priced live as the sum of their items (no discount unless the owner adds one: set 'off' to a percent). 'when' = [from, to] dates when the pack is shown first with its badge; Ramadan 1448 is expected to start about 8 Feb 2027, Eid al-Fitr about 10 Mar 2027, Eid al-Adha about 16 May 2027.",
+  "packs": [
+    {
+      "id": "harira", "when": ["2027-01-10", "2027-03-12"], "badge": "ramadan",
+      "ar": "علبة رمضان: الحريرة", "fr": "Coffret Ramadan : harira", "en": "Ramadan box: harira", "es": "Caja de Ramadán: harira",
+      "items": [["p14", 0.5], ["p1", 0.25], ["p2", 0.25], ["p3", 0.25], ["p9", 0.25], ["p85", 1]]
+    },
+    {
+      "id": "sellou", "when": ["2027-01-10", "2027-03-12"], "badge": "ramadan",
+      "ar": "علبة رمضان: السلّو والشباكية", "fr": "Coffret Ramadan : sellou et chebakia", "en": "Ramadan box: sellou and chebakia", "es": "Caja de Ramadán: sellou y chebakia",
+      "items": [["p20", 1], ["p16", 0.5], ["p39", 0.25], ["p40", 0.25], ["p9", 0.25], ["p135", 1]]
+    },
+    {
+      "id": "eid-fitr", "when": ["2027-02-20", "2027-03-14"], "badge": "eid",
+      "ar": "علبة عيد الفطر: الحلويات", "fr": "Coffret Aïd el-Fitr : pâtisseries", "en": "Eid al-Fitr box: pastries", "es": "Caja del Eid al-Fitr: dulces",
+      "items": [["p16", 1], ["p20", 0.5], ["p22", 0.25], ["p138", 2], ["p131", 4], ["p135", 2]]
+    },
+    {
+      "id": "eid-adha", "when": ["2027-04-25", "2027-05-22"], "badge": "eid",
+      "ar": "علبة عيد الأضحى: اللحم والمشوي", "fr": "Coffret Aïd el-Adha : viande et grillades", "en": "Eid al-Adha box: meat and grills", "es": "Caja del Eid al-Adha: carne y parrilla",
+      "items": [["p12", 0.5], ["p6", 0.5], ["p13", 0.5], ["p185", 0.25], ["p5", 0.25], ["p8", 0.25]]
+    },
+    {
+      "id": "tagine", "when": [], "badge": "",
+      "ar": "علبة الطاجين اليومي", "fr": "Coffret tajine du quotidien", "en": "Everyday tagine box", "es": "Caja del tajine diario",
+      "items": [["p4", 0.25], ["p1", 0.25], ["p2", 0.25], ["p3", 0.25], ["p7", 0.25], ["p85", 1]]
+    },
+    {
+      "id": "tea", "when": [], "badge": "",
+      "ar": "علبة الشاي والأعشاب", "fr": "Coffret thé et infusions", "en": "Tea and herbal box", "es": "Caja de té e infusiones",
+      "items": [["p63", 0.25], ["p59", 0.25], ["p55", 0.25], ["p36", 0.25]]
+    }
+  ],
+  "strings": {
+    "ar": {"title": "علب جاهزة", "sub": "منتجات تُستعمل معًا، بأسعار المتجر. أضف العلبة كاملة بنقرة واحدة.", "add": "أضف العلبة", "added": "أُضيفت", "ramadan": "رمضان", "eid": "العيد"},
+    "fr": {"title": "Coffrets prêts", "sub": "Des produits qui vont ensemble, aux prix de la boutique. Ajoutez tout le coffret en un geste.", "add": "Ajouter le coffret", "added": "Ajouté", "ramadan": "Ramadan", "eid": "Aïd"},
+    "en": {"title": "Ready-made boxes", "sub": "Products that go together, at the shop's prices. Add the whole box in one tap.", "add": "Add the box", "added": "Added", "ramadan": "Ramadan", "eid": "Eid"},
+    "es": {"title": "Cajas preparadas", "sub": "Productos que van juntos, a los precios de la tienda. Añade la caja entera con un toque.", "add": "Añadir la caja", "added": "Añadida", "ramadan": "Ramadán", "eid": "Eid"}
+  }
+}
