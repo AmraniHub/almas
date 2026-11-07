@@ -68,10 +68,17 @@ T = {
         "kg": "للكيلو", "piece": "للوحدة", "add": "زيد للسلة", "added": "تزاد",
         "cart": "السلة", "cart_empty": "السلة فارغة",
         "cart_empty_sub": "زيد المنتجات من الكتالوج، ومن بعد صيفط الطلب للمحل.",
-        "order_note": "طلبك كيوصل للمحل عبر واتساب، ونأكدو معاك الثمن والتوصيل والوقت.",
-        "pay_note": "الخلاص عند الاستلام أو فالمحل. والتوصيل كنتافقو عليه معاك فواتساب.",
+        "order_note": "طلبك كيوصل للمحل مباشرة، ونأكدو معاك الثمن والتوصيل والوقت فواتساب.",
+        "pay_note": "الخلاص عند الاستلام أو فالمحل أو بتحويل بنكي. والتوصيل كنتافقو عليه معاك فواتساب.",
         "f_name": "الاسم أو اسم المؤسسة", "f_phone": "رقم الهاتف", "f_address": "العنوان", "f_notes": "ملاحظات (اختياري)",
-        "send": "صيفط الطلب عبر واتساب", "subtotal": "المجموع", "remove": "حيد",
+        "send": "أكد الطلب", "subtotal": "المجموع", "remove": "حيد",
+        "pay_title": "طريقة الخلاص", "pay_cod": "عند الاستلام أو فالمحل", "pay_bank": "تحويل بنكي",
+        "bank_note": "حول المبلغ لهاد الحساب، وكتب رقم الطلب فسبب التحويل، ومن بعد صيفط لينا الوصل فواتساب.",
+        "b_holder": "المستفيد", "b_bank": "البنك", "b_rib": "RIB", "copy": "نسخ", "copied": "تنسخ",
+        "sending": "كنصيفطو الطلب…", "done_title": "توصلنا بالطلب ديالك",
+        "done_body": "رقم الطلب: {n} · المجموع: {t}. غادي نتاصلو بيك باش نأكدو التوصيل.",
+        "done_wa": "تابع فواتساب", "fail": "ما قدرناش نصيفطو الطلب. غادي يتحل واتساب باش تصيفطو مباشرة.",
+        "o_pay": "💳 الخلاص", "o_number": "🧾 رقم الطلب",
         "biz_title": "المطاعم والفنادق وقاعات الأفراح",
         "biz_body": "اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.",
         "biz_cta": "اطلب ثمن الكميات الكبيرة",
@@ -79,7 +86,7 @@ T = {
         "visit_title": "زورونا فالمحل", "visit_body": "محلنا فالقصر الصغير، قرب طنجة.", "map": "الطريق على خرائط Google",
         "how_title": "كيفاش كتطلب",
         "how": ["اختار المنتجات بالكيلو (كل 250 غرام) أو بالقطعة.", "صيفط الطلب للمحل عبر واتساب من السلة.",
-                "كنأكدو معاك الثمن والتوصيل والوقت، والخلاص عند الاستلام أو فالمحل."],
+                "كنأكدو معاك الثمن والتوصيل والوقت، والخلاص عند الاستلام أو فالمحل أو بتحويل بنكي."],
         "related": "من نفس الرف", "back": "كل المنتجات", "order_one": "اطلب هاد المنتج دابا",
         "one_msg": "السلام عليكم ألماس، بغيت: ",
         "privacy": "سياسة الخصوصية", "app": "تطبيق ألماس على Google Play",
@@ -101,10 +108,17 @@ T = {
         "kg": "le kilo", "piece": "l'unité", "add": "Ajouter", "added": "Ajouté",
         "cart": "Panier", "cart_empty": "Votre panier est vide",
         "cart_empty_sub": "Ajoutez des produits du catalogue, puis envoyez la commande à la boutique.",
-        "order_note": "Votre commande part à la boutique sur WhatsApp. Nous confirmons avec vous le prix, la livraison et l'heure.",
-        "pay_note": "Vous payez à la livraison ou à la boutique. La livraison se convient avec vous sur WhatsApp.",
+        "order_note": "Votre commande part directement à la boutique. Nous confirmons avec vous le prix, la livraison et l'heure sur WhatsApp.",
+        "pay_note": "Vous payez à la livraison, à la boutique ou par virement bancaire. La livraison se convient avec vous sur WhatsApp.",
         "f_name": "Nom ou établissement", "f_phone": "Téléphone", "f_address": "Adresse", "f_notes": "Notes (facultatif)",
-        "send": "Envoyer la commande sur WhatsApp", "subtotal": "Total", "remove": "Retirer",
+        "send": "Confirmer la commande", "subtotal": "Total", "remove": "Retirer",
+        "pay_title": "Paiement", "pay_cod": "À la livraison ou à la boutique", "pay_bank": "Virement bancaire",
+        "bank_note": "Virez le montant sur ce compte avec le numéro de commande en motif, puis envoyez-nous le reçu sur WhatsApp.",
+        "b_holder": "Bénéficiaire", "b_bank": "Banque", "b_rib": "RIB", "copy": "Copier", "copied": "Copié",
+        "sending": "Envoi de la commande…", "done_title": "Commande reçue",
+        "done_body": "Commande {n} · total {t}. Nous vous contactons pour confirmer la livraison.",
+        "done_wa": "Continuer sur WhatsApp", "fail": "La commande n'a pas pu partir. WhatsApp va s'ouvrir pour l'envoyer directement.",
+        "o_pay": "💳 Paiement", "o_number": "🧾 Commande",
         "biz_title": "Restaurants, hôtels, salles de fêtes",
         "biz_body": "Commandez au kilo avec le nom et l'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.",
         "biz_cta": "Demander un prix pour de grandes quantités",
@@ -112,7 +126,7 @@ T = {
         "visit_title": "Venez à la boutique", "visit_body": "Notre boutique est à Ksar Sghir, près de Tanger.", "map": "Itinéraire sur Google Maps",
         "how_title": "Comment commander",
         "how": ["Choisissez vos produits au kilo (par 250 g) ou à la pièce.", "Envoyez la commande à la boutique sur WhatsApp, depuis le panier.",
-                "Nous confirmons le prix, la livraison et l'heure ; vous payez à la livraison ou à la boutique."],
+                "Nous confirmons le prix, la livraison et l'heure ; vous payez à la livraison, à la boutique ou par virement."],
         "related": "Du même rayon", "back": "Tous les produits", "order_one": "Commander ce produit maintenant",
         "one_msg": "Bonjour Almas, je voudrais : ",
         "privacy": "Politique de confidentialité", "app": "L'application Almas sur Google Play",
@@ -134,10 +148,17 @@ T = {
         "kg": "per kilo", "piece": "each", "add": "Add", "added": "Added",
         "cart": "Cart", "cart_empty": "Your cart is empty",
         "cart_empty_sub": "Add products from the catalogue, then send the order to the shop.",
-        "order_note": "Your order goes to the shop on WhatsApp. We confirm the price, the delivery and the time with you.",
-        "pay_note": "You pay on delivery or at the shop. Delivery is agreed with you on WhatsApp.",
+        "order_note": "Your order goes straight to the shop. We confirm the price, the delivery and the time with you on WhatsApp.",
+        "pay_note": "You pay on delivery, at the shop or by bank transfer. Delivery is agreed with you on WhatsApp.",
         "f_name": "Name or business", "f_phone": "Phone", "f_address": "Address", "f_notes": "Notes (optional)",
-        "send": "Send the order on WhatsApp", "subtotal": "Total", "remove": "Remove",
+        "send": "Confirm the order", "subtotal": "Total", "remove": "Remove",
+        "pay_title": "Payment", "pay_cod": "On delivery or at the shop", "pay_bank": "Bank transfer",
+        "bank_note": "Transfer the amount to this account with the order number as the reference, then send us the receipt on WhatsApp.",
+        "b_holder": "Account holder", "b_bank": "Bank", "b_rib": "RIB", "copy": "Copy", "copied": "Copied",
+        "sending": "Sending the order…", "done_title": "Order received",
+        "done_body": "Order {n} · total {t}. We will contact you to confirm the delivery.",
+        "done_wa": "Continue on WhatsApp", "fail": "The order could not be sent. WhatsApp will open so you can send it directly.",
+        "o_pay": "💳 Payment", "o_number": "🧾 Order",
         "biz_title": "Restaurants, hotels, wedding venues",
         "biz_body": "Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.",
         "biz_cta": "Ask for a bulk price",
@@ -145,7 +166,7 @@ T = {
         "visit_title": "Visit the shop", "visit_body": "Our shop is in Ksar Sghir, near Tangier.", "map": "Directions on Google Maps",
         "how_title": "How to order",
         "how": ["Pick products by the kilo (in 250 g steps) or by the piece.", "Send the order to the shop on WhatsApp from the cart.",
-                "We confirm the price, the delivery and the time; you pay on delivery or at the shop."],
+                "We confirm the price, the delivery and the time; you pay on delivery, at the shop or by bank transfer."],
         "related": "From the same shelf", "back": "All products", "order_one": "Order this product now",
         "one_msg": "Hello Almas, I would like: ",
         "privacy": "Privacy policy", "app": "The Almas app on Google Play",
@@ -279,6 +300,21 @@ def header(lang, path):
 </header>"""
 
 
+def bank_box(lang):
+    """The account a bank transfer goes to, with a copy button on the RIB and the IBAN."""
+    t, b = T[lang], CFG.get("bank") or {}
+    if not b.get("rib"):
+        return ""
+    row = lambda label, value, copy=False: (
+        f'<div class="b-row"><dt>{esc(label)}</dt><dd dir="ltr"><span>{esc(value)}</span>'
+        + (f'<button type="button" class="copy" data-copy="{esc(value.replace(" ", ""))}">{esc(t["copy"])}</button>' if copy else "")
+        + "</dd></div>")
+    return (f'<div class="bank"><p>{esc(t["bank_note"])}</p><dl>'
+            + row(t["b_holder"], b["holder"]) + row(t["b_bank"], b["name"]) + row(t["b_rib"], b["rib"], True)
+            + (row("IBAN", b["iban"], True) if b.get("iban") else "") + (row("SWIFT", b["swift"]) if b.get("swift") else "")
+            + "</dl></div>")
+
+
 def cart_drawer(lang):
     t = T[lang]
     return f"""<div class="drawer" data-drawer hidden>
@@ -295,9 +331,21 @@ def cart_drawer(lang):
 <label>{esc(t['f_phone'])}<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
 <label>{esc(t['f_address'])}<input name="address" autocomplete="street-address"></label>
 <label>{esc(t['f_notes'])}<textarea name="notes" rows="2"></textarea></label>
+<fieldset class="pay"><legend>{esc(t['pay_title'])}</legend>
+<label class="opt"><input type="radio" name="pay" value="cod" checked> {esc(t['pay_cod'])}</label>
+<label class="opt"><input type="radio" name="pay" value="bank"> {esc(t['pay_bank'])}</label>
+</fieldset>
+<div data-bank hidden>{bank_box(lang)}</div>
+<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 <p class="note">{esc(t['order_note'])}<br>{esc(t['pay_note'])}</p>
-<button class="btn wa-btn" type="submit">{esc(t['send'])}</button>
+<button class="btn" type="submit" data-send>{esc(t['send'])}</button>
 </form>
+</div>
+<div class="done" data-done hidden>
+<h3>{esc(t['done_title'])}</h3>
+<p data-done-body></p>
+<div data-done-bank hidden>{bank_box(lang)}</div>
+<a class="btn wa-btn" data-done-wa href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">{esc(t['done_wa'])}</a>
 </div>
 </div>
 </aside>
@@ -312,7 +360,7 @@ def footer(lang):
 <div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p></div>
 <div class="foot-links">
 <a href="tel:{esc(CFG['phone'])}" dir="ltr">{esc(CFG['phone_display'])}</a>
-<a href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">WhatsApp</a>
+<a href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">WhatsApp <span dir="ltr">{esc(CFG.get('whatsapp_display', ''))}</span></a>
 <a href="{esc(CFG['maps_url'])}" rel="noopener">{esc(t['map'])}</a>
 {play}
 <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a>
@@ -326,10 +374,11 @@ def page_data(lang, products, cats):
     """What site.js needs: the products in this language, the WhatsApp number, the strings for the order."""
     t = T[lang]
     data = {
-        "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"],
+        "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"], "api": CFG.get("order_api", ""),
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
-                                "o_from", "add", "added", "remove", "kg", "piece", "one_msg")},
+                                "o_from", "add", "added", "remove", "kg", "piece", "one_msg", "o_pay", "o_number",
+                                "pay_cod", "pay_bank", "sending", "send", "done_body", "fail", "copied", "copy")},
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "price": p["price"], "u": p["unit"]} for p in products},
     }
     return data
@@ -521,13 +570,13 @@ def feeds(products, cats):
             w.writerow([
                 p["id"], f"{p['fr']} {size}"[:150],
                 f"{p['fr']} ({p['ar']}), vendu {how} par Almas, herboristerie à Ksar Sghir près de Tanger. "
-                f"Commande sur WhatsApp ; paiement à la livraison ou à la boutique.",
+                f"Commande en ligne ou sur WhatsApp ; paiement à la livraison, à la boutique ou par virement.",
                 "in stock", "new", f"{float(p['price']):.2f} MAD", BASE + url("fr", "p/" + p["id"] + "/")[len(PREFIX):],
                 img, "Almas", GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), cats[p["cat"]]["fr"],
                 cats[p["cat"]]["fr"], "photo" if real else "carte"])
-    over = {"ar": ("ar_AR", "{ar} {size}", "{ar}، كيتباع {how} عند معشبة ألماس فالقصر الصغير قرب طنجة. الطلب عبر واتساب، والخلاص عند الاستلام أو فالمحل.",
+    over = {"ar": ("ar_AR", "{ar} {size}", "{ar}، كيتباع {how} عند معشبة ألماس فالقصر الصغير قرب طنجة. الطلب فالموقع أو عبر واتساب، والخلاص عند الاستلام أو فالمحل أو بتحويل بنكي.",
                    {"kg": ("بالكيلو", "(1 كيلو)"), "piece": ("بالوحدة", "(للوحدة)")}),
-            "en": ("en_XX", "{en} {size}", "{en} ({ar}), sold {how} by Almas, a spice and herb shop in Ksar Sghir near Tangier. Order on WhatsApp; pay on delivery or at the shop.",
+            "en": ("en_XX", "{en} {size}", "{en} ({ar}), sold {how} by Almas, a spice and herb shop in Ksar Sghir near Tangier. Order online or on WhatsApp; pay on delivery, at the shop or by bank transfer.",
                    {"kg": ("by the kilo", "(1 kg)"), "piece": ("by the piece", "(each)")})}
     for lang, (code, title, desc, units) in over.items():
         with open(out / f"meta-{lang}.csv", "w", encoding="utf-8", newline="") as f:

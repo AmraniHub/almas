@@ -59,6 +59,7 @@
     if (c) { c.textContent = count() || ""; if (count()) c.removeAttribute("data-zero"); else c.setAttribute("data-zero", ""); }
     var list = $("[data-cart-lines]");
     if (!list) return;
+    if (count()) { var dn = $("[data-done]"); if (dn) dn.hidden = true; list.hidden = false; } // a new cart after an order
     list.innerHTML = "";
     Object.keys(cart).forEach(function (id) {
       var p = A.p[id];
@@ -129,14 +130,15 @@
     track("ViewContent", [pid], A.p[pid].price);
   }
 
-  /* WhatsApp order: the same layout as the app's, every line carrying the till's Arabic name */
-  var form = $("[data-order-form]");
-  if (form) form.onsubmit = function (e) {
-    e.preventDefault();
-    var f = new FormData(form), s = A.s, ids = Object.keys(cart);
-    if (!ids.length) return;
-    var lines = [s.order_head + " (" + s.o_from + ")", "", s.o_name + ": " + f.get("name"), s.o_phone + ": " + f.get("phone")];
+  /* the order: sent to the shop (Telegram, through /api/order, priced again there from the till), then a
+     confirmation; WhatsApp carries the same text, the app's layout with the till's Arabic name on every line */
+  function orderText(f, number) {
+    var s = A.s, ids = Object.keys(cart);
+    var lines = [s.order_head + " (" + s.o_from + ")", ""];
+    if (number) lines.push(s.o_number + ": " + number);
+    lines.push(s.o_name + ": " + f.get("name"), s.o_phone + ": " + f.get("phone"));
     if (String(f.get("address") || "").trim()) lines.push(s.o_address + ": " + f.get("address"));
+    lines.push(s.o_pay + ": " + (f.get("pay") === "bank" ? s.pay_bank : s.pay_cod));
     if (String(f.get("notes") || "").trim()) lines.push(s.o_notes + ": " + String(f.get("notes")).trim());
     lines.push("", s.o_items + ":");
     ids.forEach(function (id) {
@@ -144,10 +146,50 @@
       lines.push("• " + amount(id, cart[id]) + " " + p.ar + (A.lang === "ar" ? "" : " (" + p.n + ")") + " — " + money(cart[id] * p.price));
     });
     lines.push("", "*" + s.o_total + ": " + money(total()) + "*");
-    track("InitiateCheckout", ids, total());
-    try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: Math.round(total() * 100) / 100, currency: "MAD" }); } catch (err) {}
-    window.location.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(lines.join("\n"));
-  };
+    return lines.join("\n");
+  }
+  var form = $("[data-order-form]");
+  if (form) {
+    $$("input[name=pay]", form).forEach(function (r) {
+      r.onchange = function () { var b = $("[data-bank]"); if (b) b.hidden = form.pay.value !== "bank"; };
+    });
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var f = new FormData(form), ids = Object.keys(cart), btn = $("[data-send]", form);
+      if (!ids.length || (btn && btn.disabled)) return;
+      var value = total();
+      if (btn) { btn.disabled = true; btn.textContent = A.s.sending; }
+      track("InitiateCheckout", ids, value);
+      var body = { lang: A.lang, name: f.get("name"), phone: f.get("phone"), address: f.get("address"), notes: f.get("notes"),
+                   pay: f.get("pay"), website: f.get("website"), items: ids.map(function (id) { return { id: id, q: cart[id] }; }) };
+      var fallback = function () {
+        alert(A.s.fail);
+        window.location.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, ""));
+      };
+      fetch(A.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) {
+          if (!d || !d.ok) { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } return fallback(); }
+          try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }); } catch (err) {}
+          var wa = $("[data-done-wa]");
+          if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number));
+          $("[data-done-body]").textContent = A.s.done_body.replace("{n}", d.number).replace("{t}", money(d.total));
+          var db = $("[data-done-bank]"); if (db) db.hidden = f.get("pay") !== "bank";
+          $("[data-cart-form]").hidden = true;
+          $("[data-cart-lines]").hidden = true;
+          $("[data-done]").hidden = false;
+          cart = {}; save();
+          var c = $("[data-cart-count]"); if (c) { c.textContent = ""; c.setAttribute("data-zero", ""); }
+        })
+        .catch(function () { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } fallback(); });
+    };
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-copy]");
+    if (!b) return;
+    var done = function () { var old = A.s.copy; b.textContent = A.s.copied; setTimeout(function () { b.textContent = old; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(b.getAttribute("data-copy")).then(done, function () {});
+  });
 
   /* home: search and shelf filter */
   var grid = $("[data-grid]");

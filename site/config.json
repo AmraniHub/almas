@@ -6,7 +6,16 @@
   "brand_en": "Almas Spices & Herbs",
   "phone": "+212619434035",
   "phone_display": "06 19 43 40 35",
-  "whatsapp": "212619434035",
+  "whatsapp": "212627716149",
+  "whatsapp_display": "06 27 71 61 49",
+  "order_api": "/api/order",
+  "bank": {
+    "holder": "MONSIEUR ABDELALI EL AMRANI",
+    "name": "CIH BANK",
+    "rib": "230 720 2385504211008600 15",
+    "iban": "MA64 2307 2023 8550 4211 0086 0015",
+    "swift": "CIHMMAMC"
+  },
   "maps_url": "https://maps.google.com/?cid=5907200103412499017",
   "catalog_url": "https://aronium-shop.amrani4online.workers.dev/app/catalog.json",
   "image_base": "https://aronium-shop.amrani4online.workers.dev/app/img",

@@ -1,0 +1,114 @@
+// POST /api/order: a website order. Priced again here from the till's live catalogue (the browser's prices are
+// never trusted), numbered, and sent to the shop owners through the Almas shop bot on Telegram.
+// Env: TELEGRAM_BOT_TOKEN (the shop bot), TELEGRAM_CHAT_IDS (comma-separated owner chats).
+const CATALOG = "https://aronium-shop.amrani4online.workers.dev/app/catalog.json";
+const PAY = { cod: "💵 عند الاستلام أو فالمحل", bank: "🏦 تحويل بنكي (CIH)" };
+const LANG = { ar: "العربية", fr: "الفرنسية", en: "الإنجليزية" };
+
+function clean(v, max) {
+  return String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
+}
+
+function moroccanWa(phone) {
+  // 06 12 34 56 78 -> 212612345678, +212 6... -> 2126..., anything else: digits as typed
+  let d = phone.replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.length === 10 && d.startsWith("0")) d = "212" + d.slice(1);
+  return d;
+}
+
+function amount(unit, q) {
+  if (unit !== "kg") return `${q} ×`;
+  return q < 1 ? `${Math.round(q * 1000)} غرام` : `${q} كيلو`;
+}
+
+function money(n) {
+  const r = Math.round(n * 100) / 100;
+  return `${Number.isInteger(r) ? r : r.toFixed(2)} درهم`;
+}
+
+let cached = null; // { at, byId }: a warm function reuses the till's prices for 5 minutes
+
+async function catalogue() {
+  if (cached && Date.now() - cached.at < 300000) return cached.byId;
+  const r = await fetch(CATALOG, { signal: AbortSignal.timeout(10000), headers: { "user-agent": "almas-site" } });
+  if (!r.ok) throw new Error("catalogue " + r.status);
+  const d = await r.json();
+  const byId = Object.fromEntries((d.products || []).map((p) => [p.id, p]));
+  if (!Object.keys(byId).length) throw new Error("empty catalogue");
+  cached = { at: Date.now(), byId };
+  return byId;
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "POST only" });
+  const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+  if (b.website) return res.status(200).json({ ok: true, number: "AL-0" }); // honeypot: a bot filled the hidden field
+
+  const name = clean(b.name, 80), phone = clean(b.phone, 30), address = clean(b.address, 200), notes = clean(b.notes, 300);
+  const pay = b.pay === "bank" ? "bank" : "cod";
+  const lang = ["ar", "fr", "en"].includes(b.lang) ? b.lang : "ar";
+  const digits = phone.replace(/\D/g, "");
+  if (!name || digits.length < 9 || digits.length > 15) return res.status(400).json({ ok: false, error: "name and phone" });
+  const items = Array.isArray(b.items) ? b.items.slice(0, 60) : [];
+  if (!items.length) return res.status(400).json({ ok: false, error: "empty cart" });
+
+  let cat;
+  try {
+    cat = await catalogue();
+  } catch (e) {
+    return res.status(503).json({ ok: false, error: "catalogue unavailable" });
+  }
+  const lines = [];
+  let total = 0;
+  for (const it of items) {
+    const p = cat[String(it.id)];
+    const q = Math.round(Number(it.q) * 100) / 100;
+    const step = p && p.unit === "kg" ? 0.25 : 1;
+    if (!p || !(q > 0) || q > 500 || Math.abs(q / step - Math.round(q / step)) > 1e-6) continue;
+    const line = q * p.price;
+    total += line;
+    lines.push({ id: p.id, ar: p.ar, fr: p.fr, unit: p.unit, q, price: p.price, line });
+  }
+  if (!lines.length) return res.status(400).json({ ok: false, error: "no known product" });
+
+  const now = new Date();
+  const number = `AL-${now.toISOString().slice(2, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const wa = moroccanWa(phone);
+  const text = [
+    `🛒 طلب جديد من الموقع — ${number}`,
+    "",
+    `👤 ${name}`,
+    `📞 ${phone}${wa ? `  →  https://wa.me/${wa}` : ""}`,
+    address ? `📍 ${address}` : "",
+    `💳 ${PAY[pay]}`,
+    notes ? `📝 ${notes}` : "",
+    "",
+    ...lines.map((l) => `• ${amount(l.unit, l.q)} ${l.ar} (${l.fr}) — ${money(l.line)}`),
+    "",
+    `المجموع: ${money(total)}`,
+    `لغة الزبون: ${LANG[lang]}`,
+  ].filter((x, i, a) => x !== "" || (a[i - 1] !== "" && i > 0)).join("\n");
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chats = String(process.env.TELEGRAM_CHAT_IDS || "").split(",").map((s) => s.trim()).filter(Boolean);
+  let sent = 0;
+  for (const chat of chats) {
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ chat_id: chat, text, disable_web_page_preview: true }),
+        signal: AbortSignal.timeout(8000),
+      });
+      if (r.ok) sent++;
+    } catch (e) {
+      /* one chat down must not lose the order for the other */
+    }
+  }
+  if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
+  return res.status(200).json({
+    ok: true, number, total: Math.round(total * 100) / 100,
+    lines: lines.map((l) => ({ id: l.id, q: l.q, line: Math.round(l.line * 100) / 100 })),
+  });
+}
