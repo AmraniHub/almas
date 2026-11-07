@@ -313,6 +313,8 @@ def image_of(p):
     """(absolute URL, is_real_photo) of the product's picture."""
     if p.get("img"):
         return f"{CFG['image_base']}/{p['id'][1:]}.jpg?v={p['img']}", True
+    if (STATIC / "img" / "photo" / f"{p['id']}.jpg").exists():  # a photo of the product found on the web
+        return f"{BASE}/img/photo/{p['id']}.jpg", True
     if (STATIC / "img" / "p" / f"{p['id']}.jpg").exists():
         return f"{BASE}/img/p/{p['id']}.jpg", False
     return f"{BASE}/img/cat/{p['cat']}.jpg", False
@@ -321,7 +323,7 @@ def image_of(p):
 def src(p):
     """The picture as a page uses it: our own images by site path (they work before publishing too)."""
     img, real = image_of(p)
-    return img if real else PREFIX + img[len(BASE):]
+    return PREFIX + img[len(BASE):] if img.startswith(BASE) else img
 
 
 def name(p, lang):
@@ -866,7 +868,7 @@ def main():
     missing = [p["id"] for p in products if not image_of(p)[0].startswith(CFG["image_base"])
                and not (STATIC / "img" / "p" / f"{p['id']}.jpg").exists()]
     print(f"built {len(products)} products x {len(LANGS)} languages from the {source} catalogue; "
-          f"{sum(1 for p in products if p.get('img'))} with a real photo; {len(missing)} without a card "
+          f"{sum(1 for p in products if image_of(p)[1])} with a photo; {len(missing)} without a card "
           f"(shelf card used){': ' + ', '.join(missing) if missing else ''}")
 
 
