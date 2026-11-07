@@ -1,11 +1,10 @@
 // POST /api/order: a website order. Priced again here from the till's live catalogue (the browser's prices are
 // never trusted), numbered, and sent to the shop owners through the Almas shop bot on Telegram.
 // Env: TELEGRAM_BOT_TOKEN (the shop bot), TELEGRAM_CHAT_IDS (comma-separated owner chats).
-import { telegram, stripe, money } from "./_lib.js";
+import { telegram, stripe, money, cloud, LANGS as LANG } from "./_lib.js";
 
 const CATALOG = "https://aronium-shop.amrani4online.workers.dev/app/catalog.json";
-const PAY = { cod: "💵 عند الاستلام أو فالمحل", bank: "🏦 تحويل بنكي (CIH)", card: "💳 بطاقة بنكية (Stripe)" };
-const LANG = { ar: "العربية", fr: "الفرنسية", en: "الإنجليزية" };
+const PAY = { cod: "💵 عند الاستلام أو في المتجر", bank: "🏦 تحويل بنكي (CIH)", card: "💳 بطاقة بنكية (Stripe)" };
 
 function clean(v, max) {
   return String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -21,7 +20,7 @@ function moroccanWa(phone) {
 
 function amount(unit, q) {
   if (unit !== "kg") return `${q} ×`;
-  return q < 1 ? `${Math.round(q * 1000)} غرام` : `${q} كيلو`;
+  return q < 1 ? `${Math.round(q * 1000)} غ` : `${q} كلغ`;
 }
 
 
@@ -45,7 +44,7 @@ export default async function handler(req, res) {
 
   const name = clean(b.name, 80), phone = clean(b.phone, 30), address = clean(b.address, 200), notes = clean(b.notes, 300);
   const pay = b.pay === "bank" ? "bank" : b.pay === "card" && process.env.STRIPE_SECRET_KEY ? "card" : "cod";
-  const lang = ["ar", "fr", "en"].includes(b.lang) ? b.lang : "ar";
+  const lang = Object.keys(LANG).includes(b.lang) ? b.lang : "ar";
   const digits = phone.replace(/\D/g, "");
   if (!name || digits.length < 9 || digits.length > 15) return res.status(400).json({ ok: false, error: "name and phone" });
   const items = Array.isArray(b.items) ? b.items.slice(0, 60) : [];
@@ -96,7 +95,7 @@ export default async function handler(req, res) {
     try {
       const s = await stripe("POST", "checkout/sessions", {
         mode: "payment",
-        locale: lang === "en" ? "en" : "fr", // Stripe Checkout has no Arabic
+        locale: lang === "ar" ? "fr" : lang, // Stripe Checkout has no Arabic
         success_url: `${base}/merci/?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${base}/?cancel=${number}`,
         client_reference_id: number,
@@ -119,6 +118,12 @@ export default async function handler(req, res) {
 
   const sent = await telegram(text + (pay === "card" ? "\n⏳ في انتظار الأداء بالبطاقة" : ""));
   if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
+  await cloud("/ingest/order", {
+    id: number, at: now.toISOString(), lang, name, phone, address, notes, pay, source: "web",
+    total: Math.round(total * 100) / 100,
+    items: lines.map((l) => ({ product: l.id, name_till: l.ar, name: l.fr, qty: l.q, unit: l.unit, unit_price: l.price,
+                               line: Math.round(l.line * 100) / 100 })),
+  });
   return res.status(200).json({
     ok: true, number, total: Math.round(total * 100) / 100, url,
     lines: lines.map((l) => ({ id: l.id, q: l.q, line: Math.round(l.line * 100) / 100 })),

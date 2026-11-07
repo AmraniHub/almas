@@ -23,7 +23,7 @@ PROJECT = "almas-epices"
 TEAM = "team_ue3PsJr6RqkpDCV8sS5nHmKX"
 # what the build reads: the generator, its static files, the app's privacy page and Play images, and the
 # app's built-in catalogue (the build's fallback when the till's feed cannot be reached)
-INCLUDE = ["vercel.json", "site", "docs/privacy-policy.html", "docs/store", "app/assets/catalog/products.json"]
+INCLUDE = ["vercel.json", "package.json", "package-lock.json", "api", "site", "docs/privacy-policy.html", "docs/store", "app/assets/catalog/products.json"]
 SKIP = {"__pycache__", "deploy-vercel.py", "cards.py"}
 
 

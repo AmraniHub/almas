@@ -1,8 +1,6 @@
 // POST /api/quote/: a price request from a restaurant, hotel, caterer or wedding organiser (the /pro/ page),
 // sent to the shop owners through the Almas shop bot on Telegram.
-import { telegram } from "./_lib.js";
-
-const LANG = { ar: "العربية", fr: "الفرنسية", en: "الإنجليزية" };
+import { telegram, cloud, LANGS as LANG } from "./_lib.js";
 
 function clean(v, max) {
   return String(v == null ? "" : v).replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -16,7 +14,7 @@ export default async function handler(req, res) {
     type: clean(b.type, 40), business: clean(b.business, 100), contact: clean(b.contact, 80), phone: clean(b.phone, 30),
     city: clean(b.city, 60), freq: clean(b.freq, 30), date: clean(b.date, 10), guests: clean(b.guests, 6), items: clean(b.items, 1500),
   };
-  const lang = ["ar", "fr", "en"].includes(b.lang) ? b.lang : "ar";
+  const lang = Object.keys(LANG).includes(b.lang) ? b.lang : "ar";
   const digits = f.phone.replace(/\D/g, "");
   if (!f.business || !f.items || digits.length < 9 || digits.length > 15) {
     return res.status(400).json({ ok: false, error: "business, phone and products" });
@@ -40,5 +38,8 @@ export default async function handler(req, res) {
   ].filter((x, i, a) => x !== "" || (i > 0 && a[i - 1] !== "")).join("\n");
   const sent = await telegram(text);
   if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
+  const now = new Date();
+  await cloud("/ingest/quote", { id: `Q-${now.toISOString().slice(2, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`,
+                                 at: now.toISOString(), lang, ...f });
   return res.status(200).json({ ok: true });
 }

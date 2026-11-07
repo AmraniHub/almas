@@ -45,3 +45,12 @@ Each of these needs the shop PC updated, so it waits for a moment the owner choo
 
 15. Ramadan and Eid collections and bundles (harira spices, ras el hanout kits) built from the best sellers.
 16. Its own domain (almas.ma belongs to someone else), which also lets Meta verify the domain.
+
+## Prices from the till (when the shop is closed — do not touch the shop PC while it is open)
+
+17. **The till publishes its prices itself.** The website already re-reads every price in the visitor's browser
+    from `aronium-shop.amrani4online.workers.dev/app/catalog.json`, and `/api/order` prices each order from the
+    same file, so a price changed there changes on the site at once, with no rebuild. Today that file was
+    published from the laptop on 2026-10-27; the till's `cloud.py` predates the `app_feed` push. Install the
+    newer `cloud.py` on the shop PC (Aronium closed, backup first) so a price changed in Aronium reaches the
+    site within minutes. New products still need a rebuild (one push) to get their own page.

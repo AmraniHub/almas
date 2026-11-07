@@ -2,7 +2,7 @@
 // (the browser's word is never trusted) and tells the shop on Telegram once per payment: the PaymentIntent is
 // marked notified=1 so a reload or a second tab does not announce it again. A webhook can replace this when Almas
 // gets its own Stripe account.
-import { telegram, stripe, money } from "./_lib.js";
+import { telegram, stripe, money, cloud } from "./_lib.js";
 
 export default async function handler(req, res) {
   const id = String((req.query && req.query.session_id) || "");
@@ -21,6 +21,7 @@ export default async function handler(req, res) {
   const pi = s.payment_intent && typeof s.payment_intent === "object" ? s.payment_intent : null;
   if (paid && pi && !(pi.metadata && pi.metadata.notified)) {
     const sent = await telegram(`✅ تم الأداء بالبطاقة — ${number}\nالمبلغ: ${money(total)}${s.livemode ? "" : "\n(وضع التجربة)"}`);
+    await cloud("/ingest/paid", { id: number, stripe_session: id, amount: total });
     if (sent) {
       try {
         await stripe("POST", `payment_intents/${pi.id}`, { metadata: { notified: "1" } });

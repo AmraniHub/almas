@@ -1,0 +1,9 @@
+{
+  "name": "almas-website",
+  "private": true,
+  "type": "module",
+  "description": "Vercel functions of the Almas website (api/). The pages are built by site/build.py (Python, stdlib).",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0"
+  }
+}

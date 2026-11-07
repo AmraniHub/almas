@@ -37,9 +37,11 @@ CFG = json.loads((HERE / "config.json").read_text(encoding="utf-8"))
 OUT = Path(os.environ.get("ALMAS_OUT") or ROOT / "public")
 BASE = (os.environ.get("ALMAS_BASE_URL") or CFG["base_url"]).rstrip("/")
 PREFIX = "/" + BASE.split("://", 1)[1].split("/", 1)[1] if BASE.count("/") > 2 else ""  # "" at a domain's root
-LANGS = ("ar", "fr", "en")
-LOCALE = {"ar": "ar_MA", "fr": "fr_MA", "en": "en_US"}
-MONEY = {"ar": "{} درهم", "fr": "{} DH", "en": "{} MAD"}
+LANGS = ("ar", "fr", "en", "es")
+LOCALE = {"ar": "ar_MA", "fr": "fr_MA", "en": "en_US", "es": "es_ES"}
+MONEY = {"ar": "{} درهم", "fr": "{} DH", "en": "{} MAD", "es": "{} DH"}
+# Customer-facing names: Modern Standard Arabic and Spanish (the till's own Arabic name stays in orders, as "t")
+NAMES = json.loads((HERE / "names.json").read_text(encoding="utf-8"))
 
 # Shelf -> Google product category (Meta reads it to place items; text paths are accepted)
 GOOGLE_CAT = {
@@ -57,73 +59,122 @@ GOOGLE_CAT = {
 T = {
     "ar": {
         "dir": "rtl", "name": CFG["brand_ar"],
-        "title": "معشبة ألماس | توابل وأعشاب بالكيلو في القصر الصغير",
-        "desc": "توابل وأعشاب من محلنا في القصر الصغير، للبيت والمطاعم والفنادق وقاعات الأفراح. أسعار المحل الحقيقية، والطلب عبر واتساب.",
+        "title": "معشبة ألماس | توابل وأعشاب بالكيلوغرام في القصر الصغير",
+        "desc": "توابل وأعشاب من متجرنا في القصر الصغير، للمنازل والمطاعم والفنادق وقاعات الأفراح، بأسعار المتجر. اطلب عبر الموقع أو واتساب.",
         "kicker": "القصر الصغير، قرب طنجة",
-        "h1": "توابل وأعشاب بالكيلو، من محلنا في القصر الصغير",
-        "lead": "توابل وأعشاب من محلنا في القصر الصغير، للبيت والمطاعم والفنادق وقاعات الأفراح. الأثمنة هي أثمنة المحل.",
-        "browse": "تصفح المنتجات", "wa": "اطلب عبر واتساب", "call": "اتصل بنا",
-        "facts": "{n} منتج · {s} رفوف",
-        "search": "ابحث عن منتج…", "all": "الكل", "none": "ما لقينا حتى منتج بهاد الاسم.",
-        "kg": "للكيلو", "piece": "للوحدة", "add": "زيد للسلة", "added": "تزاد",
-        "cart": "السلة", "cart_empty": "السلة فارغة",
-        "cart_empty_sub": "زيد المنتجات من الكتالوج، ومن بعد صيفط الطلب للمحل.",
-        "order_note": "طلبك كيوصل للمحل مباشرة، ونأكدو معاك الثمن والتوصيل والوقت فواتساب.",
-        "pay_note": "الخلاص عند الاستلام أو فالمحل أو بتحويل بنكي. والتوصيل كنتافقو عليه معاك فواتساب.",
-        "f_name": "الاسم أو اسم المؤسسة", "f_phone": "رقم الهاتف", "f_address": "العنوان", "f_notes": "ملاحظات (اختياري)",
-        "send": "أكد الطلب", "subtotal": "المجموع", "remove": "حيد",
-        "pay_title": "طريقة الخلاص", "pay_cod": "عند الاستلام أو فالمحل", "pay_bank": "تحويل بنكي",
-        "bank_note": "حول المبلغ لهاد الحساب، وكتب رقم الطلب فسبب التحويل، ومن بعد صيفط لينا الوصل فواتساب.",
-        "b_holder": "المستفيد", "b_bank": "البنك", "b_rib": "RIB", "copy": "نسخ", "copied": "تنسخ",
-        "sending": "كنصيفطو الطلب…", "done_title": "توصلنا بالطلب ديالك",
-        "done_body": "رقم الطلب: {n} · المجموع: {t}. غادي نتاصلو بيك باش نأكدو التوصيل.",
-        "done_wa": "تابع فواتساب", "fail": "ما قدرناش نصيفطو الطلب. غادي يتحل واتساب باش تصيفطو مباشرة.",
-        "o_pay": "💳 الخلاص", "o_number": "🧾 رقم الطلب",
-        "pay_card": "بطاقة بنكية (أداء آمن فالإنترنت)",
-        "card_fail": "الأداء بالبطاقة ما خدامش دابا لهاد الطلب. اختار طريقة أخرى للخلاص.",
-        "ty_title": "شكرا ليك", "ty_wait": "كنتأكدو من الأداء…",
-        "ty_paid": "توصلنا بالأداء ديال الطلب {n} ({t}). غادي نتاصلو بيك باش نأكدو التوصيل.",
-        "ty_unpaid": "مازال ما توصلناش بتأكيد الأداء. إلا خلصتي، صيفط لينا رقم الطلب فواتساب.",
+        "h1": "توابل وأعشاب بالكيلوغرام من متجرنا في القصر الصغير",
+        "lead": "توابل وأعشاب من متجرنا في القصر الصغير، للمنازل والمطاعم والفنادق وقاعات الأفراح، بأسعار المتجر.",
+        "browse": "تصفح المنتجات",
+        "wa": "اطلب عبر واتساب",
+        "call": "اتصل بنا",
+        "facts": "{n} منتجًا · {s} أقسام",
+        "search": "ابحث عن منتج…",
+        "all": "الكل",
+        "none": "لم نجد أي منتج بهذا الاسم.",
+        "kg": "للكيلوغرام",
+        "piece": "للقطعة",
+        "add": "أضف إلى السلة",
+        "added": "تمت الإضافة",
+        "cart": "السلة",
+        "cart_empty": "سلتك فارغة",
+        "cart_empty_sub": "أضف منتجات من الكتالوج، ثم أرسل الطلب إلى المتجر.",
+        "order_note": "يصل طلبك إلى المتجر مباشرة، ونؤكد معك السعر والتوصيل والموعد عبر واتساب.",
+        "pay_note": "الدفع عند الاستلام أو في المتجر أو بالتحويل البنكي، ويُتفق معك على التوصيل عبر واتساب.",
+        "f_name": "الاسم أو اسم المؤسسة",
+        "f_phone": "رقم الهاتف",
+        "f_address": "العنوان",
+        "f_notes": "ملاحظات (اختياري)",
+        "send": "تأكيد الطلب",
+        "subtotal": "المجموع",
+        "remove": "حذف",
+        "pay_title": "طريقة الدفع",
+        "pay_cod": "عند الاستلام أو في المتجر",
+        "pay_bank": "تحويل بنكي",
+        "bank_note": "حوّل المبلغ إلى هذا الحساب مع ذكر رقم الطلب في سبب التحويل، ثم أرسل إلينا الإيصال عبر واتساب.",
+        "b_holder": "المستفيد",
+        "b_bank": "البنك",
+        "b_rib": "RIB",
+        "copy": "نسخ",
+        "copied": "تم النسخ",
+        "sending": "جارٍ إرسال الطلب…",
+        "done_title": "تم استلام طلبك",
+        "done_body": "رقم الطلب: {n} · المجموع: {t}. سنتواصل معك لتأكيد التوصيل.",
+        "done_wa": "المتابعة عبر واتساب",
+        "fail": "تعذّر إرسال الطلب. سيُفتح واتساب لإرساله مباشرة.",
+        "o_pay": "💳 الدفع",
+        "o_number": "🧾 رقم الطلب",
+        "pay_card": "بطاقة بنكية (دفع آمن عبر الإنترنت)",
+        "card_fail": "الدفع بالبطاقة غير متاح لهذا الطلب. يُرجى اختيار طريقة دفع أخرى.",
+        "ty_title": "شكرًا لك",
+        "ty_wait": "جارٍ التحقق من الدفع…",
+        "ty_paid": "تم استلام دفعة الطلب {n} ({t}). سنتواصل معك لتأكيد التوصيل.",
+        "ty_unpaid": "لم يصلنا تأكيد الدفع بعد. إن كنت قد دفعت، فأرسل إلينا رقم الطلب عبر واتساب.",
         "biz_title": "المطاعم والفنادق وقاعات الأفراح",
-        "biz_body": "اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.",
-        "biz_cta": "اطلب ثمن الكميات الكبيرة",
-        "biz_msg": "السلام عليكم ألماس، عندي مؤسسة وبغيت الثمن ديال كميات كبيرة من: ",
-        "nav_pro": "للمهنيين", "search_ph": "ابحث بالعربية أو الفرنسية أو الإنجليزية…", "search_none": "ما لقينا والو. جرب اسم آخر.", "search_pop": "الأكثر طلبا", "search_btn": "بحث", "upsell": "كمل الطلب ديالك", "photo": "صورة", "t_waze": "Waze", "t_waze_sub": "سوق حتى للمحل", "t_dir": "الطريق للمحل", "t_call": "اتصل بنا", "t_wa": "واتساب", "t_review": "قيمنا على Google", "t_insta": "إنستغرام",
-        "review": "قيم ألماس على Google",
+        "biz_body": "اطلب بالكيلوغرام باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا عرض سعر عبر واتساب.",
+        "biz_cta": "اطلب سعر الكميات الكبيرة",
+        "biz_msg": "السلام عليكم، لديّ مؤسسة وأرغب في معرفة سعر كميات كبيرة من: ",
+        "nav_pro": "للمهنيين",
+        "search_ph": "ابحث بالعربية أو الفرنسية أو الإنجليزية…",
+        "search_none": "لا توجد نتائج. جرّب اسمًا آخر.",
+        "search_pop": "الأكثر طلبًا",
+        "search_btn": "بحث",
+        "upsell": "أكمل طلبك",
+        "photo": "صورة",
+        "t_waze": "Waze",
+        "t_waze_sub": "القيادة إلى المتجر",
+        "t_dir": "الطريق إلى المتجر",
+        "t_call": "اتصل بنا",
+        "t_wa": "واتساب",
+        "t_review": "قيّمنا على Google",
+        "t_insta": "إنستغرام",
+        "review": "قيّم ألماس على Google",
         "insta": "إنستغرام",
-        "directions": "الطريق للمحل",
+        "directions": "الطريق إلى المتجر",
         "pro_title": "للمطاعم والفنادق ومنظمي الأعراس",
-        "pro_lead": "توابل وأعشاب وخلطات بالكيلو للمطابخ المهنية والأعراس والمناسبات، من محلنا فالقصر الصغير قرب طنجة.",
-        "pro_points": ["بالكيلو، بأثمنة المحل.", "للكميات الكبيرة، اطلب منا الثمن.", "الخلاص عند الاستلام أو فالمحل أو بتحويل بنكي.", "التوصيل كنتافقو عليه معاك فواتساب."],
-        "pro_top": "الأكثر طلبا فالمطابخ",
-        "q_title": "اطلب ثمن",
-        "q_intro": "قول لينا شنو محتاج وبشحال، ونرجعو ليك بالثمن فواتساب.",
+        "pro_lead": "توابل وأعشاب وخلطات بالكيلوغرام للمطابخ المهنية والأعراس والمناسبات، من متجرنا في القصر الصغير قرب طنجة.",
+        "pro_points": ["بالكيلوغرام، وبأسعار المتجر.", "للكميات الكبيرة، اطلب منا عرض سعر.", "الدفع عند الاستلام أو في المتجر أو بالتحويل البنكي.", "يُتفق معك على التوصيل عبر واتساب."],
+        "pro_top": "الأكثر طلبًا في المطابخ",
+        "q_title": "اطلب عرض سعر",
+        "q_intro": "أخبرنا بما تحتاجه وبالكميات، وسنرد عليك بالسعر عبر واتساب.",
         "q_type": "نوع النشاط",
-        "q_types": ["مطعم", "فندق", "أعراس ومناسبات", "ممون حفلات", "آخر"],
+        "q_types": ["مطعم", "فندق", "أعراس ومناسبات", "متعهد حفلات", "آخر"],
         "q_business": "اسم المؤسسة",
         "q_contact": "الاسم",
         "q_phone": "الهاتف",
         "q_city": "المدينة",
-        "q_date": "تاريخ المناسبة (إلا كانت)",
-        "q_guests": "عدد الضيوف (إلا كانت مناسبة)",
-        "q_freq": "كل شحال",
-        "q_freqs": ["مرة وحدة", "كل سيمانة", "كل شهر"],
+        "q_date": "تاريخ المناسبة (إن وُجدت)",
+        "q_guests": "عدد الضيوف (للمناسبات)",
+        "q_freq": "وتيرة الطلب",
+        "q_freqs": ["مرة واحدة", "أسبوعيًا", "شهريًا"],
         "q_items": "المنتجات والكميات",
-        "q_items_ph": "مثلا: 5 كيلو كمون، 3 كيلو خرقوم، 2 كيلو راس الحانوت",
-        "q_send": "صيفط طلب الثمن",
-        "q_done": "توصلنا بالطلب ديالك. غادي نتاصلو بيك بالثمن فواتساب.",
-        "q_fail": "ما قدرناش نصيفطو الطلب. غادي يتحل واتساب باش تصيفطو مباشرة.",
-        "visit_title": "زورونا فالمحل", "visit_body": "محلنا فالقصر الصغير، قرب طنجة.", "map": "الطريق على خرائط Google",
-        "how_title": "كيفاش كتطلب",
-        "how": ["اختار المنتجات بالكيلو (كل 250 غرام) أو بالقطعة.", "صيفط الطلب للمحل عبر واتساب من السلة.",
-                "كنأكدو معاك الثمن والتوصيل والوقت، والخلاص عند الاستلام أو فالمحل أو بتحويل بنكي."],
-        "related": "من نفس الرف", "back": "كل المنتجات", "order_one": "اطلب هاد المنتج دابا",
-        "one_msg": "السلام عليكم ألماس، بغيت: ",
-        "privacy": "سياسة الخصوصية", "app": "تطبيق ألماس على Google Play",
-        "nf_title": "هاد الصفحة ما كايناش", "nf_body": "رجع للكتالوج ديال ألماس.",
-        "order_head": "🌿 *طلب جديد من ألماس*", "o_name": "🏢 الاسم", "o_phone": "📞 الهاتف", "o_address": "📍 العنوان",
-        "o_notes": "📝 ملاحظات", "o_items": "🛒 المنتجات", "o_total": "المجموع", "o_from": "من الموقع",
-        "langname": "العربية", "short": "ع", "updated": "حسب أثمنة المحل",
+        "q_items_ph": "مثال: 5 كلغ كمون، 3 كلغ كركم، 2 كلغ رأس الحانوت",
+        "q_send": "إرسال الطلب",
+        "q_done": "تم استلام طلبك، وسنرد عليك بالسعر عبر واتساب.",
+        "q_fail": "تعذّر إرسال الطلب. سيُفتح واتساب لإرساله مباشرة.",
+        "visit_title": "زورونا في المتجر",
+        "visit_body": "متجرنا في القصر الصغير، قرب طنجة.",
+        "map": "الطريق على خرائط Google",
+        "how_title": "كيف تطلب",
+        "how": ["اختر المنتجات بالكيلوغرام (بمقدار 250 غرامًا) أو بالقطعة.", "أرسل الطلب إلى المتجر من السلة.", "نؤكد معك السعر والتوصيل والموعد، والدفع عند الاستلام أو في المتجر أو بالتحويل البنكي."],
+        "related": "من القسم نفسه",
+        "back": "كل المنتجات",
+        "order_one": "اطلب هذا المنتج الآن",
+        "one_msg": "السلام عليكم، أرغب في: ",
+        "privacy": "سياسة الخصوصية",
+        "app": "تطبيق ألماس على Google Play",
+        "nf_title": "هذه الصفحة غير موجودة",
+        "nf_body": "العودة إلى كتالوج ألماس.",
+        "order_head": "🌿 *طلب جديد من ألماس*",
+        "o_name": "🏢 الاسم",
+        "o_phone": "📞 الهاتف",
+        "o_address": "📍 العنوان",
+        "o_notes": "📝 ملاحظات",
+        "o_items": "🛒 المنتجات",
+        "o_total": "المجموع",
+        "o_from": "من الموقع",
+        "langname": "العربية",
+        "short": "ع",
+        "updated": "بأسعار المتجر",
     },
     "fr": {
         "dir": "ltr", "name": CFG["brand_fr"],
@@ -265,7 +316,130 @@ T = {
         "o_notes": "📝 Notes", "o_items": "🛒 Items", "o_total": "Total", "o_from": "from the website",
         "langname": "English", "short": "EN", "updated": "at the shop's prices",
     },
+    "es": {
+        "dir": "ltr", "name": CFG["brand_es"],
+        "title": "Almas | Especias y hierbas al kilo en Ksar Sghir, cerca de Tánger",
+        "desc": "Especias y hierbas de nuestra tienda en Ksar Sghir, para casa, restaurantes, hoteles y salones de bodas. Los precios de la tienda; pide en la web o por WhatsApp.",
+        "kicker": "Ksar Sghir, cerca de Tánger",
+        "h1": "Especias y hierbas al kilo, desde nuestra tienda de Ksar Sghir",
+        "lead": "Especias y hierbas de nuestra tienda en Ksar Sghir, para casa, restaurantes, hoteles y salones de bodas. Los precios son los de la tienda.",
+        "browse": "Ver los productos",
+        "wa": "Pedir por WhatsApp",
+        "call": "Llamarnos",
+        "facts": "{n} productos · {s} secciones",
+        "search": "Buscar un producto…",
+        "all": "Todo",
+        "none": "Ningún producto con ese nombre.",
+        "kg": "el kilo",
+        "piece": "la unidad",
+        "add": "Añadir",
+        "added": "Añadido",
+        "cart": "Cesta",
+        "cart_empty": "Tu cesta está vacía",
+        "cart_empty_sub": "Añade productos del catálogo y envía el pedido a la tienda.",
+        "order_note": "Tu pedido llega directamente a la tienda. Confirmamos contigo el precio, la entrega y la hora por WhatsApp.",
+        "pay_note": "Pagas a la entrega, en la tienda o por transferencia bancaria. La entrega se acuerda contigo por WhatsApp.",
+        "f_name": "Nombre o establecimiento",
+        "f_phone": "Teléfono",
+        "f_address": "Dirección",
+        "f_notes": "Notas (opcional)",
+        "send": "Confirmar el pedido",
+        "subtotal": "Total",
+        "remove": "Quitar",
+        "pay_title": "Pago",
+        "pay_cod": "A la entrega o en la tienda",
+        "pay_bank": "Transferencia bancaria",
+        "bank_note": "Transfiere el importe a esta cuenta con el número de pedido como concepto y envíanos el justificante por WhatsApp.",
+        "b_holder": "Beneficiario",
+        "b_bank": "Banco",
+        "b_rib": "RIB",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "sending": "Enviando el pedido…",
+        "done_title": "Pedido recibido",
+        "done_body": "Pedido {n} · total {t}. Te contactamos para confirmar la entrega.",
+        "done_wa": "Seguir por WhatsApp",
+        "fail": "No se pudo enviar el pedido. Se abrirá WhatsApp para enviarlo directamente.",
+        "o_pay": "💳 Pago",
+        "o_number": "🧾 Pedido",
+        "pay_card": "Tarjeta bancaria (pago seguro en línea)",
+        "card_fail": "El pago con tarjeta no está disponible para este pedido. Elige otra forma de pago.",
+        "ty_title": "¡Gracias!",
+        "ty_wait": "Comprobando el pago…",
+        "ty_paid": "Pago recibido para el pedido {n} ({t}). Te contactamos para confirmar la entrega.",
+        "ty_unpaid": "Aún no tenemos la confirmación del pago. Si ya pagaste, envíanos el número de pedido por WhatsApp.",
+        "biz_title": "Restaurantes, hoteles, salones de bodas",
+        "biz_body": "Pide al kilo con el nombre y la dirección de tu establecimiento. Para grandes cantidades, pídenos un precio por WhatsApp.",
+        "biz_cta": "Pedir precio para grandes cantidades",
+        "biz_msg": "Hola Almas, tengo un establecimiento y quisiera un precio para grandes cantidades de: ",
+        "nav_pro": "Profesionales",
+        "search_ph": "Busca en árabe, francés, inglés o español…",
+        "search_none": "Sin resultados. Prueba otro nombre.",
+        "search_pop": "Los más pedidos",
+        "search_btn": "Buscar",
+        "upsell": "Completa tu pedido",
+        "photo": "Foto",
+        "t_waze": "Waze",
+        "t_waze_sub": "Ir en coche",
+        "t_dir": "Cómo llegar",
+        "t_call": "Llamar",
+        "t_wa": "WhatsApp",
+        "t_review": "Reseña en Google",
+        "t_insta": "Instagram",
+        "review": "Valora Almas en Google",
+        "insta": "Instagram",
+        "directions": "Cómo llegar a la tienda",
+        "pro_title": "Restaurantes, hoteles, organizadores de bodas",
+        "pro_lead": "Especias, hierbas y mezclas al kilo para cocinas profesionales, bodas y fiestas, desde nuestra tienda de Ksar Sghir, cerca de Tánger.",
+        "pro_points": ["Al kilo, a los precios de la tienda.", "Para grandes cantidades, pídenos un precio.", "Pago a la entrega, en la tienda o por transferencia bancaria.", "Entrega acordada contigo por WhatsApp."],
+        "pro_top": "Lo más pedido en cocina",
+        "q_title": "Pedir un precio",
+        "q_intro": "Dinos qué necesitas y en qué cantidad: te respondemos con un precio por WhatsApp.",
+        "q_type": "Actividad",
+        "q_types": ["Restaurante", "Hotel", "Bodas y eventos", "Catering", "Otro"],
+        "q_business": "Establecimiento",
+        "q_contact": "Tu nombre",
+        "q_phone": "Teléfono",
+        "q_city": "Ciudad",
+        "q_date": "Fecha del evento (si lo hay)",
+        "q_guests": "Número de invitados (para un evento)",
+        "q_freq": "Frecuencia",
+        "q_freqs": ["Una vez", "Cada semana", "Cada mes"],
+        "q_items": "Productos y cantidades",
+        "q_items_ph": "Por ejemplo: 5 kg de comino, 3 kg de cúrcuma, 2 kg de ras el hanout",
+        "q_send": "Enviar la solicitud",
+        "q_done": "Solicitud recibida. Te respondemos con un precio por WhatsApp.",
+        "q_fail": "No se pudo enviar la solicitud. Se abrirá WhatsApp para enviarla directamente.",
+        "visit_title": "Visita la tienda",
+        "visit_body": "Nuestra tienda está en Ksar Sghir, cerca de Tánger.",
+        "map": "Cómo llegar en Google Maps",
+        "how_title": "Cómo pedir",
+        "how": ["Elige los productos al kilo (de 250 g en 250 g) o por unidad.", "Envía el pedido a la tienda desde la cesta.", "Confirmamos el precio, la entrega y la hora; pagas a la entrega, en la tienda o por transferencia."],
+        "related": "De la misma sección",
+        "back": "Todos los productos",
+        "order_one": "Pedir este producto ahora",
+        "one_msg": "Hola Almas, quisiera: ",
+        "privacy": "Política de privacidad",
+        "app": "La aplicación Almas en Google Play",
+        "nf_title": "Esta página no existe",
+        "nf_body": "Vuelve al catálogo de Almas.",
+        "order_head": "🌿 *Nuevo pedido Almas*",
+        "o_name": "🏢 Nombre",
+        "o_phone": "📞 Teléfono",
+        "o_address": "📍 Dirección",
+        "o_notes": "📝 Notas",
+        "o_items": "🛒 Artículos",
+        "o_total": "Total",
+        "o_from": "desde la web",
+        "langname": "Español",
+        "short": "ES",
+        "updated": "a los precios de la tienda",
+    },
 }
+# reviews, quantity price, back-to-top and the assistant: one file, four languages
+for _l, _s in json.loads((HERE / "strings-extra.json").read_text(encoding="utf-8")).items():
+    T[_l].update(_s)
+
 UNIT_FEED = {"kg": ("au kilo", "(1 kg)"), "piece": ("à la pièce", "(l'unité)")}
 
 
@@ -557,7 +731,7 @@ def pro_page(lang, products, cats):
 
 def cart_drawer(lang):
     t = T[lang]
-    return f"""<div class="search" data-search-panel hidden role="dialog" aria-modal="true" aria-label="{esc(t['search_btn'])}">
+    return widgets(lang) + f"""<div class="search" data-search-panel hidden role="dialog" aria-modal="true" aria-label="{esc(t['search_btn'])}">
 <div class="search-in wrap"><input type="search" data-search-input placeholder="{esc(t['search_ph'])}" aria-label="{esc(t['search_ph'])}" autocomplete="off">
 <button type="button" class="x" data-close-search aria-label="×">×</button></div>
 <div class="wrap"><p class="search-head" data-search-head></p><ul class="results" data-search-results></ul></div>
@@ -624,14 +798,17 @@ def page_data(lang, products, cats):
     t = T[lang]
     data = {
         "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"], "api": CFG.get("order_api", ""),
-        "qapi": CFG.get("quote_api", ""),
+        "qapi": CFG.get("quote_api", ""), "rapi": CFG.get("review_api", ""), "aapi": CFG.get("assistant_api", ""),
+        "cloud": CFG.get("cloud_url", ""),
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
                                 "o_from", "add", "added", "remove", "kg", "piece", "one_msg", "o_pay", "o_number",
                                 "pay_cod", "pay_bank", "pay_card", "card_fail", "sending", "send", "done_body", "fail",
                                 "search_none", "search_pop", "upsell",
-                                "copied", "copy", "q_send", "q_fail", "sending")},
-        "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "fr": p["fr"], "en": p["en"], "price": p["price"], "u": p["unit"],
+                                "copied", "copy", "q_send", "q_fail", "sending", "rv_count", "rv_verified", "rv_none",
+                                "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa")},
+        "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "t": p["t"], "fr": p["fr"], "en": p["en"], "es": p["es"],
+                        "price": p["price"], "u": p["unit"],
                         "c": p["cat"], "r": p.get("rank") or 0, "i": src(p), "l": url(lang, "p/" + p["id"] + "/")} for p in products},
         "cats": {c: cats[c][lang] for c in cats},
     }
@@ -649,11 +826,12 @@ def card(lang, p, cats):
     cat = cats[p["cat"]]
     unit = t["kg"] if p["unit"] == "kg" else t["piece"]
     other = p["ar"] if lang != "ar" else p["fr"]
-    return f"""<li class="card" data-cat="{p['cat']}" data-search="{esc(' '.join([p['ar'], p['fr'], p['en']]).lower())}" style="--c:{cat['color']}">
+    return f"""<li class="card" data-cat="{p['cat']}" data-search="{esc(' '.join([p['ar'], p['t'], p['fr'], p['en'], p['es']]).lower())}" style="--c:{cat['color']}">
 <a class="card-link" href="{url(lang, 'p/' + p['id'] + '/')}">
-<img src="{esc(src(p))}" alt="{esc(name(p, lang))}" loading="lazy" width="400" height="400">
+<span class="ph"><img src="{esc(src(p))}" alt="{esc(name(p, lang))}" loading="lazy" width="400" height="400"></span>
 <span class="card-name">{esc(name(p, lang))}</span>
 <span class="card-other" lang="{'fr' if lang == 'ar' else 'ar'}">{esc(other)}</span>
+<span class="stars-mini" data-stars="{p['id']}" hidden></span>
 </a>
 <div class="card-buy"><span class="price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small></span>
 <button type="button" class="add" data-add="{p['id']}" aria-label="{esc(t['add'])} {esc(name(p, lang))}">+</button></div>
@@ -735,10 +913,10 @@ def gallery(p, n, t):
     track = "".join(f'<img src="{esc(local(u))}" alt="{esc(n)}" width="800" height="800"{"" if i == 0 else " loading=lazy"}>'
                     for i, u in enumerate(imgs))
     if len(imgs) == 1:
-        return f'<div class="product-img"><div class="g-track">{track}</div></div>'
+        return f'<div class="product-img"><div class="ph"><div class="g-track">{track}</div></div></div>'
     thumbs = "".join(f'<button type="button" data-g="{i}" aria-label="{esc(t["photo"])} {i + 1}"{" aria-current=true" if i == 0 else ""}>'
                      f'<img src="{esc(local(u))}" alt="" width="80" height="80" loading="lazy"></button>' for i, u in enumerate(imgs))
-    return f'<div class="product-img" data-gallery><div class="g-track">{track}</div><div class="g-thumbs">{thumbs}</div></div>'
+    return f'<div class="product-img" data-gallery><div class="ph"><div class="g-track">{track}</div></div><div class="g-thumbs">{thumbs}</div></div>'
 
 
 def product_page(lang, p, products, cats):
@@ -753,7 +931,7 @@ def product_page(lang, p, products, cats):
     names = "".join(f'<li lang="{l}"><span>{esc(T[l]["langname"])}</span> {esc(p[l])}</li>' for l in LANGS if p.get(l))
     same = [q for q in products if q["cat"] == p["cat"] and q["id"] != p["id"]][:8]
     related = "".join(card(lang, q, cats) for q in same)
-    one = f"https://wa.me/{CFG['whatsapp']}?text=" + urllib.parse.quote(t["one_msg"] + p["ar"] + ("" if lang == "ar" else f" ({n})"))
+    one = f"https://wa.me/{CFG['whatsapp']}?text=" + urllib.parse.quote(t["one_msg"] + p["t"] + ("" if p["t"] == n else f" ({n})"))
     extra = (f'\n<meta property="og:type" content="product">'
              f'\n<meta property="product:retailer_item_id" content="{p["id"]}">'
              f'\n<meta property="product:price:amount" content="{num(p["price"])}">'
@@ -783,14 +961,17 @@ def product_page(lang, p, products, cats):
 <div class="product-info">
 <p class="kicker">{esc(cat[lang])}</p>
 <h1>{esc(n)}</h1>
+<a class="stars-mini big" href="#reviews" data-stars="{p['id']}" hidden></a>
 <ul class="names">{names}</ul>
 <p class="big-price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small></p>
-<div class="qty" data-qty-for="{p['id']}"><button type="button" data-step="-1" aria-label="-">−</button><output data-qty-label></output><button type="button" data-step="1" aria-label="+">+</button></div>
+<div class="qty-row"><div class="qty" data-qty-for="{p['id']}"><button type="button" data-step="-1" aria-label="-">−</button><output data-qty-label></output><button type="button" data-step="1" aria-label="+">+</button></div>
+<p class="qty-price"><small>{esc(t['qty_for'])}</small><b data-qty-price></b></p></div>
 <div class="cta"><button type="button" class="btn" data-add-qty="{p['id']}">{esc(t['add'])}</button>
 <a class="btn ghost wa-link" data-order-one="{p['id']}" href="{esc(one)}" rel="noopener">{esc(t['order_one'])}</a></div>
 <p class="note">{esc(t['order_note'])}<br>{esc(t['pay_note'])}</p>
 </div>
 </section>
+{reviews_block(lang, p)}
 <section class="wrap related"><h2>{esc(t['related'])}</h2><ul class="grid">{related}</ul></section>
 </main>
 {footer(lang)}
@@ -802,6 +983,56 @@ def product_page(lang, p, products, cats):
 </body>
 </html>
 """
+
+
+def reviews_block(lang, p):
+    """Customer reviews under the product: loaded from the shop's cloud (published ones only), and a form to write one."""
+    t = T[lang]
+    if not CFG.get("cloud_url"):
+        return ""
+    stars = "".join(f'<label><input type="radio" name="rating" value="{i}" required><span aria-hidden="true">★</span>'
+                    f'<b class="sr">{i}/5</b></label>' for i in range(5, 0, -1))
+    google = CFG.get("review_url") or CFG["maps_url"]
+    return f"""<section class="wrap reviews" id="reviews" data-reviews="{p['id']}">
+<div class="rv-head"><h2>{esc(t['rv_title'])}</h2><p class="rv-sum" data-rv-sum></p>
+<button type="button" class="btn ghost" data-rv-open>{esc(t['rv_write'])}</button></div>
+<ul class="rv-list" data-rv-list><li class="rv-none">{esc(t['rv_none'])}</li></ul>
+<form class="rv-form" data-rv-form hidden>
+<fieldset class="rv-stars"><legend>{esc(t['rv_rating'])}</legend><div class="stars-in" dir="ltr">{stars}</div></fieldset>
+<label>{esc(t['rv_text'])}<textarea name="text" rows="3" maxlength="600" required></textarea></label>
+<label>{esc(t['rv_name'])}<input name="name" maxlength="80" autocomplete="name" required></label>
+<p class="note">{esc(t['rv_proof'])}</p>
+<div class="two-in"><label>{esc(t['rv_order'])}<input name="order" maxlength="24" dir="ltr" placeholder="AL-…"></label>
+<label>{esc(t['rv_phone'])}<input name="phone" type="tel" inputmode="tel" maxlength="20" dir="ltr"></label></div>
+<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button class="btn" type="submit" data-rv-send>{esc(t['rv_send'])}</button>
+<p class="rv-done" data-rv-done hidden>{esc(t['rv_done'])} <a href="{esc(google)}" rel="noopener">★ {esc(t['rv_google'])}</a></p>
+</form>
+</section>"""
+
+
+def widgets(lang):
+    """On every page: the back-to-top arrow and Tajine, the shop assistant (a tagine with a face)."""
+    t = T[lang]
+    chips = "".join(f'<button type="button" data-as-chip>{esc(c)}</button>' for c in t["as_chips"])
+    tagine = ('<svg viewBox="0 0 64 64" aria-hidden="true" class="tagine">'
+              '<path class="base" d="M3 44h58c-1.5 6-8 10-16 10H19C11 54 4.5 50 3 44z"/>'
+              '<path class="rim" d="M2 42.5h60v2.6H2z"/>'
+              '<path class="dots" d="M14 48.5h2v2h-2zM24 49.5h2v2h-2zM38 49.5h2v2h-2zM48 48.5h2v2h-2z"/>'
+              '<path class="lid" d="M30.2 9.5L11 42.5h42L33.8 9.5z"/>'
+              '<path class="band" d="M15.6 34.6h32.8l2.1 3.6H13.5zM25.3 18h13.4l1.6 2.8H23.7z"/>'
+              '<circle class="knob" cx="32" cy="7" r="3.6"/>'
+              '<circle class="eye" cx="27.5" cy="27" r="2.1"/><circle class="eye" cx="36.5" cy="27" r="2.1"/>'
+              '<path class="smile" d="M28 30.8c2.3 2.2 5.7 2.2 8 0"/></svg>')
+    return f"""<button type="button" class="to-top" data-to-top aria-label="{esc(t['top'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<button type="button" class="as-fab" data-as-open aria-label="{esc(t['as_open'])}">{tagine}<span class="as-tip">{esc(t['as_open'])}</span></button>
+<div class="as" data-as hidden role="dialog" aria-modal="false" aria-label="{esc(t['as_title'])}">
+<div class="as-head">{tagine}<div><b>{esc(t['as_title'])}</b><small>{esc(t['as_sub'])}</small></div><button type="button" class="x" data-as-close aria-label="×">×</button></div>
+<div class="as-body" data-as-body><div class="msg bot">{esc(t['as_hello'])}</div><div class="as-chips">{chips}</div></div>
+<form class="as-form" data-as-form><input name="q" maxlength="500" autocomplete="off" placeholder="{esc(t['as_ph'])}" aria-label="{esc(t['as_ph'])}" required>
+<button type="submit" aria-label="{esc(t['as_send'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-7z"/></svg></button></form>
+<a class="as-wa" href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener" data-as-wa>{esc(t['as_wa'])}</a>
+</div>"""
 
 
 def not_found():
@@ -836,10 +1067,12 @@ def feeds(products, cats):
                 "in stock", "new", f"{float(p['price']):.2f} MAD", BASE + url("fr", "p/" + p["id"] + "/")[len(PREFIX):],
                 img, ",".join(images_of(p)[1:]), "Almas", GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), cats[p["cat"]]["fr"],
                 cats[p["cat"]]["fr"], "photo" if real else "carte"])
-    over = {"ar": ("ar_AR", "{ar} {size}", "{ar}، كيتباع {how} عند معشبة ألماس فالقصر الصغير قرب طنجة. الطلب فالموقع أو عبر واتساب، والخلاص عند الاستلام أو فالمحل أو بتحويل بنكي.",
-                   {"kg": ("بالكيلو", "(1 كيلو)"), "piece": ("بالوحدة", "(للوحدة)")}),
+    over = {"ar": ("ar_AR", "{ar} {size}", "{ar}، يُباع {how} لدى معشبة ألماس في القصر الصغير قرب طنجة. اطلب عبر الموقع أو واتساب، والدفع عند الاستلام أو في المتجر أو بالتحويل البنكي.",
+                   {"kg": ("بالكيلوغرام", "(1 كلغ)"), "piece": ("بالقطعة", "(للقطعة)")}),
             "en": ("en_XX", "{en} {size}", "{en} ({ar}), sold {how} by Almas, a spice and herb shop in Ksar Sghir near Tangier. Order online or on WhatsApp; pay on delivery, at the shop or by bank transfer.",
-                   {"kg": ("by the kilo", "(1 kg)"), "piece": ("by the piece", "(each)")})}
+                   {"kg": ("by the kilo", "(1 kg)"), "piece": ("by the piece", "(each)")}),
+            "es": ("es_XX", "{es} {size}", "{es} ({ar}), vendido {how} por Almas, tienda de especias y hierbas en Ksar Sghir, cerca de Tánger. Pide en la web o por WhatsApp; pago a la entrega, en la tienda o por transferencia.",
+                   {"kg": ("al kilo", "(1 kg)"), "piece": ("por unidad", "(unidad)")})}
     for lang, (code, title, desc, units) in over.items():
         with open(out / f"meta-{lang}.csv", "w", encoding="utf-8", newline="") as f:
             w = csv.writer(f, lineterminator=chr(10))  # LF on every OS, so the daily Linux build does not rewrite it
@@ -873,13 +1106,23 @@ STAMP = hashlib.sha256(b"".join((HERE / "assets" / n).read_bytes() for n in ("si
 def main():
     data, source = fetch_catalog("--offline" in sys.argv)
     cats = {c["id"]: c for c in data["categories"]}
+    for c, names in NAMES["_shelves"].items():
+        if c in cats:
+            cats[c].update(names)
+    for c in cats.values():
+        c.setdefault("es", c["fr"])
     products = [p for p in data["products"] if p.get("cat") in cats and p.get("price")]
+    for p in products:
+        p["t"] = p["ar"]  # the till's name, kept for the order the shop receives
+        p.update({k: v for k, v in NAMES.get(p["id"], {}).items() if v})
+        p.setdefault("es", p["fr"])
     order = {c: i for i, c in enumerate(cats)}
     products.sort(key=lambda p: (order[p["cat"]], -(p.get("rank") or 0), p["fr"]))
     # every build reads the till's prices afresh (Vercel builds on each push and once a day), so the day shown
     # is the day they were last read
     now = datetime.now(timezone.utc)
-    day = {"ar": now.strftime("%d/%m/%Y"), "fr": now.strftime("%d/%m/%Y"), "en": now.strftime("%Y-%m-%d")}
+    day = {"ar": now.strftime("%d/%m/%Y"), "fr": now.strftime("%d/%m/%Y"), "en": now.strftime("%Y-%m-%d"),
+           "es": now.strftime("%d/%m/%Y")}
 
     # a fresh folder each time: a product the shop removed leaves no page behind for an ad to land on
     shutil.rmtree(OUT, ignore_errors=True)

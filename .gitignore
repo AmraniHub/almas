@@ -45,3 +45,6 @@ crm/
 website/
 public/
 .vercel/
+node_modules/
+__pycache__/
+cloud/.cloud.json

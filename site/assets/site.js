@@ -7,6 +7,7 @@
   if (!A) return;
   var KEY = "almas-cart-v1";
   var cart = {};
+  var showQty = null; // the product page's quantity display, refreshed when live prices arrive
   try { cart = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { cart = {}; }
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -19,9 +20,9 @@
     if (A.p[id].u !== "kg") return fmt(q) + " ×";
     if (q < 1) {
       var g = Math.round(q * 1000);
-      return A.lang === "ar" ? g + " غرام" : g + " g";
+      return A.lang === "ar" ? g + " غ" : g + " g";
     }
-    return A.lang === "ar" ? fmt(q) + " كيلو" : fmt(q) + " kg";
+    return A.lang === "ar" ? fmt(q) + " كلغ" : fmt(q) + " kg";
   }
   function track(ev, ids, value) {
     try {
@@ -35,6 +36,7 @@
       var p = A.p[el.getAttribute("data-price")];
       if (p) el.textContent = money(p.price);
     });
+    if (showQty) showQty();
   }
   try {
     fetch(A.feed, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
@@ -56,7 +58,12 @@
   }
   function render() {
     var c = $("[data-cart-count]");
-    if (c) { c.textContent = count() || ""; if (count()) c.removeAttribute("data-zero"); else c.setAttribute("data-zero", ""); }
+    if (c) {
+      var was = c.textContent;
+      c.textContent = count() || "";
+      if (count()) c.removeAttribute("data-zero"); else c.setAttribute("data-zero", "");
+      if (was && was !== c.textContent) { c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+    }
     var list = $("[data-cart-lines]");
     if (!list) return;
     if (count()) { var dn = $("[data-done]"); if (dn) dn.hidden = true; list.hidden = false; } // a new cart after an order
@@ -65,8 +72,9 @@
       var p = A.p[id];
       if (!p) return;
       var li = document.createElement("li");
-      var other = A.lang === "ar" ? "" : '<span class="ln-ar" lang="ar">' + esc(p.ar) + "</span>";
-      li.innerHTML = '<span><span class="ln-name">' + esc(p.n) + "</span><br>" + other + "</span>" +
+      var other = A.lang === "ar" ? "" : '<span class="ln-ar" lang="ar">' + esc(p.ar) + "</span><br>";
+      var each = '<small class="ln-unit">' + money(p.price) + " " + esc(p.u === "kg" ? A.s.kg : A.s.piece) + "</small>";
+      li.innerHTML = '<span><span class="ln-name">' + esc(p.n) + "</span><br>" + other + each + "</span>" +
         "<b>" + money(cart[id] * p.price) + "</b>" +
         '<span class="ln-ctl"><button type="button" data-dec aria-label="-">−</button><span>' + amount(id, cart[id]) +
         '</span><button type="button" data-inc aria-label="+">+</button><button type="button" class="rm" data-rm>' + esc(A.s.remove) + "</button></span>";
@@ -145,8 +153,8 @@
   var INDEX = {}, SKEL = {};
   Object.keys(A.p).forEach(function (id) {
     var p = A.p[id];
-    INDEX[id] = norm([p.n, p.ar, p.fr, p.en, A.cats ? A.cats[p.c] : ""].join(" "));
-    SKEL[id] = arSkel(p.ar) + " | " + arToLat(p.ar);
+    INDEX[id] = norm([p.n, p.ar, p.t, p.fr, p.en, p.es, A.cats ? A.cats[p.c] : ""].join(" "));
+    SKEL[id] = arSkel(p.ar + " " + p.t) + " | " + arToLat(p.ar + " " + p.t);
   });
   function find(q) {
     var words = norm(q).split(" ").filter(Boolean);
@@ -221,8 +229,12 @@
   var pid = document.body.getAttribute("data-product");
   if (pid && A.p[pid]) {
     var q = 1; // 1 kg or one piece, the unit the price is shown for
-    var box = $("[data-qty-for]"), lab = $("[data-qty-label]");
-    var show = function () { if (lab) lab.textContent = amount(pid, q); };
+    var box = $("[data-qty-for]"), lab = $("[data-qty-label]"), qp = $("[data-qty-price]");
+    var show = function () {
+      if (lab) lab.textContent = amount(pid, q);
+      if (qp) { qp.textContent = money(q * A.p[pid].price); qp.classList.remove("bump"); void qp.offsetWidth; qp.classList.add("bump"); }
+    };
+    showQty = show;
     if (box) $$("[data-step]", box).forEach(function (b) {
       b.onclick = function () { q = Math.max(step(pid), Math.round((q + step(pid) * +b.getAttribute("data-step")) * 100) / 100); show(); };
     });
@@ -235,7 +247,7 @@
     var one = $("[data-order-one]");
     if (one) one.onclick = function () {
       var p = A.p[pid];
-      var line = amount(pid, q) + " " + p.ar + (A.lang === "ar" ? "" : " (" + p.n + ")");
+      var line = amount(pid, q) + " " + (p.t || p.ar) + (p.t === p.n ? "" : " (" + p.n + ")") + " — " + money(q * p.price);
       one.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(A.s.one_msg + line);
       track("InitiateCheckout", [pid], q * p.price);
     };
@@ -255,7 +267,7 @@
     lines.push("", s.o_items + ":");
     ids.forEach(function (id) {
       var p = A.p[id];
-      lines.push("• " + amount(id, cart[id]) + " " + p.ar + (A.lang === "ar" ? "" : " (" + p.n + ")") + " — " + money(cart[id] * p.price));
+      lines.push("• " + amount(id, cart[id]) + " " + (p.t || p.ar) + (p.t === p.n ? "" : " (" + p.n + ")") + " — " + money(cart[id] * p.price));
     });
     lines.push("", "*" + s.o_total + ": " + money(total()) + "*");
     return lines.join("\n");
@@ -362,6 +374,130 @@
     if (a.hasAttribute("data-order-one")) return;
     a.addEventListener("click", function () { try { window.fbq("track", "Contact"); } catch (e) {} });
   });
+
+  /* smooth header: a shadow once the page scrolls; the back-to-top arrow after one screen */
+  var topBar = $("header.top"), toTop = $("[data-to-top]"), ticking = false;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function onScroll() {
+    ticking = false;
+    var y = window.pageYOffset || document.documentElement.scrollTop;
+    if (topBar) topBar.classList.toggle("scrolled", y > 8);
+    if (toTop) toTop.hidden = y < window.innerHeight * 0.9;
+  }
+  window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+  if (toTop) toTop.onclick = function () { window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
+
+  /* star ratings from the shop's cloud: published reviews only */
+  function starsHtml(avg) {
+    var full = Math.round(avg * 2) / 2, out = "";
+    for (var i = 1; i <= 5; i++) out += '<i class="' + (full >= i ? "on" : full >= i - 0.5 ? "half" : "") + '">★</i>';
+    return '<span class="st" dir="ltr" aria-hidden="true">' + out + "</span>";
+  }
+  function countText(n) { return A.s.rv_count.replace("{n}", n); }
+  if (A.cloud && $("[data-stars]")) {
+    fetch(A.cloud + "/public/ratings").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d) return;
+      $$("[data-stars]").forEach(function (el) {
+        var x = d[el.getAttribute("data-stars")];
+        if (!x || !x.count) return;
+        el.innerHTML = starsHtml(x.avg) + "<small>" + fmt(x.avg) + " · " + esc(countText(x.count)) + "</small>";
+        el.setAttribute("aria-label", fmt(x.avg) + "/5, " + countText(x.count));
+        el.hidden = false;
+      });
+    }).catch(function () {});
+  }
+
+  /* reviews under a product: the published ones, and the form to write one */
+  var rv = $("[data-reviews]");
+  if (rv && A.cloud) {
+    var rid = rv.getAttribute("data-reviews");
+    var dateFmt = function (iso) {
+      try { return new Date(iso + "T12:00:00Z").toLocaleDateString(A.lang === "ar" ? "ar-MA" : A.lang, { year: "numeric", month: "long", day: "numeric" }); }
+      catch (e) { return iso; }
+    };
+    fetch(A.cloud + "/public/reviews?product=" + encodeURIComponent(rid)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.count) return;
+      $("[data-rv-sum]", rv).innerHTML = starsHtml(d.avg) + " <b>" + fmt(d.avg) + "</b>/5 · " + esc(countText(d.count));
+      $("[data-rv-list]", rv).innerHTML = d.reviews.map(function (x) {
+        return '<li><div class="rv-top">' + starsHtml(x.rating) + "<b>" + esc(x.name) + "</b>" +
+          (x.verified ? '<span class="rv-ok">✓ ' + esc(A.s.rv_verified) + "</span>" : "") +
+          '<time datetime="' + esc(x.date) + '">' + esc(dateFmt(x.date)) + "</time></div><p>" + esc(x.text) + "</p></li>";
+      }).join("");
+    }).catch(function () {});
+    var rf = $("[data-rv-form]", rv), ro = $("[data-rv-open]", rv);
+    if (ro && rf) ro.onclick = function () { rf.hidden = false; ro.hidden = true; var t = $("textarea", rf); if (t) t.focus(); };
+    if (rf) rf.onsubmit = function (e) {
+      e.preventDefault();
+      var f = new FormData(rf), btn = $("[data-rv-send]", rf);
+      if (!f.get("rating") || String(f.get("text") || "").trim().length < 3) return alert(A.s.rv_need);
+      var label = btn ? btn.textContent : "";
+      if (btn) { btn.disabled = true; btn.textContent = A.s.sending; }
+      var body = { lang: A.lang, product: rid, rating: +f.get("rating"), text: f.get("text"), name: f.get("name"),
+                   order: f.get("order"), phone: f.get("phone"), website: f.get("website") };
+      fetch(A.rapi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) {
+          if (!d || !d.ok) throw new Error("review");
+          $$("input, textarea, fieldset, button", rf).forEach(function (x) { x.disabled = true; });
+          if (btn) btn.hidden = true;
+          $("[data-rv-done]", rf).hidden = false;
+        })
+        .catch(function () { if (btn) { btn.disabled = false; btn.textContent = label; } alert(A.s.rv_fail); });
+    };
+  }
+
+  /* Tajine, the assistant: answers from the shop's catalogue, suggests products that go straight into the cart */
+  var as = $("[data-as]"), asOpen = $("[data-as-open]"), asBody = $("[data-as-body]"), asForm = $("[data-as-form]");
+  var turns = [];
+  function asShow(open) {
+    if (!as) return;
+    as.hidden = !open;
+    if (asOpen) asOpen.classList.toggle("on", open);
+    if (open) { var i = $("input", asForm); if (i && window.innerWidth > 700) setTimeout(function () { i.focus(); }, 60); }
+  }
+  function bubble(cls, html) {
+    var d = document.createElement("div");
+    d.className = "msg " + cls; d.innerHTML = html;
+    asBody.appendChild(d); asBody.scrollTop = asBody.scrollHeight;
+    return d;
+  }
+  function productsHtml(ids) {
+    ids = (ids || []).filter(function (id) { return A.p[id]; }).slice(0, 4);
+    return ids.length ? '<ul class="as-items">' + ids.map(function (id) { return miniItem(id, "data-asadd"); }).join("") + "</ul>" : "";
+  }
+  function wire(el) { $$("[data-asadd]", el).forEach(function (b) { b.onclick = function () { addFrom(b, "data-asadd"); }; }); }
+  function ask(q) {
+    q = String(q || "").trim();
+    if (!q || !asBody) return;
+    var chips = $(".as-chips", asBody); if (chips) chips.remove();
+    bubble("me", esc(q));
+    turns.push({ role: "user", content: q });
+    var wait = bubble("bot wait", esc(A.s.as_thinking));
+    var fallback = function () {
+      wait.remove();
+      var el = bubble("bot", esc(A.s.as_error) + productsHtml(find(q).slice(0, 4)));
+      wire(el);
+      turns.pop();
+    };
+    fetch(A.aapi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: A.lang, messages: turns }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (!d || !d.ok || !d.reply) return fallback();
+        wait.remove();
+        turns.push({ role: "assistant", content: d.reply });
+        var el = bubble("bot", esc(d.reply).replace(/\n/g, "<br>") + productsHtml(d.products) +
+          (d.whatsapp ? '<a class="as-wa-in" href="https://wa.me/' + A.wa + "?text=" + encodeURIComponent(q) + '" rel="noopener">' + esc(A.s.as_wa) + "</a>" : ""));
+        wire(el);
+        try { window.fbq("trackCustom", "AssistantQuestion"); } catch (e) {}
+      })
+      .catch(fallback);
+  }
+  if (asOpen) asOpen.onclick = function () { asShow(as.hidden); };
+  $$("[data-as-close]").forEach(function (b) { b.onclick = function () { asShow(false); }; });
+  $$("[data-as-chip]").forEach(function (b) { b.onclick = function () { ask(b.textContent); }; });
+  if (asForm) asForm.onsubmit = function (e) { e.preventDefault(); var i = $("input", asForm); ask(i.value); i.value = ""; };
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && as && !as.hidden) asShow(false); });
 
   render();
 })();

@@ -54,3 +54,24 @@ export function money(n) {
   const r = Math.round(n * 100) / 100;
   return `${Number.isInteger(r) ? r : r.toFixed(2)} درهم`;
 }
+
+// The shop's back office (Cloudflare Worker "almas-shop", cloud/): every order, quote, payment and review is copied
+// there for the admin dashboard. Best effort: Telegram stays the alert, so a cloud outage never loses an order.
+// Env: ALMAS_CLOUD_URL, ALMAS_CLOUD_SECRET.
+export async function cloud(path, body) {
+  const base = process.env.ALMAS_CLOUD_URL, secret = process.env.ALMAS_CLOUD_SECRET;
+  if (!base || !secret) return null;
+  try {
+    const r = await fetch(base.replace(/\/$/, "") + path, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-almas-secret": secret },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(6000),
+    });
+    return await r.json().catch(() => null);
+  } catch (e) {
+    return null;
+  }
+}
+
+export const LANGS = { ar: "العربية", fr: "الفرنسية", en: "الإنجليزية", es: "الإسبانية" };
