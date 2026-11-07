@@ -375,9 +375,8 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
 .as-wa-in { display: inline-block; margin-top: 8px; color: var(--wa); font-weight: 700; font-size: .86rem; }
 .as-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--surface); }
 .as-form input { flex: 1; min-width: 0; min-height: 46px; margin: 0; border-radius: var(--pill); padding: 0 16px; }
-.as-form button { width: 46px; height: 46px; flex: none; border-radius: 50%; border: 0; background: var(--terracotta); cursor: pointer; display: grid; place-items: center; }
-.as-form button svg { width: 20px; height: 20px; fill: #fff; }
-html[dir="rtl"] .as-form button svg { transform: scaleX(-1); }
+.as-form button[type="submit"] { width: 46px; height: 46px; flex: none; border-radius: 50%; border: 0; background: var(--terracotta); cursor: pointer; display: grid; place-items: center; }
+.as-form button[type="submit"] svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 .as-wa { text-align: center; font-size: .8rem; padding: 6px 0 9px; color: var(--wa); font-weight: 700; background: var(--surface); }
 @media (max-width: 520px) { .as { inset-inline: 8px; width: auto; bottom: 88px; height: calc(100vh - 112px); } }
 

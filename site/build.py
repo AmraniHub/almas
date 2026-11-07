@@ -1133,7 +1133,7 @@ def reviews_block(lang, p):
 
 
 def widgets(lang):
-    """On every page: the back-to-top arrow and Tajine, the shop assistant (a tagine with a face)."""
+    """On every page: the back-to-top arrow and the shop assistant (العشّاب / Achab, drawn as a tagine on a wood fire)."""
     t = T[lang]
     chips = "".join(f'<button type="button" data-as-chip>{esc(c)}</button>' for c in t["as_chips"])
     tagine = ('<svg viewBox="0 0 64 76" aria-hidden="true" class="tagine">'
@@ -1168,7 +1168,7 @@ def widgets(lang):
 <div class="as-body" data-as-body><div class="msg bot">{esc(t['as_hello'])}</div><div class="as-chips">{chips}</div></div>
 <form class="as-form" data-as-form><input name="q" maxlength="500" autocomplete="off" placeholder="{esc(t['as_ph'])}" aria-label="{esc(t['as_ph'])}" required>
 <button type="button" class="mic" data-mic="[data-as-form] input" aria-label="{esc(t['mic'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button>
-<button type="submit" aria-label="{esc(t['as_send'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-7z"/></svg></button></form>
+<button type="submit" aria-label="{esc(t['as_send'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button></form>
 <a class="as-wa" href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener" data-as-wa>{esc(t['as_wa'])}</a>
 </div>"""
 

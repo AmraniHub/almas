@@ -1,4 +1,4 @@
-// POST /api/assistant/: the shop's chat assistant ("Tajine"). Answers in the visitor's language from the shop's own
+// POST /api/assistant/: the shop's chat assistant ("العشّاب" / Achab, drawn as a little tagine). Answers in the visitor's language from the shop's own
 // facts and catalogue, and returns the ids of the products it suggests so the page can show them with an add button.
 //
 // Free models only, tried in order until one answers:
@@ -29,7 +29,7 @@ async function systemPrompt() {
     const n = names[p.id] || {};
     return `${p.id} | ${n.ar || p.ar} | ${n.fr || p.fr} | ${n.en || p.en} | ${n.es || p.fr} | ${cats[p.cat] || p.cat} | ${p.price} MAD/${p.unit === "kg" ? "kg" : "piece"}`;
   });
-  const system = `You are Tajine, the shop assistant of Almas (معشبة ألماس, "Almas Épices & Herbes"), a spice and herb shop in Ksar Sghir near Tangier, Morocco. On the website you appear as a friendly little tagine. You help visitors find products, choose what to buy for a dish or an event, and order.
+  const system = `You are Achab (in Arabic العشّاب, "the herbalist"), the shop assistant of Almas (معشبة ألماس, "Almas Épices & Herbes"), a spice and herb shop in Ksar Sghir near Tangier, Morocco. On the website you appear as a friendly little tagine on a wood fire. If asked your name: العشّاب in Arabic, Achab in other languages. You help visitors find products, choose what to buy for a dish or an event, and order.
 
 Facts you may state (nothing else about the shop):
 - Products are sold by the kilo (in 250 g steps) or by the piece, at the prices in the catalogue below. 250 g costs a quarter of the kilo price.
