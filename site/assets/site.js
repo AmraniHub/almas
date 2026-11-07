@@ -609,7 +609,8 @@
   var Fire = (function () {
     var AC = window.AudioContext || window.webkitAudioContext, ctx = null, master = null, timer = null, level = 0;
     var SKEY = "almas-sound";
-    function enabled() { try { return localStorage.getItem(SKEY) !== "off"; } catch (e) { return true; } }
+    var SOUND_ON = false; // the owner did not like the crackle (2026-11-07): off until another sound is chosen
+    function enabled() { if (!SOUND_ON) return false; try { return localStorage.getItem(SKEY) !== "off"; } catch (e) { return true; } }
     function noise(seconds, brown) {
       var len = Math.floor(ctx.sampleRate * seconds), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0), last = 0;
       for (var i = 0; i < len; i++) {
@@ -718,7 +719,8 @@
     Fire.set(on ? 0.1 : 0.045);
   }
   var snd = $("[data-as-sound]");
-  if (snd) {
+  if (snd && !Fire.enabled()) snd.hidden = true; // no sound playing, so no button for it
+  if (snd && !snd.hidden) {
     snd.setAttribute("aria-pressed", Fire.enabled() ? "true" : "false");
     snd.onclick = function () {
       var on = Fire.toggle();
