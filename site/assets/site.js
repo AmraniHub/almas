@@ -169,7 +169,12 @@
       fetch(A.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
         .then(function (r) { return r.json().catch(function () { return {}; }); })
         .then(function (d) {
+          if (d && !d.ok && d.error === "card") { // Stripe refused this order: let them pick another way to pay
+            if (btn) { btn.disabled = false; btn.textContent = A.s.send; }
+            return alert(A.s.card_fail);
+          }
           if (!d || !d.ok) { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } return fallback(); }
+          if (d.url) { window.location.href = d.url; return; } // card: Stripe's payment page, then /merci/
           try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }); } catch (err) {}
           var wa = $("[data-done-wa]");
           if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number));

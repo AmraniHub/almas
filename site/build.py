@@ -79,6 +79,11 @@ T = {
         "done_body": "رقم الطلب: {n} · المجموع: {t}. غادي نتاصلو بيك باش نأكدو التوصيل.",
         "done_wa": "تابع فواتساب", "fail": "ما قدرناش نصيفطو الطلب. غادي يتحل واتساب باش تصيفطو مباشرة.",
         "o_pay": "💳 الخلاص", "o_number": "🧾 رقم الطلب",
+        "pay_card": "بطاقة بنكية (أداء آمن فالإنترنت)",
+        "card_fail": "الأداء بالبطاقة ما خدامش دابا لهاد الطلب. اختار طريقة أخرى للخلاص.",
+        "ty_title": "شكرا ليك", "ty_wait": "كنتأكدو من الأداء…",
+        "ty_paid": "توصلنا بالأداء ديال الطلب {n} ({t}). غادي نتاصلو بيك باش نأكدو التوصيل.",
+        "ty_unpaid": "مازال ما توصلناش بتأكيد الأداء. إلا خلصتي، صيفط لينا رقم الطلب فواتساب.",
         "biz_title": "المطاعم والفنادق وقاعات الأفراح",
         "biz_body": "اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.",
         "biz_cta": "اطلب ثمن الكميات الكبيرة",
@@ -119,6 +124,11 @@ T = {
         "done_body": "Commande {n} · total {t}. Nous vous contactons pour confirmer la livraison.",
         "done_wa": "Continuer sur WhatsApp", "fail": "La commande n'a pas pu partir. WhatsApp va s'ouvrir pour l'envoyer directement.",
         "o_pay": "💳 Paiement", "o_number": "🧾 Commande",
+        "pay_card": "Carte bancaire (paiement en ligne sécurisé)",
+        "card_fail": "Le paiement par carte n'est pas disponible pour cette commande. Choisissez un autre mode de paiement.",
+        "ty_title": "Merci !", "ty_wait": "Vérification du paiement…",
+        "ty_paid": "Paiement reçu pour la commande {n} ({t}). Nous vous contactons pour confirmer la livraison.",
+        "ty_unpaid": "Nous n'avons pas encore la confirmation du paiement. Si vous avez payé, envoyez-nous le numéro de commande sur WhatsApp.",
         "biz_title": "Restaurants, hôtels, salles de fêtes",
         "biz_body": "Commandez au kilo avec le nom et l'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.",
         "biz_cta": "Demander un prix pour de grandes quantités",
@@ -159,6 +169,11 @@ T = {
         "done_body": "Order {n} · total {t}. We will contact you to confirm the delivery.",
         "done_wa": "Continue on WhatsApp", "fail": "The order could not be sent. WhatsApp will open so you can send it directly.",
         "o_pay": "💳 Payment", "o_number": "🧾 Order",
+        "pay_card": "Bank card (secure online payment)",
+        "card_fail": "Card payment is not available for this order. Please choose another way to pay.",
+        "ty_title": "Thank you!", "ty_wait": "Checking the payment…",
+        "ty_paid": "Payment received for order {n} ({t}). We will contact you to confirm the delivery.",
+        "ty_unpaid": "We do not have the payment confirmation yet. If you paid, send us the order number on WhatsApp.",
         "biz_title": "Restaurants, hotels, wedding venues",
         "biz_body": "Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.",
         "biz_cta": "Ask for a bulk price",
@@ -315,6 +330,33 @@ def bank_box(lang):
             + "</dl></div>")
 
 
+def card_option(lang):
+    if not os.environ.get("STRIPE_SECRET_KEY"):
+        return ""
+    return f'<label class="opt"><input type="radio" name="pay" value="card"> {esc(T[lang]["pay_card"])}</label>'
+
+
+def thanks(lang):
+    """/merci/: where Stripe sends the customer back; asks /api/paid/ whether the card payment went through."""
+    t = T[lang]
+    return f"""{head(lang, t['ty_title'] + ' | ' + t['name'], t['desc'], 'merci/', f'{BASE}/store/feature-graphic.png',
+                     chr(10) + '<meta name="robots" content="noindex">')}
+<body>
+{header(lang, 'merci/')}
+<main class="wrap nf thanks">
+<h1>{esc(t['ty_title'])}</h1>
+<p data-ty>{esc(t['ty_wait'])}</p>
+<div class="cta"><a class="btn wa-btn" data-ty-wa href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">{esc(t['done_wa'])}</a>
+<a class="btn ghost" href="{url(lang)}">{esc(t['back'])}</a></div>
+</main>
+{footer(lang)}
+<script>window.TY={json.dumps({k: t[k] for k in ('ty_paid', 'ty_unpaid')}, ensure_ascii=False)};window.TYM={json.dumps(MONEY[lang], ensure_ascii=False)};</script>
+<script src="{PREFIX}/assets/thanks.js?v={STAMP}" defer></script>
+</body>
+</html>
+"""
+
+
 def cart_drawer(lang):
     t = T[lang]
     return f"""<div class="drawer" data-drawer hidden>
@@ -334,6 +376,7 @@ def cart_drawer(lang):
 <fieldset class="pay"><legend>{esc(t['pay_title'])}</legend>
 <label class="opt"><input type="radio" name="pay" value="cod" checked> {esc(t['pay_cod'])}</label>
 <label class="opt"><input type="radio" name="pay" value="bank"> {esc(t['pay_bank'])}</label>
+{card_option(lang)}
 </fieldset>
 <div data-bank hidden>{bank_box(lang)}</div>
 <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -378,7 +421,8 @@ def page_data(lang, products, cats):
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
                                 "o_from", "add", "added", "remove", "kg", "piece", "one_msg", "o_pay", "o_number",
-                                "pay_cod", "pay_bank", "sending", "send", "done_body", "fail", "copied", "copy")},
+                                "pay_cod", "pay_bank", "pay_card", "card_fail", "sending", "send", "done_body", "fail",
+                                "copied", "copy")},
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "price": p["price"], "u": p["unit"]} for p in products},
     }
     return data
@@ -605,7 +649,7 @@ def write(path, text):
 
 
 # asset version: changes only when the design does, so a daily rebuild does not rewrite every page
-STAMP = hashlib.sha256(b"".join((HERE / "assets" / n).read_bytes() for n in ("site.css", "site.js"))).hexdigest()[:10]
+STAMP = hashlib.sha256(b"".join((HERE / "assets" / n).read_bytes() for n in ("site.css", "site.js", "thanks.js"))).hexdigest()[:10]
 
 
 def main():
@@ -625,7 +669,7 @@ def main():
     shutil.copyfile(DOCS / "privacy-policy.html", OUT / "privacy-policy.html")
     shutil.copytree(DOCS / "store", OUT / "store")
     (OUT / "assets").mkdir(parents=True, exist_ok=True)
-    for name_ in ("site.css", "site.js"):
+    for name_ in ("site.css", "site.js", "thanks.js"):
         shutil.copyfile(HERE / "assets" / name_, OUT / "assets" / name_)
 
     for lang in LANGS:
@@ -633,6 +677,7 @@ def main():
         write(OUT / "assets" / f"data-{lang}.js",
               "window.ALMAS=" + json.dumps(page_data(lang, products, cats), ensure_ascii=False) + ";" + chr(10))
         write(base / "index.html", home(lang, products, cats, day[lang]))
+        write(base / "merci" / "index.html", thanks(lang))
         for p in products:
             write(base / "p" / p["id"] / "index.html", product_page(lang, p, products, cats))
     write(OUT / "404.html", not_found())

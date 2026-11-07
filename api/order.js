@@ -1,8 +1,10 @@
 // POST /api/order: a website order. Priced again here from the till's live catalogue (the browser's prices are
 // never trusted), numbered, and sent to the shop owners through the Almas shop bot on Telegram.
 // Env: TELEGRAM_BOT_TOKEN (the shop bot), TELEGRAM_CHAT_IDS (comma-separated owner chats).
+import { telegram, stripe, money } from "./_lib.js";
+
 const CATALOG = "https://aronium-shop.amrani4online.workers.dev/app/catalog.json";
-const PAY = { cod: "💵 عند الاستلام أو فالمحل", bank: "🏦 تحويل بنكي (CIH)" };
+const PAY = { cod: "💵 عند الاستلام أو فالمحل", bank: "🏦 تحويل بنكي (CIH)", card: "💳 بطاقة بنكية (Stripe)" };
 const LANG = { ar: "العربية", fr: "الفرنسية", en: "الإنجليزية" };
 
 function clean(v, max) {
@@ -22,10 +24,6 @@ function amount(unit, q) {
   return q < 1 ? `${Math.round(q * 1000)} غرام` : `${q} كيلو`;
 }
 
-function money(n) {
-  const r = Math.round(n * 100) / 100;
-  return `${Number.isInteger(r) ? r : r.toFixed(2)} درهم`;
-}
 
 let cached = null; // { at, byId }: a warm function reuses the till's prices for 5 minutes
 
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
   if (b.website) return res.status(200).json({ ok: true, number: "AL-0" }); // honeypot: a bot filled the hidden field
 
   const name = clean(b.name, 80), phone = clean(b.phone, 30), address = clean(b.address, 200), notes = clean(b.notes, 300);
-  const pay = b.pay === "bank" ? "bank" : "cod";
+  const pay = b.pay === "bank" ? "bank" : b.pay === "card" && process.env.STRIPE_SECRET_KEY ? "card" : "cod";
   const lang = ["ar", "fr", "en"].includes(b.lang) ? b.lang : "ar";
   const digits = phone.replace(/\D/g, "");
   if (!name || digits.length < 9 || digits.length > 15) return res.status(400).json({ ok: false, error: "name and phone" });
@@ -90,25 +88,44 @@ export default async function handler(req, res) {
     `لغة الزبون: ${LANG[lang]}`,
   ].filter((x, i, a) => x !== "" || (a[i - 1] !== "" && i > 0)).join("\n");
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chats = String(process.env.TELEGRAM_CHAT_IDS || "").split(",").map((s) => s.trim()).filter(Boolean);
-  let sent = 0;
-  for (const chat of chats) {
+  // card: the Stripe page is opened before the shop is told, so a refused card setup never announces an order
+  let url = "";
+  if (pay === "card") {
+    const origin = `https://${req.headers["x-forwarded-host"] || req.headers.host}`;
+    const base = origin + (lang === "ar" ? "" : `/${lang}`);
     try {
-      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ chat_id: chat, text, disable_web_page_preview: true }),
-        signal: AbortSignal.timeout(8000),
+      const s = await stripe("POST", "checkout/sessions", {
+        mode: "payment",
+        locale: lang === "en" ? "en" : "fr", // Stripe Checkout has no Arabic
+        success_url: `${base}/merci/?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${base}/?cancel=${number}`,
+        client_reference_id: number,
+        metadata: { order: number, phone },
+        payment_intent_data: { metadata: { order: number }, statement_descriptor_suffix: "ALMAS", description: `Almas ${number}` },
+        line_items: lines.map((l) => ({
+          quantity: 1,
+          price_data: {
+            currency: "mad",
+            unit_amount: Math.round(l.line * 100),
+            product_data: { name: `${l.fr} — ${amountFr(l.unit, l.q)}`, description: l.ar },
+          },
+        })),
       });
-      if (r.ok) sent++;
+      url = s.url;
     } catch (e) {
-      /* one chat down must not lose the order for the other */
+      return res.status(502).json({ ok: false, error: "card", detail: String(e.message || e).slice(0, 200) });
     }
   }
+
+  const sent = await telegram(text + (pay === "card" ? "\n⏳ في انتظار الأداء بالبطاقة" : ""));
   if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
   return res.status(200).json({
-    ok: true, number, total: Math.round(total * 100) / 100,
+    ok: true, number, total: Math.round(total * 100) / 100, url,
     lines: lines.map((l) => ({ id: l.id, q: l.q, line: Math.round(l.line * 100) / 100 })),
   });
+}
+
+function amountFr(unit, q) {
+  if (unit !== "kg") return `${q} ×`;
+  return q < 1 ? `${Math.round(q * 1000)} g` : `${q} kg`;
 }
