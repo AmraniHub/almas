@@ -39,3 +39,7 @@ project_prompt.md
 # Firebase config of the June version: kept on the laptop only, never on the public repo
 android/app/google-services.json
 lib/firebase_options.dart
+
+# nested repos kept on the laptop only (crm holds Firebase keys)
+crm/
+website/
