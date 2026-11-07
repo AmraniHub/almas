@@ -58,3 +58,12 @@ favour photographed items). New products get the shelf card until `python site/c
 `almas.ma` belongs to someone else. With a domain: set `base_url`, point the DNS at Vercel,
 add it to the Vercel project, and change the feed URL in Commerce Manager. A domain also lets Meta verify it
 (`meta_domain_verification`), which a `vercel.app` address cannot.
+
+## Back office (cloud/)
+
+Orders, customers (CRM), B2B quotes, reviews and product sales live in a free Cloudflare Worker + D1,
+`almas-shop`: https://almas-shop.amrani4online.workers.dev/admin (login key in `%USERPROFILE%\keys\almas-admin.txt`).
+The Vercel functions copy every order, quote, card payment and review there (env `ALMAS_CLOUD_URL`,
+`ALMAS_CLOUD_SECRET`); Telegram stays the instant alert. A review shows on the site only once published in the
+admin. Redeploy with `python cloud/deploy.py` (keeps secrets; `--rotate` logs everyone out and needs the Vercel
+secret updated). Tests: `node --test cloud/tests/worker.test.mjs`, live: `python cloud/live-test.py`.
