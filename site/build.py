@@ -569,7 +569,7 @@ def head(lang, title, desc, path, image, extra=""):
 <html lang="{lang}" dir="{t['dir']}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">{verify}
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">{verify}
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{canonical}">{alts}
@@ -635,7 +635,7 @@ def card_option(lang):
 def thanks(lang):
     """/merci/: where Stripe sends the customer back; asks /api/paid/ whether the card payment went through."""
     t = T[lang]
-    return f"""{head(lang, t['ty_title'] + ' | ' + t['name'], t['desc'], 'merci/', f'{BASE}/store/feature-graphic.png',
+    return f"""{head(lang, t['ty_title'] + ' | ' + t['name'], t['desc'], 'merci/', f'{BASE}/img/og-{lang}.jpg',
                      chr(10) + '<meta name="robots" content="noindex">')}
 <body>
 {header(lang, 'merci/')}
@@ -669,6 +669,17 @@ def tile(kind, href, label, sub, sub_ltr=False):
             f'<span class="tile-tx"><b>{esc(label)}</b><small{d}>{sub}</small></span></a>')
 
 
+def hours_html(lang):
+    """Every day's hours, and a badge the page turns into "open now" or "closed, opens at..." in Morocco's time."""
+    h = CFG.get("hours")
+    if not h:
+        return ""
+    t = T[lang]
+    return (f'<p class="hours"><span class="open-badge" data-open-badge data-open="{h["open"]}" data-close="{h["close"]}" '
+            f'data-on="{esc(t["open_now"])}" data-off="{esc(t["closed_now"].format(o=h["open"]))}" hidden></span> '
+            f'<span>{esc(t["hours_line"].format(o=h["open"], c=h["close"]))}</span></p>')
+
+
 def visit(lang):
     """Where the shop is: the map with its pin, directions from where the visitor stands, Google review, Instagram."""
     t = T[lang]
@@ -695,6 +706,7 @@ def visit(lang):
 <div class="wrap visit-grid">
 <div>
 <h2>{esc(t['visit_title'])}</h2><p>{esc(t['visit_body'])}</p>
+{hours_html(lang)}
 <div class="tiles">
 {tiles_html}
 </div>
@@ -713,7 +725,7 @@ def pro_page(lang, products, cats):
                   for p in tops[:4])
     points = "".join(f"<li>{esc(x)}</li>" for x in t["pro_points"])
     opts = lambda xs: "".join(f'<option>{esc(x)}</option>' for x in xs)
-    return f"""{head(lang, t['pro_title'] + ' | ' + t['name'], t['pro_lead'], 'pro/', f'{BASE}/store/feature-graphic.png')}
+    return f"""{head(lang, t['pro_title'] + ' | ' + t['name'], t['pro_lead'], 'pro/', f'{BASE}/img/og-{lang}.jpg')}
 <body>
 {header(lang, 'pro/')}
 <main>
@@ -858,7 +870,7 @@ def footer(lang):
     ]
     return f"""<footer class="foot">
 <div class="wrap foot-in">
-<div class="foot-brand"><img src="{PREFIX}/img/logo-192.png" alt="" width="44" height="44" loading="lazy"><div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p></div></div>
+<div class="foot-brand"><img src="{PREFIX}/img/logo-192.png" alt="" width="44" height="44" loading="lazy"><div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p>{hours_html(lang)}</div></div>
 <div class="foot-groups">{"".join(f'<div class="fg">{g}</div>' for g in groups if g)}</div>
 </div>
 <p class="wrap copyright">© {datetime.now().year} {esc(t['name'])} · <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a></p>
@@ -965,15 +977,17 @@ def home(lang, products, cats, stamp_day):
                   for p in tops)
     ld = {
         "@context": "https://schema.org", "@type": "Store", "name": t["name"], "alternateName": [CFG["brand_ar"], CFG["brand_fr"]],
-        "url": BASE + url(lang)[len(PREFIX):], "telephone": CFG["phone"], "image": f"{BASE}/store/feature-graphic.png",
+        "url": BASE + url(lang)[len(PREFIX):], "telephone": CFG["phone"], "image": f"{BASE}/img/og-{lang}.jpg",
         "logo": f"{BASE}/img/logo-512.png", "hasMap": CFG["maps_url"], "priceRange": "DH",
         "address": {"@type": "PostalAddress", "addressLocality": "Ksar Sghir", "addressRegion": "Tanger-Tétouan-Al Hoceïma",
                     "addressCountry": "MA"},
         "paymentAccepted": "Cash, Bank transfer",
+        "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                                       "opens": CFG["hours"]["open"], "closes": CFG["hours"]["close"]}] if CFG.get("hours") else [],
         "geo": {"@type": "GeoCoordinates", "latitude": CFG["geo"][0], "longitude": CFG["geo"][1]},
         "sameAs": [f"https://www.instagram.com/{CFG['instagram']}/"] if CFG.get("instagram") else [],
     }
-    return f"""{head(lang, t['title'], t['desc'], '', f'{BASE}/store/feature-graphic.png')}
+    return f"""{head(lang, t['title'], t['desc'], '', f'{BASE}/img/og-{lang}.jpg')}
 <body>
 {header(lang, '')}
 <main>
@@ -1211,7 +1225,7 @@ def manifest(lang):
 def not_found():
     t = T["ar"]
     links = " · ".join(f'<a href="{url(l)}" lang="{l}">{esc(T[l]["nf_body"])}</a>' for l in LANGS)
-    return f"""{head('ar', t['nf_title'], t['desc'], '', f'{BASE}/store/feature-graphic.png')}
+    return f"""{head('ar', t['nf_title'], t['desc'], '', f'{BASE}/img/og-ar.jpg')}
 <body>
 {header('ar', '')}
 <main class="wrap nf"><h1>{esc(t['nf_title'])}</h1><p>{links}</p></main>

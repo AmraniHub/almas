@@ -97,7 +97,10 @@
     "as_checkout": "أكمل الطلب",
     "as_maps": "الطريق على خرائط Google",
     "as_pro": "صفحة المشاريع",
-    "as_listen": "استمع"
+    "as_listen": "استمع",
+    "hours_line": "مفتوح كل يوم من الساعة {o} إلى {c}",
+    "open_now": "مفتوح الآن",
+    "closed_now": "مغلق الآن · يفتح على الساعة {o}"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -197,7 +200,10 @@
     "as_checkout": "Finaliser la commande",
     "as_maps": "Itinéraire Google Maps",
     "as_pro": "Page professionnels",
-    "as_listen": "Écouter"
+    "as_listen": "Écouter",
+    "hours_line": "Ouvert tous les jours de {o} à {c}",
+    "open_now": "Ouvert maintenant",
+    "closed_now": "Fermé · ouvre à {o}"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -297,7 +303,10 @@
     "as_checkout": "Complete my order",
     "as_maps": "Google Maps directions",
     "as_pro": "Businesses page",
-    "as_listen": "Listen"
+    "as_listen": "Listen",
+    "hours_line": "Open every day, {o} to {c}",
+    "open_now": "Open now",
+    "closed_now": "Closed · opens at {o}"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -397,6 +406,9 @@
     "as_checkout": "Completar el pedido",
     "as_maps": "Cómo llegar en Google Maps",
     "as_pro": "Página de profesionales",
-    "as_listen": "Escuchar"
+    "as_listen": "Escuchar",
+    "hours_line": "Abierto todos los días de {o} a {c}",
+    "open_now": "Abierto ahora",
+    "closed_now": "Cerrado · abre a las {o}"
   }
 }

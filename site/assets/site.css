@@ -379,7 +379,12 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
 .as-form button[type="submit"] { width: 46px; height: 46px; flex: none; border-radius: 50%; border: 0; background: var(--terracotta); cursor: pointer; display: grid; place-items: center; }
 .as-form button[type="submit"] svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 .as-wa { text-align: center; font-size: .8rem; padding: 6px 0 9px; color: var(--wa); font-weight: 700; background: var(--surface); }
-@media (max-width: 520px) { .as { inset-inline: 8px; width: auto; bottom: 88px; height: calc(100vh - 112px); } }
+/* on a phone the chat fills the visible screen between its edges (a height in vh would run under the address bar),
+   and the round button steps aside while it is open: the X closes it */
+@media (max-width: 520px) {
+  .as { inset-inline: 6px; width: auto; top: max(6px, env(safe-area-inset-top)); bottom: max(6px, env(safe-area-inset-bottom)); height: auto; max-height: none; border-radius: 18px; }
+  .as-fab.on { display: none; }
+}
 
 /* My orders, kept on the phone */
 .mo-btn { margin-inline-start: auto; margin-inline-end: 4px; border: 1px solid var(--line); background: var(--card); border-radius: var(--pill); padding: 6px 12px; font-weight: 700; font-size: .84rem; cursor: pointer; }
@@ -533,6 +538,13 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
 .talking .tagine .smile { transform-box: fill-box; transform-origin: 50% 0; animation: talk .32s ease-in-out infinite alternate; }
 @keyframes talk { from { transform: scaleY(.6); } to { transform: scaleY(1.9); } }
 
+/* opening hours and the open-now badge */
+.hours { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 8px 0 0; font-size: .92rem; }
+.open-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px; border-radius: var(--pill); font-weight: 800; font-size: .8rem; background: #f6dede; color: #9b2c2c; }
+.open-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.open-badge.is-open { background: #dff3e7; color: var(--wa); }
+.open-badge[hidden] { display: none; }
+.foot .hours { color: #c9bba9; font-size: .85rem; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }

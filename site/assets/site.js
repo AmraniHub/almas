@@ -920,6 +920,16 @@
   if (asForm) asForm.onsubmit = function (e) { e.preventDefault(); var i = $("input", asForm); ask(i.value); i.value = ""; };
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && as && !as.hidden) asShow(false); });
 
+  /* open now / closed: Morocco keeps UTC+0 all year since September 2026, so the shop's hours are read in UTC */
+  $$("[data-open-badge]").forEach(function (b) {
+    var now = new Date(), m = now.getUTCHours() * 60 + now.getUTCMinutes();
+    var hm = function (v) { var x = String(v).split(":"); return +x[0] * 60 + +(x[1] || 0); };
+    var open = m >= hm(b.getAttribute("data-open")) && m < hm(b.getAttribute("data-close"));
+    b.textContent = b.getAttribute(open ? "data-on" : "data-off");
+    b.classList.toggle("is-open", open);
+    b.hidden = false;
+  });
+
   /* any slider (the boxes): faded edges and arrows where there is more, the wheel slides it while it can */
   $$("[data-slider]").forEach(function (wrap) {
     var row = $("[data-slide-row]", wrap), rtlS = document.documentElement.dir === "rtl";

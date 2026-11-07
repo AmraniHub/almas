@@ -5,7 +5,7 @@
 const ORDER_STATUS = ["new", "confirmed", "preparing", "delivered", "cancelled"];
 const QUOTE_STATUS = ["new", "contacted", "won", "lost"];
 const PAY = { cod: "Cash on delivery", bank: "Bank transfer", card: "Card (Stripe)" };
-const SHOP_AR = "ألماس للتوابل";
+const SHOP_AR = "معشبة ألماس";
 
 const $ = (id) => document.getElementById(id);
 const view = () => $("view");
