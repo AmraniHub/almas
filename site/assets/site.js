@@ -67,6 +67,7 @@
   function total() { return Object.keys(cart).reduce(function (s, id) { return s + cart[id] * A.p[id].price; }, 0); }
   function add(id, q) {
     if (!A.p[id]) return;
+    if (q > 0 && typeof Sound !== "undefined") Sound.clink();
     cart[id] = Math.round(((cart[id] || 0) + q) * 100) / 100;
     if (cart[id] <= 0) delete cart[id];
     save(); render();
@@ -602,63 +603,61 @@
     };
   }
 
-  /* the wood fire under Tajine, as sound: made in the browser (filtered noise for the low roar, short bright bursts
-     for the crackles), so there is no file to download. It plays only while the chat is open (the visitor opened
-     it: browsers allow sound after a tap), very softly, a little louder while Tajine thinks, fades out when the chat
-     closes or the phone screen goes off. The speaker button mutes it, and the choice is remembered. */
-  var Fire = (function () {
-    var AC = window.AudioContext || window.webkitAudioContext, ctx = null, master = null, timer = null, level = 0;
-    var SKEY = "almas-sound";
-    var SOUND_ON = false; // the owner did not like the crackle (2026-11-07): off until another sound is chosen
-    function enabled() { if (!SOUND_ON) return false; try { return localStorage.getItem(SKEY) !== "off"; } catch (e) { return true; } }
-    function noise(seconds, brown) {
-      var len = Math.floor(ctx.sampleRate * seconds), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0), last = 0;
-      for (var i = 0; i < len; i++) {
-        var w = Math.random() * 2 - 1;
-        if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w;
-      }
-      return buf;
-    }
-    function crackle() {
-      if (!ctx || level <= 0) return;
-      var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
-      src.buffer = noise(0.04, false);
-      bp.type = "bandpass"; bp.frequency.value = 1400 + Math.random() * 3200; bp.Q.value = 0.9;
-      var peak = (0.25 + Math.random() * 0.75) * level * 2.2;
-      g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.015 + Math.random() * 0.05);
-      src.connect(bp); bp.connect(g); g.connect(master); src.start(t); src.stop(t + 0.08);
-    }
-    function loop() { crackle(); if (Math.random() < 0.25) setTimeout(crackle, 30 + Math.random() * 60); timer = setTimeout(loop, 70 + Math.random() * (level > 0.06 ? 160 : 380)); }
-    function start(to) {
-      if (!AC || !enabled() || reduce) return;
+  /* sounds of the moment, never a background: a small brass bell when the chat opens, tea poured into a glass when
+     Tajine answers, a spoon on a tea glass when something goes into the cart. Made in the browser (no file to
+     download), quiet, and only right after the visitor's own tap. The speaker button in the chat mutes all three,
+     and the choice is remembered. */
+  var Sound = (function () {
+    var AC = window.AudioContext || window.webkitAudioContext, ctx = null, out = null, SKEY = "almas-sound";
+    function on() { try { return localStorage.getItem(SKEY) !== "off"; } catch (e) { return true; } }
+    function ready() {
+      if (!AC || !on()) return false;
       try {
-        if (!ctx) {
-          ctx = new AC();
-          master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-          var roar = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), rg = ctx.createGain();
-          roar.buffer = noise(3, true); roar.loop = true;
-          lp.type = "lowpass"; lp.frequency.value = 420; rg.gain.value = 0.9;
-          roar.connect(lp); lp.connect(rg); rg.connect(master); roar.start();
-        }
+        if (!ctx) { ctx = new AC(); out = ctx.createGain(); out.gain.value = 0.55; out.connect(ctx.destination); }
         if (ctx.state === "suspended") ctx.resume();
-        set(to || 0.045);
-        if (!timer) loop();
-      } catch (e) { /* no sound, nothing else changes */ }
+        return true;
+      } catch (e) { return false; }
     }
-    function set(v) {
-      level = v;
-      if (master) master.gain.setTargetAtTime(v, ctx.currentTime, 0.6);
+    function tone(freq, start, dur, peak, type) {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.exponentialRampToValueAtTime(peak, start + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      o.connect(g); g.connect(out); o.start(start); o.stop(start + dur + 0.05);
     }
-    function stop() {
-      if (!ctx) return;
-      set(0);
-      clearTimeout(timer); timer = null;
-      setTimeout(function () { if (level === 0 && ctx && ctx.state === "running") ctx.suspend(); }, 2500);
+    // a small brass bell: a few inharmonic partials, the high ones dying first
+    function bell() {
+      if (!ready()) return;
+      var t = ctx.currentTime + 0.02, f = 1046;
+      [[1, 0.09, 1.6], [2.76, 0.04, 0.9], [5.4, 0.02, 0.5], [8.93, 0.01, 0.3]].forEach(function (p) { tone(f * p[0], t, p[2], p[1]); });
     }
-    return { start: start, set: function (v) { if (ctx && level > 0) set(v); }, stop: stop, enabled: enabled,
-             toggle: function () { var on = !enabled(); try { localStorage.setItem(SKEY, on ? "on" : "off"); } catch (e) {} return on; } };
+    // a spoon touching a tea glass: two bright, very short pings
+    function clink() {
+      if (!ready()) return;
+      var t = ctx.currentTime + 0.01;
+      tone(2637, t, 0.35, 0.05); tone(4186, t, 0.22, 0.025); tone(3520, t + 0.09, 0.25, 0.022);
+    }
+    // tea poured from high into a glass: a stream of filtered noise whose pitch rises as the glass fills
+    function pour() {
+      if (!ready()) return;
+      var t = ctx.currentTime + 0.02, dur = 1.15, len = Math.floor(ctx.sampleRate * dur);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      var src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), bp2 = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = buf;
+      bp.type = "bandpass"; bp.Q.value = 6; bp.frequency.setValueAtTime(700, t); bp.frequency.exponentialRampToValueAtTime(1900, t + dur);
+      bp2.type = "bandpass"; bp2.Q.value = 3; bp2.frequency.setValueAtTime(2600, t); bp2.frequency.exponentialRampToValueAtTime(4200, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.08);
+      for (var k = 1; k < 10; k++) g.gain.setValueAtTime(0.1 + Math.random() * 0.08, t + k * 0.1); // the little gulps of a stream
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(bp); src.connect(bp2); bp.connect(g); bp2.connect(g); g.connect(out);
+      src.start(t); src.stop(t + dur + 0.05);
+    }
+    return { bell: bell, clink: clink, pour: pour, on: on,
+             toggle: function () { var v = !on(); try { localStorage.setItem(SKEY, v ? "on" : "off"); } catch (e) {} return v; } };
   })();
-  document.addEventListener("visibilitychange", function () { if (document.hidden) Fire.stop(); else if (as && !as.hidden) Fire.start(); });
 
   /* Tajine, the assistant: answers from the shop's catalogue, suggests products that go straight into the cart */
   var as = $("[data-as]"), asOpen = $("[data-as-open]"), asBody = $("[data-as-body]"), asForm = $("[data-as-form]");
@@ -667,7 +666,7 @@
     if (!as) return;
     as.hidden = !open;
     if (asOpen) asOpen.classList.toggle("on", open);
-    if (open) Fire.start(); else Fire.stop();
+    if (open) Sound.bell();
     if (open) { var i = $("input", asForm); if (i && window.innerWidth > 700) setTimeout(function () { i.focus(); }, 60); }
   }
   function bubble(cls, html) {
@@ -716,16 +715,15 @@
       el.classList.toggle("cooking", on);
       if (served) { el.classList.add("served"); setTimeout(function () { el.classList.remove("served"); }, 2600); }
     });
-    Fire.set(on ? 0.1 : 0.045);
+    if (served) Sound.pour();
   }
   var snd = $("[data-as-sound]");
-  if (snd && !Fire.enabled()) snd.hidden = true; // no sound playing, so no button for it
-  if (snd && !snd.hidden) {
-    snd.setAttribute("aria-pressed", Fire.enabled() ? "true" : "false");
+  if (snd) {
+    snd.setAttribute("aria-pressed", Sound.on() ? "true" : "false");
     snd.onclick = function () {
-      var on = Fire.toggle();
+      var on = Sound.toggle();
       snd.setAttribute("aria-pressed", on ? "true" : "false");
-      if (on) Fire.start(); else Fire.stop();
+      if (on) Sound.bell();
     };
   }
   if (asOpen) asOpen.onclick = function () { asShow(as.hidden); };
@@ -751,7 +749,7 @@
       var k = A.packs[b.getAttribute("data-add-pack")];
       if (!k) return;
       k.items.forEach(function (x) { if (A.p[x[0]]) cart[x[0]] = Math.round(((cart[x[0]] || 0) + packQty(x[0], x[1])) * 100) / 100; });
-      save(); render();
+      save(); render(); Sound.clink();
       track("AddToCart", k.items.map(function (x) { return x[0]; }), packTotal(b.getAttribute("data-add-pack")));
       b.textContent = "✓"; setTimeout(function () { b.textContent = label; }, 1200);
       setTimeout(openCart, 300);
@@ -842,7 +840,7 @@
       b.onclick = function () {
         var o = list[+b.getAttribute("data-again")];
         o.items.forEach(function (x) { if (A.p[x.id]) cart[x.id] = x.q; });
-        save(); render(); showCart();
+        save(); render(); showCart(); Sound.clink();
         track("AddToCart", o.items.map(function (x) { return x.id; }), total());
       };
     });
