@@ -1,0 +1,38 @@
+name: Website and Meta catalogue
+
+# Rebuilds docs/ (the website on GitHub Pages and the Meta catalogue feeds) from the shop's live catalogue,
+# so a price changed at the till reaches the site and the ads within a day. GitHub runs scheduled jobs late
+# (hours, on this account); "Run workflow" in the Actions tab rebuilds at once.
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["site/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build from the live catalogue
+        run: python site/build.py
+      - name: Commit when something changed
+        run: |
+          git config user.name "almas-site-bot"
+          git config user.email "almas-site-bot@users.noreply.github.com"
+          git add docs
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "Site and Meta feed rebuilt from the shop catalogue"
+          git push

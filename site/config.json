@@ -1,0 +1,17 @@
+{
+  "_note": "Every business fact the site shows. A blank value hides its line (pixel, Play link, domain verification). Change base_url when Almas gets its own domain, then rebuild.",
+  "base_url": "https://amranihub.github.io/almas",
+  "brand_ar": "معشبة ألماس",
+  "brand_fr": "Almas Épices & Herbes",
+  "brand_en": "Almas Spices & Herbs",
+  "phone": "+212619434035",
+  "phone_display": "06 19 43 40 35",
+  "whatsapp": "212619434035",
+  "maps_url": "https://maps.google.com/?cid=5907200103412499017",
+  "catalog_url": "https://aronium-shop.amrani4online.workers.dev/app/catalog.json",
+  "image_base": "https://aronium-shop.amrani4online.workers.dev/app/img",
+  "meta_pixel_id": "",
+  "meta_domain_verification": "",
+  "google_site_verification": "",
+  "play_url": ""
+}

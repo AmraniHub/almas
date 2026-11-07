@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://amranihub.github.io/almas/sitemap.xml
