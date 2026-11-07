@@ -61,9 +61,9 @@ T = {
         "desc": "توابل وأعشاب من محلنا في القصر الصغير، للبيت والمطاعم والفنادق وقاعات الأفراح. أسعار المحل الحقيقية، والطلب عبر واتساب.",
         "kicker": "القصر الصغير، قرب طنجة",
         "h1": "توابل وأعشاب بالكيلو، من محلنا في القصر الصغير",
-        "lead": "توابل وأعشاب من محلنا في القصر الصغير، للبيت والمطاعم والفنادق وقاعات الأفراح. الأثمنة هي أثمنة المحل، كتتحدث من الصندوق.",
+        "lead": "توابل وأعشاب من محلنا في القصر الصغير، للبيت والمطاعم والفنادق وقاعات الأفراح. الأثمنة هي أثمنة المحل.",
         "browse": "تصفح المنتجات", "wa": "اطلب عبر واتساب", "call": "اتصل بنا",
-        "facts": "{n} منتج · {s} رفوف · الأثمنة محدثة {d}",
+        "facts": "{n} منتج · {s} رفوف",
         "search": "ابحث عن منتج…", "all": "الكل", "none": "ما لقينا حتى منتج بهاد الاسم.",
         "kg": "للكيلو", "piece": "للوحدة", "add": "زيد للسلة", "added": "تزاد",
         "cart": "السلة", "cart_empty": "السلة فارغة",
@@ -88,6 +88,31 @@ T = {
         "biz_body": "اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.",
         "biz_cta": "اطلب ثمن الكميات الكبيرة",
         "biz_msg": "السلام عليكم ألماس، عندي مؤسسة وبغيت الثمن ديال كميات كبيرة من: ",
+        "nav_pro": "للمهنيين",
+        "review": "قيم ألماس على Google",
+        "insta": "إنستغرام",
+        "directions": "الطريق للمحل",
+        "pro_title": "للمطاعم والفنادق ومنظمي الأعراس",
+        "pro_lead": "توابل وأعشاب وخلطات بالكيلو للمطابخ المهنية والأعراس والمناسبات، من محلنا فالقصر الصغير قرب طنجة.",
+        "pro_points": ["بالكيلو، بأثمنة المحل.", "للكميات الكبيرة، اطلب منا الثمن.", "الخلاص عند الاستلام أو فالمحل أو بتحويل بنكي.", "التوصيل كنتافقو عليه معاك فواتساب."],
+        "pro_top": "الأكثر طلبا فالمطابخ",
+        "q_title": "اطلب ثمن",
+        "q_intro": "قول لينا شنو محتاج وبشحال، ونرجعو ليك بالثمن فواتساب.",
+        "q_type": "نوع النشاط",
+        "q_types": ["مطعم", "فندق", "أعراس ومناسبات", "ممون حفلات", "آخر"],
+        "q_business": "اسم المؤسسة",
+        "q_contact": "الاسم",
+        "q_phone": "الهاتف",
+        "q_city": "المدينة",
+        "q_date": "تاريخ المناسبة (إلا كانت)",
+        "q_guests": "عدد الضيوف (إلا كانت مناسبة)",
+        "q_freq": "كل شحال",
+        "q_freqs": ["مرة وحدة", "كل سيمانة", "كل شهر"],
+        "q_items": "المنتجات والكميات",
+        "q_items_ph": "مثلا: 5 كيلو كمون، 3 كيلو خرقوم، 2 كيلو راس الحانوت",
+        "q_send": "صيفط طلب الثمن",
+        "q_done": "توصلنا بالطلب ديالك. غادي نتاصلو بيك بالثمن فواتساب.",
+        "q_fail": "ما قدرناش نصيفطو الطلب. غادي يتحل واتساب باش تصيفطو مباشرة.",
         "visit_title": "زورونا فالمحل", "visit_body": "محلنا فالقصر الصغير، قرب طنجة.", "map": "الطريق على خرائط Google",
         "how_title": "كيفاش كتطلب",
         "how": ["اختار المنتجات بالكيلو (كل 250 غرام) أو بالقطعة.", "صيفط الطلب للمحل عبر واتساب من السلة.",
@@ -106,9 +131,9 @@ T = {
         "desc": "Épices et herbes de notre boutique à Ksar Sghir, pour la maison, les restaurants, les hôtels et les salles de fêtes. Les vrais prix de la boutique, commande sur WhatsApp.",
         "kicker": "Ksar Sghir, près de Tanger",
         "h1": "Épices et herbes au kilo, depuis notre boutique de Ksar Sghir",
-        "lead": "Épices et herbes de notre boutique à Ksar Sghir, pour la maison, les restaurants, les hôtels et les salles de fêtes. Les prix sont ceux de la boutique, mis à jour depuis la caisse.",
+        "lead": "Épices et herbes de notre boutique à Ksar Sghir, pour la maison, les restaurants, les hôtels et les salles de fêtes. Les prix sont ceux de la boutique.",
         "browse": "Voir les produits", "wa": "Commander sur WhatsApp", "call": "Nous appeler",
-        "facts": "{n} produits · {s} rayons · prix mis à jour le {d}",
+        "facts": "{n} produits · {s} rayons",
         "search": "Chercher un produit…", "all": "Tout", "none": "Aucun produit ne porte ce nom.",
         "kg": "le kilo", "piece": "l'unité", "add": "Ajouter", "added": "Ajouté",
         "cart": "Panier", "cart_empty": "Votre panier est vide",
@@ -133,6 +158,31 @@ T = {
         "biz_body": "Commandez au kilo avec le nom et l'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.",
         "biz_cta": "Demander un prix pour de grandes quantités",
         "biz_msg": "Bonjour Almas, j'ai un établissement et je voudrais un prix pour de grandes quantités de : ",
+        "nav_pro": "Professionnels",
+        "review": "Notez Almas sur Google",
+        "insta": "Instagram",
+        "directions": "Itinéraire vers la boutique",
+        "pro_title": "Restaurants, hôtels, organisateurs de mariages",
+        "pro_lead": "Épices, herbes et mélanges au kilo pour les cuisines professionnelles, les mariages et les fêtes, depuis notre boutique de Ksar Sghir près de Tanger.",
+        "pro_points": ["Au kilo, aux prix de la boutique.", "Pour les grandes quantités, demandez-nous un prix.", "Paiement à la livraison, à la boutique ou par virement bancaire.", "Livraison convenue avec vous sur WhatsApp."],
+        "pro_top": "Les plus demandés en cuisine",
+        "q_title": "Demander un prix",
+        "q_intro": "Dites-nous ce qu'il vous faut et en quelle quantité : nous vous répondons avec un prix sur WhatsApp.",
+        "q_type": "Activité",
+        "q_types": ["Restaurant", "Hôtel", "Mariages et événements", "Traiteur", "Autre"],
+        "q_business": "Établissement",
+        "q_contact": "Votre nom",
+        "q_phone": "Téléphone",
+        "q_city": "Ville",
+        "q_date": "Date de l'événement (s'il y en a un)",
+        "q_guests": "Nombre d'invités (pour un événement)",
+        "q_freq": "Fréquence",
+        "q_freqs": ["Une fois", "Chaque semaine", "Chaque mois"],
+        "q_items": "Produits et quantités",
+        "q_items_ph": "Par exemple : 5 kg de cumin, 3 kg de curcuma, 2 kg de ras el hanout",
+        "q_send": "Envoyer la demande",
+        "q_done": "Demande reçue. Nous vous répondons avec un prix sur WhatsApp.",
+        "q_fail": "La demande n'a pas pu partir. WhatsApp va s'ouvrir pour l'envoyer directement.",
         "visit_title": "Venez à la boutique", "visit_body": "Notre boutique est à Ksar Sghir, près de Tanger.", "map": "Itinéraire sur Google Maps",
         "how_title": "Comment commander",
         "how": ["Choisissez vos produits au kilo (par 250 g) ou à la pièce.", "Envoyez la commande à la boutique sur WhatsApp, depuis le panier.",
@@ -151,9 +201,9 @@ T = {
         "desc": "Spices and herbs from our shop in Ksar Sghir, for homes, restaurants, hotels and wedding venues. The shop's real prices, order on WhatsApp.",
         "kicker": "Ksar Sghir, near Tangier",
         "h1": "Spices and herbs by the kilo, from our shop in Ksar Sghir",
-        "lead": "Spices and herbs from our shop in Ksar Sghir, for homes, restaurants, hotels and wedding venues. Prices are the shop's own, updated from the till.",
+        "lead": "Spices and herbs from our shop in Ksar Sghir, for homes, restaurants, hotels and wedding venues. Prices are the shop's own.",
         "browse": "See the products", "wa": "Order on WhatsApp", "call": "Call us",
-        "facts": "{n} products · {s} shelves · prices updated {d}",
+        "facts": "{n} products · {s} shelves",
         "search": "Search a product…", "all": "All", "none": "No product by that name.",
         "kg": "per kilo", "piece": "each", "add": "Add", "added": "Added",
         "cart": "Cart", "cart_empty": "Your cart is empty",
@@ -178,6 +228,31 @@ T = {
         "biz_body": "Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.",
         "biz_cta": "Ask for a bulk price",
         "biz_msg": "Hello Almas, I run a business and would like a price for large quantities of: ",
+        "nav_pro": "Businesses",
+        "review": "Rate Almas on Google",
+        "insta": "Instagram",
+        "directions": "Directions to the shop",
+        "pro_title": "Restaurants, hotels, wedding organisers",
+        "pro_lead": "Spices, herbs and blends by the kilo for professional kitchens, weddings and events, from our shop in Ksar Sghir near Tangier.",
+        "pro_points": ["By the kilo, at the shop's prices.", "For large quantities, ask us for a price.", "Pay on delivery, at the shop or by bank transfer.", "Delivery agreed with you on WhatsApp."],
+        "pro_top": "Most ordered by kitchens",
+        "q_title": "Ask for a price",
+        "q_intro": "Tell us what you need and how much: we reply with a price on WhatsApp.",
+        "q_type": "Business type",
+        "q_types": ["Restaurant", "Hotel", "Weddings and events", "Caterer", "Other"],
+        "q_business": "Business name",
+        "q_contact": "Your name",
+        "q_phone": "Phone",
+        "q_city": "City",
+        "q_date": "Event date (if any)",
+        "q_guests": "Number of guests (for an event)",
+        "q_freq": "How often",
+        "q_freqs": ["Once", "Every week", "Every month"],
+        "q_items": "Products and quantities",
+        "q_items_ph": "For example: 5 kg cumin, 3 kg turmeric, 2 kg ras el hanout",
+        "q_send": "Send the request",
+        "q_done": "Request received. We will reply with a price on WhatsApp.",
+        "q_fail": "The request could not be sent. WhatsApp will open so you can send it directly.",
         "visit_title": "Visit the shop", "visit_body": "Our shop is in Ksar Sghir, near Tangier.", "map": "Directions on Google Maps",
         "how_title": "How to order",
         "how": ["Pick products by the kilo (in 250 g steps) or by the piece.", "Send the order to the shop on WhatsApp from the cart.",
@@ -309,6 +384,7 @@ def header(lang, path):
     return f"""<header class="top">
 <div class="wrap top-in">
 <a class="brand" href="{url(lang)}"><img src="{PREFIX}/img/logo-192.png" alt="" width="40" height="40"><span><b>{esc(t['name'])}</b><small>{esc(t['kicker'])}</small></span></a>
+<a class="nav-pro" href="{url(lang, 'pro/')}">{esc(t['nav_pro'])}</a>
 <nav class="langs" aria-label="Language">{switch}</nav>
 <button class="cart-btn" type="button" data-open-cart aria-label="{esc(t['cart'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span class="count" data-cart-count>0</span></button>
 </div>
@@ -352,6 +428,81 @@ def thanks(lang):
 {footer(lang)}
 <script>window.TY={json.dumps({k: t[k] for k in ('ty_paid', 'ty_unpaid')}, ensure_ascii=False)};window.TYM={json.dumps(MONEY[lang], ensure_ascii=False)};</script>
 <script src="{PREFIX}/assets/thanks.js?v={STAMP}" defer></script>
+</body>
+</html>
+"""
+
+
+def visit(lang):
+    """Where the shop is: the map with its pin, directions from where the visitor stands, Google review, Instagram."""
+    t = T[lang]
+    lat, lng = CFG["geo"]
+    embed = f"https://maps.google.com/maps?q={lat},{lng}&z=16&hl={lang}&output=embed"
+    insta = (f'<a class="btn ghost" href="https://www.instagram.com/{esc(CFG["instagram"])}/" rel="noopener">'
+             f'{esc(t["insta"])} @{esc(CFG["instagram"])}</a>') if CFG.get("instagram") else ""
+    return f"""<section class="visit" id="visit">
+<div class="wrap visit-grid">
+<div>
+<h2>{esc(t['visit_title'])}</h2><p>{esc(t['visit_body'])}</p>
+<div class="cta"><a class="btn" href="https://www.google.com/maps/dir/?api=1&amp;destination={lat},{lng}" rel="noopener">{esc(t['directions'])}</a>
+<a class="btn ghost" href="tel:{esc(CFG['phone'])}">{esc(t['call'])} <span dir="ltr">{esc(CFG['phone_display'])}</span></a>
+<a class="btn ghost review" href="{esc(CFG.get('review_url') or CFG['maps_url'])}" rel="noopener">★ {esc(t['review'])}</a>
+{insta}</div>
+</div>
+<iframe class="map" title="{esc(t['visit_title'])}" src="{esc(embed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+</section>"""
+
+
+def pro_page(lang, products, cats):
+    """Restaurants, hotels, wedding organisers: what Almas offers them, its kitchen best sellers, a quote form."""
+    t = T[lang]
+    tops = sorted([p for p in products if p["cat"] in ("spices", "blends", "herbs")], key=lambda p: -(p.get("rank") or 0))[:8]
+    grid = "".join(card(lang, p, cats) for p in tops)
+    art = "".join(f'<a href="{url(lang, "p/" + p["id"] + "/")}" tabindex="-1"><img src="{esc(src(p))}" alt="" width="260" height="260"></a>'
+                  for p in tops[:4])
+    points = "".join(f"<li>{esc(x)}</li>" for x in t["pro_points"])
+    opts = lambda xs: "".join(f'<option>{esc(x)}</option>' for x in xs)
+    return f"""{head(lang, t['pro_title'] + ' | ' + t['name'], t['pro_lead'], 'pro/', f'{BASE}/store/feature-graphic.png')}
+<body>
+{header(lang, 'pro/')}
+<main>
+<section class="hero"><div class="wrap hero-grid">
+<div class="hero-in">
+<p class="kicker">{esc(t['nav_pro'])}</p>
+<h1>{esc(t['pro_title'])}</h1>
+<p class="lead">{esc(t['pro_lead'])}</p>
+<ul class="ticks">{points}</ul>
+<div class="cta"><a class="btn" href="#quote">{esc(t['q_title'])}</a></div>
+</div>
+<div class="hero-art" aria-hidden="true">{art}</div>
+</div></section>
+<section class="wrap related"><h2>{esc(t['pro_top'])}</h2><ul class="grid">{grid}</ul></section>
+<section class="band" id="quote"><div class="wrap quote">
+<h2>{esc(t['q_title'])}</h2><p>{esc(t['q_intro'])}</p>
+<form data-quote-form>
+<div class="q-grid">
+<label>{esc(t['q_type'])}<select name="type">{opts(t['q_types'])}</select></label>
+<label>{esc(t['q_business'])}<input name="business" required></label>
+<label>{esc(t['q_contact'])}<input name="contact" autocomplete="name"></label>
+<label>{esc(t['q_phone'])}<input name="phone" type="tel" inputmode="tel" autocomplete="tel" required></label>
+<label>{esc(t['q_city'])}<input name="city" autocomplete="address-level2"></label>
+<label>{esc(t['q_freq'])}<select name="freq">{opts(t['q_freqs'])}</select></label>
+<label>{esc(t['q_date'])}<input name="date" type="date"></label>
+<label>{esc(t['q_guests'])}<input name="guests" type="number" min="0" inputmode="numeric"></label>
+</div>
+<label>{esc(t['q_items'])}<textarea name="items" rows="4" required placeholder="{esc(t['q_items_ph'])}"></textarea></label>
+<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button class="btn" type="submit" data-q-send>{esc(t['q_send'])}</button>
+<p class="note" data-q-done hidden>{esc(t['q_done'])}</p>
+</form>
+</div></section>
+{visit(lang)}
+</main>
+{footer(lang)}
+{cart_drawer(lang)}
+{data_tag(lang)}
+<script src="{PREFIX}/assets/site.js?v={STAMP}" defer></script>
 </body>
 </html>
 """
@@ -405,6 +556,8 @@ def footer(lang):
 <a href="tel:{esc(CFG['phone'])}" dir="ltr">{esc(CFG['phone_display'])}</a>
 <a href="https://wa.me/{esc(CFG['whatsapp'])}" rel="noopener">WhatsApp <span dir="ltr">{esc(CFG.get('whatsapp_display', ''))}</span></a>
 <a href="{esc(CFG['maps_url'])}" rel="noopener">{esc(t['map'])}</a>
+<a href="{esc(CFG.get('review_url') or CFG['maps_url'])}" rel="noopener">★ {esc(t['review'])}</a>
+{f'<a href="https://www.instagram.com/{esc(CFG["instagram"])}/" rel="noopener">Instagram @{esc(CFG["instagram"])}</a>' if CFG.get("instagram") else ""}
 {play}
 <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a>
 </div>
@@ -418,11 +571,12 @@ def page_data(lang, products, cats):
     t = T[lang]
     data = {
         "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"], "api": CFG.get("order_api", ""),
+        "qapi": CFG.get("quote_api", ""),
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
                                 "o_from", "add", "added", "remove", "kg", "piece", "one_msg", "o_pay", "o_number",
                                 "pay_cod", "pay_bank", "pay_card", "card_fail", "sending", "send", "done_body", "fail",
-                                "copied", "copy")},
+                                "copied", "copy", "q_send", "q_fail", "sending")},
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "price": p["price"], "u": p["unit"]} for p in products},
     }
     return data
@@ -470,7 +624,9 @@ def home(lang, products, cats, stamp_day):
         "logo": f"{BASE}/img/logo-512.png", "hasMap": CFG["maps_url"], "priceRange": "DH",
         "address": {"@type": "PostalAddress", "addressLocality": "Ksar Sghir", "addressRegion": "Tanger-Tétouan-Al Hoceïma",
                     "addressCountry": "MA"},
-        "paymentAccepted": "Cash",
+        "paymentAccepted": "Cash, Bank transfer",
+        "geo": {"@type": "GeoCoordinates", "latitude": CFG["geo"][0], "longitude": CFG["geo"][1]},
+        "sameAs": [f"https://www.instagram.com/{CFG['instagram']}/"] if CFG.get("instagram") else [],
     }
     return f"""{head(lang, t['title'], t['desc'], '', f'{BASE}/store/feature-graphic.png')}
 <body>
@@ -502,16 +658,10 @@ def home(lang, products, cats, stamp_day):
 <section class="band">
 <div class="wrap two">
 <div><h2>{esc(t['how_title'])}</h2><ol class="how">{how}</ol></div>
-<div class="biz"><h2>{esc(t['biz_title'])}</h2><p>{esc(t['biz_body'])}</p><a class="btn wa-link" href="{esc(biz_link)}" rel="noopener">{esc(t['biz_cta'])}</a></div>
+<div class="biz"><h2>{esc(t['biz_title'])}</h2><p>{esc(t['biz_body'])}</p><div class="cta"><a class="btn" href="{url(lang, 'pro/')}">{esc(t['q_title'])}</a> <a class="btn ghost wa-link" href="{esc(biz_link)}" rel="noopener">WhatsApp</a></div></div>
 </div>
 </section>
-<section class="visit">
-<div class="wrap">
-<h2>{esc(t['visit_title'])}</h2><p>{esc(t['visit_body'])}</p>
-<div class="cta"><a class="btn" href="{esc(CFG['maps_url'])}" rel="noopener">{esc(t['map'])}</a>
-<a class="btn ghost" href="tel:{esc(CFG['phone'])}">{esc(t['call'])} <span dir="ltr">{esc(CFG['phone_display'])}</span></a></div>
-</div>
-</section>
+{visit(lang)}
 </main>
 {footer(lang)}
 {cart_drawer(lang)}
@@ -633,7 +783,7 @@ def feeds(products, cats):
 
 
 def sitemap(products):
-    paths = [""] + ["p/" + p["id"] + "/" for p in products]
+    paths = ["", "pro/"] + ["p/" + p["id"] + "/" for p in products]
     rows = []
     for path in paths:
         for lang in LANGS:
@@ -678,6 +828,7 @@ def main():
               "window.ALMAS=" + json.dumps(page_data(lang, products, cats), ensure_ascii=False) + ";" + chr(10))
         write(base / "index.html", home(lang, products, cats, day[lang]))
         write(base / "merci" / "index.html", thanks(lang))
+        write(base / "pro" / "index.html", pro_page(lang, products, cats))
         for p in products:
             write(base / "p" / p["id"] / "index.html", product_page(lang, p, products, cats))
     write(OUT / "404.html", not_found())

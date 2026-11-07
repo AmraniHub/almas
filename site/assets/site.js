@@ -189,6 +189,32 @@
         .catch(function () { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } fallback(); });
     };
   }
+  /* /pro/: price request from a restaurant, hotel or wedding organiser, to the shop's Telegram */
+  var qf = $("[data-quote-form]");
+  if (qf) qf.onsubmit = function (e) {
+    e.preventDefault();
+    var f = new FormData(qf), btn = $("[data-q-send]", qf), body = { lang: A.lang };
+    f.forEach(function (v, k) { body[k] = v; });
+    if (btn) { btn.disabled = true; btn.textContent = A.s.sending; }
+    var fail = function () {
+      if (btn) { btn.disabled = false; btn.textContent = A.s.q_send; }
+      alert(A.s.q_fail);
+      var lines = [body.type, body.business + (body.city ? " — " + body.city : ""), body.contact, body.phone, body.freq,
+                   body.date, body.guests, "", body.items].filter(function (x) { return x !== undefined && x !== null; });
+      window.location.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(lines.join("\n"));
+    };
+    fetch(A.qapi, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (!d || !d.ok) return fail();
+        try { window.fbq("track", "Lead", { content_name: "pro-quote", content_category: body.type }); } catch (err) {}
+        $$("input, select, textarea, button", qf).forEach(function (x) { x.disabled = true; });
+        if (btn) btn.hidden = true;
+        var done = $("[data-q-done]", qf); if (done) done.hidden = false;
+      })
+      .catch(fail);
+  };
+
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-copy]");
     if (!b) return;

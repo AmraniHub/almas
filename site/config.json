@@ -17,6 +17,11 @@
     "swift": "CIHMMAMC"
   },
   "maps_url": "https://maps.google.com/?cid=5907200103412499017",
+  "geo": [35.8273678, -5.5647085],
+  "review_url": "https://maps.google.com/?cid=5907200103412499017",
+  "_review_note": "Paste the Business Profile 'Ask for reviews' link (g.page/r/.../review) into review_url: it opens the review form directly.",
+  "instagram": "almasnow",
+  "quote_api": "/api/quote/",
   "catalog_url": "https://aronium-shop.amrani4online.workers.dev/app/catalog.json",
   "image_base": "https://aronium-shop.amrani4online.workers.dev/app/img",
   "meta_pixel_id": "",

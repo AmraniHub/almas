@@ -1,21 +1,18 @@
-name: Daily website rebuild
+name: Rebuild the website
 
-# Vercel builds the website (site/build.py -> public/) on every push. Prices change at the till without a push,
-# so this asks Vercel for a fresh build once a day through the project's deploy hook (repo secret
-# VERCEL_DEPLOY_HOOK). GitHub runs scheduled jobs late (hours, on this account); "Run workflow" rebuilds at once.
+# Vercel builds the website on every push. This job only asks Vercel for a fresh build when run by hand
+# ("Run workflow" in the Actions tab), through the project's deploy hook (repo secret VERCEL_DEPLOY_HOOK).
+# No schedule: the catalogue does not change by itself today, so a daily build would only spend Vercel builds.
 on:
-  schedule:
-    - cron: "15 3 * * *"
   workflow_dispatch:
 
 jobs:
   rebuild:
     runs-on: ubuntu-latest
     steps:
-      - name: Ask Vercel for a fresh build from the till's catalogue
+      - name: Ask Vercel for a fresh build
         env:
           HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          # no hook until the Vercel GitHub app can see this repo (a hook needs a git-linked project): skip, do not fail
-          if [ -z "$HOOK" ]; then echo "VERCEL_DEPLOY_HOOK is not set yet: nothing to do"; exit 0; fi
+          if [ -z "$HOOK" ]; then echo "VERCEL_DEPLOY_HOOK is not set: nothing to do"; exit 0; fi
           curl -sf -X POST "$HOOK" -o /dev/null && echo "rebuild requested"
