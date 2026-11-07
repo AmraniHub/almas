@@ -930,7 +930,9 @@ def packs_section(lang, products):
     if not cards:
         return ""
     return (f'<section class="packs" id="packs"><div class="wrap"><h2>{esc(st["title"])}</h2><p class="lead">{esc(st["sub"])}</p>'
-            f'<ul class="pk-row" data-pk-row>{"".join(cards)}</ul></div></section>')
+            f'<div class="pk-wrap slider" data-slider><button type="button" class="chips-nav prev" data-slide="-1" aria-label="‹" tabindex="-1">‹</button>'
+            f'<ul class="pk-row" data-pk-row data-slide-row>{"".join(cards)}</ul>'
+            f'<button type="button" class="chips-nav next" data-slide="1" aria-label="›" tabindex="-1">›</button></div></div></section>')
 
 
 def home(lang, products, cats, stamp_day):

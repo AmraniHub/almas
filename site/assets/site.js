@@ -732,6 +732,31 @@
   if (asForm) asForm.onsubmit = function (e) { e.preventDefault(); var i = $("input", asForm); ask(i.value); i.value = ""; };
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && as && !as.hidden) asShow(false); });
 
+  /* any slider (the boxes): faded edges and arrows where there is more, the wheel slides it while it can */
+  $$("[data-slider]").forEach(function (wrap) {
+    var row = $("[data-slide-row]", wrap), rtlS = document.documentElement.dir === "rtl";
+    var ends = function () {
+      var r = row.getBoundingClientRect(), lo = Infinity, hi = -Infinity;
+      for (var i = 0; i < row.children.length; i++) { var k = row.children[i].getBoundingClientRect(); lo = Math.min(lo, k.left); hi = Math.max(hi, k.right); }
+      wrap.classList.toggle("more-left", lo < r.left - 2);
+      wrap.classList.toggle("more-right", hi > r.right + 2);
+    };
+    row.addEventListener("scroll", ends, { passive: true });
+    window.addEventListener("resize", ends);
+    window.addEventListener("load", ends);
+    ends();
+    $$("[data-slide]", wrap).forEach(function (b) {
+      b.onclick = function () { row.scrollBy({ left: +b.getAttribute("data-slide") * row.clientWidth * 0.9 }); };
+    });
+    row.addEventListener("wheel", function (e) {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      var toLeft = rtlS ? e.deltaY > 0 : e.deltaY < 0;
+      if (!wrap.classList.contains(toLeft ? "more-left" : "more-right")) return;
+      e.preventDefault();
+      row.scrollBy({ left: (rtlS ? -1 : 1) * e.deltaY * 1.5, behavior: "auto" });
+    }, { passive: false });
+  });
+
   /* packs: the whole box into the cart in one tap; the seasonal ones go first, with their badge, in their season */
   var today = new Date().toISOString().slice(0, 10), row = $("[data-pk-row]");
   if (row && A.packs) {

@@ -423,8 +423,18 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
 /* ready-made boxes (packs) */
 .packs { padding-block: 32px 8px; }
 .packs .lead { margin-bottom: 14px; }
-.pk-row { list-style: none; margin: 0; padding: 4px 0 14px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 82%); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; }
-@media (min-width: 900px) { .pk-row { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; } }
+.pk-wrap { position: relative; }
+.pk-row { list-style: none; margin: 0; padding: 4px 0 14px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 82%); gap: 14px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; overscroll-behavior-x: contain; }
+.pk-row::-webkit-scrollbar { display: none; }
+@media (min-width: 700px) { .pk-row { grid-auto-columns: calc((100% - 14px) / 2); } }
+@media (min-width: 1000px) { .pk-row { grid-auto-columns: calc((100% - 28px) / 3); } }
+/* sliders (shelves, boxes): faded edges and, with a mouse, arrows where there is more */
+.slider.more-left .pk-row { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px); mask-image: linear-gradient(to right, transparent 0, #000 40px); }
+.slider.more-right .pk-row { -webkit-mask-image: linear-gradient(to left, transparent 0, #000 40px); mask-image: linear-gradient(to left, transparent 0, #000 40px); }
+.slider.more-left.more-right .pk-row { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%); }
+.pk-wrap .chips-nav { width: 42px; height: 42px; font-size: 1.6rem; top: 42%; }
+@media (hover: hover) and (pointer: fine) { .slider.more-left .chips-nav.prev, .slider.more-right .chips-nav.next { display: grid; place-items: center; } }
 .pack { scroll-snap-align: start; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
 .pk-art { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--bg-deep); }
 .pk-art img { width: 100%; aspect-ratio: 1; object-fit: cover; }
