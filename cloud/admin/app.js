@@ -104,6 +104,89 @@ function reorderMessage(r) {
   return `السلام عليكم ${r.business || r.name || ""}، نرجو أن تكونوا بخير. مضى ${r.days} يومًا على طلبكم الأخير من ${SHOP_AR}` +
     (list ? ` (${list})` : "") + ". هل تودّون أن نجهّز لكم الطلب نفسه؟ يكفي أن تردّوا بـ«نعم» أو ترسلوا التعديلات.";
 }
+// one basket line per product, each in its own direction: Arabic names and Latin quantities do not scramble
+function itemsLine(items) {
+  return h("span", { class: "items-line" }, items.map((x) => h("span", { class: "it", dir: "auto" }, qty(x.qty, x.unit) + " " + (x.name_till || x.name || x.product))));
+}
+const EVERY_LABEL = { 7: "every week", 14: "every 2 weeks", 30: "every month" };
+const EVERY_AR = { 7: "كل أسبوع", 14: "كل أسبوعين", 30: "كل شهر" };
+function standingMessage(s) {
+  const list = s.items.slice(0, 8).map((x) => qty(x.qty, x.unit) + " " + (x.name_till || x.name || x.product)).join("، ");
+  return `السلام عليكم ${s.business || s.name || ""}، حان موعد طلبكم الدوري (${EVERY_AR[s.every_days] || ""}) من ${SHOP_AR}` +
+    (list ? `: ${list}` : "") + ". هل نجهّزه لكم كالمعتاد؟ يمكنكم الرد بـ«نعم» أو إرسال أي تعديل.";
+}
+function standingWelcome(s) {
+  return `السلام عليكم ${s.business || s.name || ""}، شكرًا لثقتكم في ${SHOP_AR}. فعّلنا طلبكم الدوري (${EVERY_AR[s.every_days] || ""})، ` +
+    `وسنراسلكم قبل كل موعد لتأكيده. الموعد القادم: ${s.next_date}.`;
+}
+function standingRowView(s) {
+  return h("div", { class: "row" },
+    h("div", { class: "main" },
+      h("div", {}, h("b", { dir: "auto" }, s.business || s.name), " ", chip(s.status), " ", h("span", { class: "small muted" }, EVERY_LABEL[s.every_days] || s.every_days + " days")),
+      h("div", { class: "small muted" }, s.status === "active" ? "next: " + s.next_date : "requested " + when(s.created_at, false), s.last_order ? " · last order " + s.last_order : ""),
+      h("div", { class: "small" }, itemsLine(s.items))),
+    h("div", { class: "side" }, h("a", { class: "btn ghost small", href: "#standing" }, "Open")));
+}
+function standingCard(s) {
+  const every = selectOf(["7", "14", "30"], String(s.every_days), { 7: "Every week", 14: "Every 2 weeks", 30: "Every month" });
+  const next = h("input", { type: "date", value: s.next_date });
+  const note = h("textarea", { placeholder: "Internal note" }, s.admin_note || "");
+  const save = async (extra, msg) => {
+    try {
+      await api("standing", { id: s.id, every_days: Number(every.value), next_date: next.value, admin_note: note.value, ...extra });
+      toast(msg || "Saved");
+      render();
+    } catch (e) {
+      toast(e.message, true);
+    }
+  };
+  return h("div", { class: "card" + (s.due ? " due" : "") },
+    h("div", { class: "actions" }, h("b", { dir: "auto" }, s.business || s.name), chip(s.status), s.due ? chip("due", "due") : null,
+      h("span", { class: "id" }, "#" + s.id)),
+    h("div", { class: "small muted" }, s.name, " · ", s.phone, " · ", h("a", { href: "#customer/" + encodeURIComponent(s.phone_norm) }, "customer file"),
+      " · first order ", h("a", { href: "#order/" + encodeURIComponent(s.from_order) }, s.from_order)),
+    h("dl", { class: "kv" },
+      h("dt", {}, "Basket"), h("dd", {}, itemsLine(s.items)),
+      h("dt", {}, "Payment"), h("dd", {}, s.pay === "bank" ? "bank transfer" : "on delivery"),
+      s.address ? [h("dt", {}, "Address"), h("dd", { dir: "auto" }, s.address)] : null,
+      s.notes ? [h("dt", {}, "Customer note"), h("dd", { dir: "auto" }, s.notes)] : null,
+      s.last_order ? [h("dt", {}, "Last order"), h("dd", {}, h("a", { href: "#order/" + encodeURIComponent(s.last_order) }, s.last_order), s.last_done ? " (" + s.last_done + ")" : "")] : null),
+    h("div", { class: "actions" }, h("label", { class: "small" }, "Rhythm ", every), h("label", { class: "small" }, "Next date ", next)),
+    note,
+    h("div", { class: "actions" },
+      s.status === "pending" ? h("button", { type: "button", onclick: () => save({ status: "active" }, "Activated") }, "Activate") : null,
+      s.status === "pending" ? waButton(s.phone_norm, standingWelcome({ ...s, next_date: next.value }), "WhatsApp: activated") : null,
+      s.status === "active" ? waButton(s.phone_norm, standingMessage(s), "WhatsApp: confirm this delivery") : null,
+      s.status === "active" ? h("button", { type: "button", onclick: async () => {
+        try {
+          const r = await api("standing/run", { id: s.id });
+          toast("Order " + r.order_id + " created, " + money(r.total) + (r.skipped ? " (" + r.skipped + " product no longer sold, skipped)" : ""));
+          location.hash = "order/" + encodeURIComponent(r.order_id);
+        } catch (e) {
+          toast(e.message, true);
+        }
+      } }, "Create today's order") : null,
+      h("button", { type: "button", class: "ghost", onclick: () => save({}) }, "Save"),
+      s.status === "active" ? h("button", { type: "button", class: "ghost", onclick: () => save({ status: "paused" }, "Paused") }, "Pause") : null,
+      s.status === "paused" ? h("button", { type: "button", onclick: () => save({ status: "active" }, "Resumed") }, "Resume") : null,
+      s.status !== "stopped" ? h("button", { type: "button", class: "ghost", onclick: () => save({ status: "stopped" }, "Stopped") }, "Stop") : null,
+      dangerButton("Delete", async () => {
+        await api("standing/delete", { id: s.id });
+        toast("Standing order deleted");
+        render();
+      })));
+}
+async function standingView(params) {
+  const status = params.get("status") || "";
+  const d = await api("standing" + (status ? "?status=" + encodeURIComponent(status) : ""));
+  markNav("standing");
+  clear(view(), h("h1", {}, "Standing orders"),
+    h("p", { class: "small muted" }, "A customer's basket repeated every week, 2 weeks or month. Requests from the website arrive as pending: activate them, " +
+      "confirm each delivery on WhatsApp, then \"Create today's order\" makes a normal order at the till's current prices and moves the next date on."),
+    filterBar(params, [{ name: "status", label: "Pending, active and paused", options: [["pending", "Pending"], ["active", "Active"], ["paused", "Paused"], ["stopped", "Stopped"]] }],
+      (p) => { location.hash = "standing" + (p.toString() ? "?" + p : ""); }),
+    d.standing.length ? d.standing.map(standingCard) : h("p", { class: "empty" }, "No standing orders yet. Customers ask for one by ticking \"Repeat this order\" in the cart."));
+}
 function quoteMessage(q) {
   return `السلام عليكم ${q.contact || ""}، شكرا لاهتمامكم بمنتجات ${SHOP_AR}. تلقّينا طلب عرض الأسعار الخاص بـ${q.business || "مؤسستكم"}، ` +
     "وسنرسل لكم العرض في أقرب وقت. هل يمكننا الاتصال بكم لتأكيد الكميات المطلوبة؟";
@@ -162,7 +245,7 @@ let counts = null;
 function markNav(tab) {
   for (const a of document.querySelectorAll("#nav a")) {
     a.classList.toggle("on", a.dataset.tab === tab);
-    const n = counts && { orders: counts.to_handle, reviews: counts.pending_reviews, quotes: counts.new_quotes }[a.dataset.tab];
+    const n = counts && { orders: counts.to_handle, reviews: counts.pending_reviews, quotes: counts.new_quotes, standing: (counts.standing_pending || 0) + (counts.standing_due || []).length }[a.dataset.tab];
     const old = a.querySelector(".count");
     if (old) old.remove();
     if (n) a.append(h("span", { class: "count" }, n));
@@ -186,13 +269,16 @@ async function overviewView() {
       kpi("Unpaid bank transfers", d.unpaid_bank.orders, money(d.unpaid_bank.amount), "#orders?pay=bank&paid=0", d.unpaid_bank.orders > 0),
       kpi("Pending reviews", d.pending_reviews, "to publish or hide", "#reviews", d.pending_reviews > 0),
       kpi("New quote requests", d.new_quotes, "restaurants, hotels, events", "#quotes?status=new", d.new_quotes > 0)),
+    (d.standing_due || []).length || d.standing_pending ? h("div", { class: "card" }, h("h2", {}, "Standing orders"),
+      d.standing_pending ? h("p", {}, h("a", { href: "#standing?status=pending" }, d.standing_pending + (d.standing_pending === 1 ? " new request" : " new requests")), " waiting for your OK.") : null,
+      (d.standing_due || []).length ? h("div", { class: "rows" }, d.standing_due.map(standingRowView)) : null) : null,
     (d.reorder || []).length ? h("div", { class: "card" }, h("h2", {}, "Due to reorder"),
       h("p", { class: "small muted" }, "From each customer's own rhythm: restaurants, hotels and event organisers first. One tap opens WhatsApp with a reminder naming their last order."),
       h("div", { class: "rows" }, d.reorder.map((r) => h("div", { class: "row" },
         h("div", { class: "main" },
           h("div", {}, h("a", { href: "#customer/" + encodeURIComponent(r.phone_norm) }, h("b", { dir: "auto" }, r.business || r.name || "+" + r.phone_norm)), " ", chip(r.kind)),
           h("div", { class: "small muted" }, r.days + " days since the last order" + (r.gap ? " · usually every " + r.gap + " days" : "") + " · " + r.orders + (r.orders === 1 ? " order" : " orders")),
-          h("div", { class: "small", dir: "rtl" }, r.items.map((x) => qty(x.qty, x.unit) + " " + x.name).join(" · "))),
+          h("div", { class: "small" }, itemsLine(r.items))),
         h("div", { class: "side" }, waButton(r.phone_norm, reorderMessage(r), "WhatsApp reminder")))))) : null,
     h("div", { class: "grid2" },
       h("div", { class: "card" }, h("h2", {}, "Latest orders"),
@@ -534,6 +620,7 @@ async function render() {
     else if (tab === "quotes") await quotesView(params);
     else if (tab === "reviews") await reviewsView(params);
     else if (tab === "products") await productsView(params);
+    else if (tab === "standing") await standingView(params);
     else await overviewView();
     window.scrollTo(0, 0);
   } catch (e) {

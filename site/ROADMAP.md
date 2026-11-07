@@ -63,3 +63,8 @@ Each of these needs the shop PC updated, so it waits for a moment the owner choo
 - Ordering from Europe: collected in Morocco by a relative, or shipped once the shop confirms it can be and its cost.
   Real shipping rates (Amana / DHL by weight) are still the owner's to set.
 - Reorder reminders: back office overview, "Due to reorder", from each customer's own rhythm, businesses first.
+- Standing orders (2026-11-07): "Repeat this order" in the cart (every week / 2 weeks / month) files a request in
+  the back office (Standing tab); the owner activates it, confirms each delivery on WhatsApp, and "Create today's
+  order" makes a normal order at the till's prices of the day, then moves the next date on. No card subscriptions:
+  pay on delivery or by transfer, as Moroccan businesses do.
+- Waze button opens the shop's Google listing in Waze (place id), not a dropped pin.

@@ -92,3 +92,30 @@ create index if not exists reviews_status on reviews (status, at);
 -- rate limits: k = 'login:<iphash>' or 'review:<iphash>', at = unix seconds. Raw addresses are never stored.
 create table if not exists hits (k text not null, at integer not null);
 create index if not exists hits_k on hits (k, at);
+
+-- standing orders: a customer's basket repeated on a rhythm (7, 14 or 30 days). Requested from the website as
+-- 'pending'; the owner activates it; each run creates a normal order at the day's till prices.
+create table if not exists standing (
+  id integer primary key autoincrement,
+  phone_norm text not null,
+  phone text not null default '',
+  name text not null default '',
+  business text not null default '',
+  address text not null default '',
+  notes text not null default '',
+  admin_note text not null default '',
+  lang text not null default 'ar',
+  pay text not null default 'cod',
+  every_days integer not null default 14,
+  next_date text not null default '',
+  items text not null default '[]',
+  status text not null default 'pending',
+  from_order text not null default '',
+  last_order text not null default '',
+  last_done text,
+  created_at text not null,
+  updated_at text
+);
+create index if not exists standing_due on standing (status, next_date);
+create index if not exists standing_phone on standing (phone_norm);
+create unique index if not exists standing_from on standing (from_order) where from_order <> '';

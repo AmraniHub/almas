@@ -388,3 +388,35 @@ test("reorder reminders follow each customer's own rhythm; a single-order busine
   assert.equal(d.reorder[0].kind, "pro", "businesses come first");
   assert.ok(!due["212655500002"], "ordered 2 days ago: not due");
 });
+
+test("standing order: requested pending, activated by the owner, each run is a real order at today's till prices", async () => {
+  const req = { from_order: "AL-STD-0001", at: new Date().toISOString(), name: "Café Kasbah", phone: "0644400001", lang: "es", pay: "cod",
+    every_days: 14, address: "Tanger", items: [{ product: "p6", qty: 2, unit: "kg", name_till: "كمون" }, { product: "p999", qty: 1 }, { product: "p9", qty: 3, unit: "piece" }] };
+  assert.deepEqual(await (await ingest("standing", req)).json(), { ok: true });
+  assert.equal((await (await ingest("standing", req)).json()).duplicate, true, "a retry is filed once");
+  assert.equal((await ingest("standing", { ...req, from_order: "AL-STD-0002", every_days: 10 })).status, 400, "only 7, 14 or 30 days");
+  if (!sessionCookie) sessionCookie = (await adminLogin(KEY)).headers.get("Set-Cookie").split(";")[0];
+  let list = (await (await admin("standing")).json()).standing;
+  const s = list.find((x) => x.from_order === "AL-STD-0001");
+  assert.equal(s.status, "pending");
+  assert.equal(s.lang, "es");
+  assert.equal(s.items.length, 3, "an id missing from the catalogue is kept on the basket (it may come back)");
+  assert.equal((await admin("standing/run", { id: s.id })).status, 409, "not before the owner activates it");
+  const today = new Date().toISOString().slice(0, 10);
+  await admin("standing", { id: s.id, status: "active", next_date: today });
+  const ov = await (await admin("overview")).json();
+  assert.ok(ov.standing_due.some((x) => x.id === s.id), "due today shows on the overview");
+  const run = await (await admin("standing/run", { id: s.id })).json();
+  assert.equal(run.ok, true);
+  assert.equal(run.total, 2 * 120 + 3 * 15, "priced from the catalogue, the unknown product skipped");
+  assert.equal(run.skipped, 1);
+  const o = await (await admin("order?id=" + encodeURIComponent(run.order_id))).json();
+  assert.equal(o.order.source, "standing");
+  assert.equal(o.items.length, 2);
+  assert.equal((await admin("standing/run", { id: s.id })).status, 409, "once a day at most");
+  list = (await (await admin("standing")).json()).standing;
+  const after = list.find((x) => x.id === s.id);
+  const d = new Date(today + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 14);
+  assert.equal(after.next_date, d.toISOString().slice(0, 10), "the next date moves on by its rhythm");
+  assert.equal(after.last_order, run.order_id);
+});

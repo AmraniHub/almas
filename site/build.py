@@ -669,7 +669,9 @@ def visit(lang):
     # built outside the template: quotes nested inside an f-string need Python 3.12, Vercel's may be older
     tiles = [
         tile("pin", f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}", t["t_dir"], "Google Maps"),
-        tile("waze", f"https://waze.com/ul?ll={lat},{lng}&navigate=yes", t["t_waze"], esc(t["t_waze_sub"])),
+        # Waze knows the shop by its Google listing: the place id opens it by name, phone and hours, not a dropped pin
+        tile("waze", (f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={lat}%2C{lng}&navigate=yes" if CFG.get("google_place_id")
+                      else f"https://waze.com/ul?ll={lat},{lng}&navigate=yes"), t["t_waze"], esc(t["t_waze_sub"])),
         tile("phone", "tel:" + CFG["phone"], t["t_call"], esc(CFG["phone_display"]), True),
         tile("wa", "https://wa.me/" + CFG["whatsapp"], t["t_wa"], esc(CFG.get("whatsapp_display", "")), True),
         tile("google", CFG.get("review_url") or CFG["maps_url"], t["t_review"], '<span class="stars">★★★★★</span>'),
@@ -714,6 +716,9 @@ def pro_page(lang, products, cats):
 </div>
 <div class="hero-art" aria-hidden="true">{art}</div>
 </div></section>
+<section class="wrap standing-info" id="standing"><h2>{esc(t['st_title'])}</h2>
+<ol class="how">{"".join(f"<li>{esc(x)}</li>" for x in t["st_body"])}</ol>
+<div class="cta"><a class="btn" href="{url(lang)}#products">{esc(t['st_cta'])}</a></div></section>
 <section class="wrap related"><h2>{esc(t['pro_top'])}</h2><ul class="grid">{grid}</ul></section>
 <section class="band" id="quote"><div class="wrap quote">
 <h2>{esc(t['q_title'])}</h2><p>{esc(t['q_intro'])}</p>
@@ -787,6 +792,10 @@ def cart_drawer(lang):
 <label data-dest-who>{esc(t['dest_who'])}<input name="collector" maxlength="80"></label>
 <p class="note">{esc(t['dest_note'])}</p></div>
 </fieldset>
+<fieldset class="pay rep"><legend>{esc(t['rep_title'])}</legend>
+<p class="note">{esc(t['rep_sub'])}</p>
+<div class="rep-opts">{"".join(f'<label class="chip-opt"><input type="radio" name="repeat" value="{v}"{" checked" if v == "0" else ""}><span>{esc(t["rep_" + v])}</span></label>' for v in ("0", "7", "14", "30"))}</div>
+</fieldset>
 <fieldset class="pay"><legend>{esc(t['pay_title'])}</legend>
 <label class="opt"><input type="radio" name="pay" value="cod" checked> {esc(t['pay_cod'])}</label>
 <label class="opt"><input type="radio" name="pay" value="bank"> {esc(t['pay_bank'])}</label>
@@ -850,7 +859,7 @@ def page_data(lang, products, cats):
                                 "copied", "copy", "q_send", "q_fail", "sending", "rv_count", "rv_verified", "rv_none",
                                 "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa", "my_orders", "cart", "mo_again",
                                 "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
-                                "app_go", "app_got")},
+                                "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30")},
         "p": {p["id"]: {"n": name(p, lang), "ar": p["ar"], "t": p["t"], "fr": p["fr"], "en": p["en"], "es": p["es"],
                         "price": p["price"], "u": p["unit"],
                         "c": p["cat"], "r": p.get("rank") or 0, "i": src(p), "l": url(lang, "p/" + p["id"] + "/")} for p in products},

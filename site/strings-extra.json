@@ -67,7 +67,22 @@
     "share": "شارك مع صديق",
     "share_msg": "انظر إلى {n} لدى معشبة ألماس ({p}):",
     "share_copy": "انسخ الرابط",
-    "share_copied": "نُسخ الرابط"
+    "share_copied": "نُسخ الرابط",
+    "rep_title": "كرّر هذا الطلب",
+    "rep_sub": "للمطاعم والفنادق والزبائن الدائمين: نجهّز السلة نفسها حسب الإيقاع الذي تختاره، ونؤكّد كل توصيل معك عبر واتساب. يمكنك الإيقاف متى شئت.",
+    "rep_0": "هذه المرة فقط",
+    "rep_7": "كل أسبوع",
+    "rep_14": "كل أسبوعين",
+    "rep_30": "كل شهر",
+    "rep_done": "طلبتَ تكرار هذا الطلب ({e}). سيؤكّد المتجر ذلك معك عبر واتساب.",
+    "st_title": "طلب دوري للمؤسسات",
+    "st_body": [
+      "اختر منتجاتك وكمياتك مرة واحدة.",
+      "اختر الإيقاع: كل أسبوع أو كل أسبوعين أو كل شهر.",
+      "نراسلك قبل كل موعد لتأكيده أو تعديله، بأسعار المتجر يومها.",
+      "الدفع عند الاستلام أو بالتحويل البنكي، والإيقاف متى شئت."
+    ],
+    "st_cta": "كوّن سلتك"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -137,7 +152,22 @@
     "share": "Partager avec un ami",
     "share_msg": "Regarde {n} chez Almas ({p}) :",
     "share_copy": "Copier le lien",
-    "share_copied": "Lien copié"
+    "share_copied": "Lien copié",
+    "rep_title": "Répéter cette commande",
+    "rep_sub": "Pour les restaurants, hôtels et clients réguliers : nous préparons le même panier à votre rythme et confirmons chaque livraison sur WhatsApp. Arrêt à tout moment.",
+    "rep_0": "Juste cette fois",
+    "rep_7": "Chaque semaine",
+    "rep_14": "Toutes les 2 semaines",
+    "rep_30": "Chaque mois",
+    "rep_done": "Commande régulière demandée ({e}). La boutique vous la confirme sur WhatsApp.",
+    "st_title": "Commande régulière pour les professionnels",
+    "st_body": [
+      "Choisissez vos produits et quantités une seule fois.",
+      "Choisissez le rythme : chaque semaine, toutes les 2 semaines ou chaque mois.",
+      "Nous vous écrivons avant chaque livraison pour la confirmer ou l'ajuster, aux prix du jour de la boutique.",
+      "Paiement à la livraison ou par virement, arrêt à tout moment."
+    ],
+    "st_cta": "Composer mon panier"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -207,7 +237,22 @@
     "share": "Share with a friend",
     "share_msg": "Have a look at {n} at Almas ({p}):",
     "share_copy": "Copy the link",
-    "share_copied": "Link copied"
+    "share_copied": "Link copied",
+    "rep_title": "Repeat this order",
+    "rep_sub": "For restaurants, hotels and regular customers: we prepare the same basket on your rhythm and confirm each delivery on WhatsApp. Stop any time.",
+    "rep_0": "Just this once",
+    "rep_7": "Every week",
+    "rep_14": "Every 2 weeks",
+    "rep_30": "Every month",
+    "rep_done": "Standing order requested ({e}). The shop will confirm it with you on WhatsApp.",
+    "st_title": "Standing orders for businesses",
+    "st_body": [
+      "Choose your products and quantities once.",
+      "Pick the rhythm: every week, every 2 weeks or every month.",
+      "We message you before each delivery to confirm or adjust it, at the shop's prices of the day.",
+      "Pay on delivery or by bank transfer, and stop any time."
+    ],
+    "st_cta": "Build my basket"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -277,6 +322,21 @@
     "share": "Compartir con un amigo",
     "share_msg": "Mira {n} en Almas ({p}):",
     "share_copy": "Copiar el enlace",
-    "share_copied": "Enlace copiado"
+    "share_copied": "Enlace copiado",
+    "rep_title": "Repetir este pedido",
+    "rep_sub": "Para restaurantes, hoteles y clientes habituales: preparamos la misma cesta a tu ritmo y confirmamos cada entrega por WhatsApp. Puedes parar cuando quieras.",
+    "rep_0": "Solo esta vez",
+    "rep_7": "Cada semana",
+    "rep_14": "Cada 2 semanas",
+    "rep_30": "Cada mes",
+    "rep_done": "Pedido periódico solicitado ({e}). La tienda te lo confirmará por WhatsApp.",
+    "st_title": "Pedidos periódicos para profesionales",
+    "st_body": [
+      "Elige tus productos y cantidades una sola vez.",
+      "Elige el ritmo: cada semana, cada 2 semanas o cada mes.",
+      "Te escribimos antes de cada entrega para confirmarla o ajustarla, a los precios del día de la tienda.",
+      "Pago a la entrega o por transferencia, y paras cuando quieras."
+    ],
+    "st_cta": "Preparar mi cesta"
   }
 }

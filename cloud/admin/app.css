@@ -108,3 +108,9 @@ tfoot td { font-weight: 700; border-bottom: 0; }
   main { padding: 0; max-width: none; }
   .card { border: 0; padding: 0; }
 }
+
+.card.due { border-color: #b5532f; box-shadow: 0 0 0 2px rgba(181, 83, 47, .15); }
+.chip.due { background: #b5532f; color: #fff; }
+.chip.pending { background: #fff1d6; color: #8a5a00; } .chip.active { background: #dff3e7; color: #1f7a4d; } .chip.paused, .chip.stopped { background: #eee; color: #666; }
+.items-line { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.items-line .it { background: #f3ece2; border-radius: 8px; padding: 1px 8px; white-space: nowrap; }

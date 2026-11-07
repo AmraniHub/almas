@@ -18,7 +18,7 @@ const ORDER_STATUS = ["new", "confirmed", "preparing", "delivered", "cancelled"]
 const QUOTE_STATUS = ["new", "contacted", "won", "lost"];
 const REVIEW_STATUS = ["pending", "published", "hidden"];
 const PAYS = ["cod", "bank", "card"];
-const LANGS = ["ar", "fr", "en"];
+const LANGS = ["ar", "fr", "en", "es"];
 const NL = String.fromCharCode(10);
 const CRLF = String.fromCharCode(13, 10);
 const BOM = String.fromCharCode(0xfeff);
@@ -428,6 +428,135 @@ async function reorderDue(env, limit = 30) {
   }));
 }
 
+// ---------- standing orders: the same basket on a rhythm ----------
+
+const EVERY = [7, 14, 30];
+const STANDING_STATUS = ["pending", "active", "paused", "stopped"];
+const ymd = (d) => d.toISOString().slice(0, 10);
+function addDays(day, n) {
+  const d = new Date(day + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return ymd(d);
+}
+function standingItems(list) {
+  const out = [];
+  for (const it of (Array.isArray(list) ? list : []).slice(0, 60)) {
+    if (!it || typeof it !== "object") continue;
+    const product = text(it.product, 20);
+    const qty = num(it.qty, 0.001, 10000, 3);
+    if (!PRODUCT_RE.test(product) || qty === null) continue;
+    out.push({ product, qty, unit: it.unit === "kg" ? "kg" : "piece", name_till: text(it.name_till, 120), name: text(it.name, 120) });
+  }
+  return out;
+}
+function standingRow(r) {
+  let items = [];
+  try { items = JSON.parse(r.items || "[]"); } catch { /* keep empty */ }
+  return { ...r, items, due: r.status === "active" && r.next_date !== "" && r.next_date <= ymd(new Date()) };
+}
+
+// from the website: the order that was just placed, to be repeated every 7, 14 or 30 days once the owner agrees
+async function ingestStanding(env, b) {
+  const from = text(b.from_order, 40);
+  if (!ID_RE.test(from)) throw new Http(400, "from_order");
+  const every = Number(b.every_days);
+  if (!EVERY.includes(every)) throw new Http(400, "every_days");
+  const name = text(b.name, 80), phone = text(b.phone, 30), pn = phoneNorm(phone);
+  if (!name || pn.length < 9 || pn.length > 15) throw new Http(400, "name and phone");
+  const items = standingItems(b.items);
+  if (!items.length) throw new Http(400, "no items");
+  if (await first(env, "select 1 x from standing where from_order = ?", from)) return { ok: true, duplicate: true };
+  const start = (iso(b.at) || nowIso()).slice(0, 10);
+  try {
+    await env.DB.prepare(
+      "insert into standing (phone_norm, phone, name, business, address, notes, lang, pay, every_days, next_date, items, status, from_order, last_order, created_at, updated_at) " +
+      "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)"
+    ).bind(pn, phone, name, text(b.business, 100), text(b.address, 300, true), text(b.notes, 600, true), oneOf(b.lang, LANGS, "ar"),
+      oneOf(b.pay, ["cod", "bank"], "cod"), every, addDays(start, every), JSON.stringify(items), from, from, nowIso(), nowIso()).run();
+  } catch (e) {
+    if (/UNIQUE|constraint/i.test(String(e && e.message))) return { ok: true, duplicate: true };
+    throw e;
+  }
+  return { ok: true };
+}
+
+async function listStanding(env, p) {
+  const status = p.get("status") || "";
+  const rows = STANDING_STATUS.includes(status)
+    ? await all(env, "select * from standing where status = ? order by next_date, id limit 300", status)
+    : await all(env, "select * from standing where status <> 'stopped' order by case status when 'pending' then 0 when 'active' then 1 else 2 end, next_date, id limit 300");
+  return { ok: true, standing: rows.map(standingRow) };
+}
+
+async function updateStanding(env, b) {
+  const id = Number(b.id);
+  if (!Number.isInteger(id)) throw new Http(400, "id");
+  const sets = [], args = [];
+  if (b.status !== undefined) {
+    if (!STANDING_STATUS.includes(b.status)) throw new Http(400, "status");
+    sets.push("status = ?"); args.push(b.status);
+  }
+  if (b.every_days !== undefined) {
+    if (!EVERY.includes(Number(b.every_days))) throw new Http(400, "every_days");
+    sets.push("every_days = ?"); args.push(Number(b.every_days));
+  }
+  if (b.next_date !== undefined) {
+    const d = text(b.next_date, 10);
+    if (!DATE_RE.test(d)) throw new Http(400, "next_date must be YYYY-MM-DD");
+    sets.push("next_date = ?"); args.push(d);
+  }
+  if (b.items !== undefined) {
+    const items = standingItems(b.items);
+    if (!items.length) throw new Http(400, "no items");
+    sets.push("items = ?"); args.push(JSON.stringify(items));
+  }
+  if (b.admin_note !== undefined) { sets.push("admin_note = ?"); args.push(text(b.admin_note, 2000, true)); }
+  if (!sets.length) throw new Http(400, "nothing to change");
+  sets.push("updated_at = ?"); args.push(nowIso(), id);
+  const r = await env.DB.prepare("update standing set " + sets.join(", ") + " where id = ?").bind(...args).run();
+  if (!r.meta || !r.meta.changes) throw new Http(404, "no such standing order");
+  return { ok: true, standing: standingRow(await first(env, "select * from standing where id = ?", id)) };
+}
+
+// today's delivery of a standing order: a normal order at the till's current prices, then the next date moves on
+async function runStanding(env, b) {
+  const id = Number(b.id);
+  const s = Number.isInteger(id) ? await first(env, "select * from standing where id = ?", id) : null;
+  if (!s) throw new Http(404, "no such standing order");
+  if (s.status !== "active") throw new Http(409, "activate it first");
+  const today = ymd(new Date());
+  const orderId = "AL-" + today.slice(2).replace(/-/g, "") + "-S" + s.id;
+  if (await first(env, "select 1 x from orders where id = ?", orderId)) throw new Http(409, "today's order for it already exists: " + orderId);
+  let prices = {};
+  try {
+    prices = Object.fromEntries((await catalogue(env)).products.map((p) => [String(p.id), p]));
+  } catch {
+    throw new Http(503, "the till's prices could not be read: try again in a minute");
+  }
+  const items = [];
+  for (const it of standingRow(s).items) {
+    const p = prices[it.product];
+    if (!p || !(Number(p.price) > 0)) continue; // a product the shop no longer sells is skipped, not invented
+    items.push({ ...it, name_till: p.ar || it.name_till, unit: p.unit === "kg" ? "kg" : "piece", unit_price: Number(p.price),
+                 line: Math.round(it.qty * Number(p.price) * 100) / 100 });
+  }
+  if (!items.length) throw new Http(409, "none of its products is in the catalogue any more");
+  const total = Math.round(items.reduce((t, i) => t + i.line, 0) * 100) / 100;
+  await ingestOrder(env, { id: orderId, at: nowIso(), lang: s.lang, name: s.name, phone: s.phone, address: s.address, pay: s.pay,
+                           notes: "[standing order #" + s.id + ", every " + s.every_days + " days]" + (s.notes ? " " + s.notes : ""),
+                           source: "standing", total, items });
+  const base = s.next_date && s.next_date > today ? s.next_date : today;
+  await env.DB.prepare("update standing set last_order = ?, last_done = ?, next_date = ?, updated_at = ? where id = ?")
+    .bind(orderId, today, addDays(base, s.every_days), nowIso(), s.id).run();
+  return { ok: true, order_id: orderId, total, skipped: standingRow(s).items.length - items.length };
+}
+
+async function deleteStanding(env, b) {
+  const r = await env.DB.prepare("delete from standing where id = ?").bind(Number(b.id)).run();
+  if (!r.meta || !r.meta.changes) throw new Http(404, "no such standing order");
+  return { ok: true };
+}
+
 async function overview(env) {
   const today = dayStart(0);
   const d7 = dayStart(6);
@@ -462,6 +591,9 @@ async function overview(env) {
     top: top.results || [],
     recent: recent.results || [],
     reorder: await reorderDue(env, 12),
+    standing_due: (await all(env, "select * from standing where status = 'active' and next_date <> '' and next_date <= ? order by next_date limit 30",
+      addDays(ymd(new Date()), 1))).map(standingRow),
+    standing_pending: ((await first(env, "select count(*) n from standing where status = 'pending'")) || {}).n || 0,
   };
 }
 
@@ -779,6 +911,7 @@ async function admin(req, env, url) {
       case "/admin/api/quotes": return json(await listQuotes(env, p));
       case "/admin/api/reviews": return json(await listReviews(env, p));
       case "/admin/api/products": return json(await products(env));
+      case "/admin/api/standing": return json(await listStanding(env, p));
       case "/admin/export/orders.csv": return exportOrders(env);
       case "/admin/export/customers.csv": return exportCustomers(env);
     }
@@ -793,6 +926,9 @@ async function admin(req, env, url) {
       case "/admin/api/quote/delete": return json(await deleteQuote(env, b));
       case "/admin/api/review": return json(await updateReview(env, b));
       case "/admin/api/review/delete": return json(await deleteReview(env, b));
+      case "/admin/api/standing": return json(await updateStanding(env, b));
+      case "/admin/api/standing/run": return json(await runStanding(env, b));
+      case "/admin/api/standing/delete": return json(await deleteStanding(env, b));
     }
   }
   throw new Http(404, "not found");
@@ -815,6 +951,7 @@ async function route(req, env) {
     if (path === "/ingest/paid") return json(await ingestPaid(env, b));
     if (path === "/ingest/quote") return json(await ingestQuote(env, b));
     if (path === "/ingest/review") return json(await ingestReview(env, b));
+    if (path === "/ingest/standing") return json(await ingestStanding(env, b));
     throw new Http(404, "not found");
   }
   if (path === "/admin" || path.startsWith("/admin/")) return admin(req, env, url);

@@ -281,6 +281,7 @@
     lines.push(s.o_name + ": " + f.get("name"), s.o_phone + ": " + f.get("phone"));
     if (String(f.get("address") || "").trim()) lines.push(s.o_address + ": " + f.get("address"));
     lines.push(s.o_pay + ": " + (f.get("pay") === "bank" ? s.pay_bank : s.pay_cod));
+    if (+f.get("repeat")) lines.push("🔁 " + A.s["rep_" + f.get("repeat")]);
     if (f.get("dest") && f.get("dest") !== "ma") lines.push("🇪🇺 " + (f.get("dest") === "eu_ship" ? "→ " + (f.get("country") || "Europe") : "↩ " + (f.get("collector") || "")));
     if (String(f.get("notes") || "").trim()) lines.push(s.o_notes + ": " + String(f.get("notes")).trim());
     lines.push("", s.o_items + ":");
@@ -304,7 +305,7 @@
       if (btn) { btn.disabled = true; btn.textContent = A.s.sending; }
       track("InitiateCheckout", ids, value);
       var body = { lang: A.lang, name: f.get("name"), phone: f.get("phone"), address: f.get("address"), notes: f.get("notes"),
-                   pay: f.get("pay"), website: f.get("website"), dest: f.get("dest"), country: f.get("country"), collector: f.get("collector"),
+                   pay: f.get("pay"), website: f.get("website"), dest: f.get("dest"), country: f.get("country"), collector: f.get("collector"), repeat: +f.get("repeat") || 0,
                    items: ids.map(function (id) { return { id: id, q: cart[id] }; }) };
       var fallback = function () {
         alert(A.s.fail);
@@ -322,7 +323,8 @@
           try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }); } catch (err) {}
           var wa = $("[data-done-wa]");
           if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number));
-          $("[data-done-body]").textContent = A.s.done_body.replace("{n}", d.number).replace("{t}", money(d.total));
+          $("[data-done-body]").textContent = A.s.done_body.replace("{n}", d.number).replace("{t}", money(d.total)) +
+            (+f.get("repeat") ? " " + A.s.rep_done.replace("{e}", A.s["rep_" + f.get("repeat")]) : "");
           var db = $("[data-done-bank]"); if (db) db.hidden = f.get("pay") !== "bank";
           $("[data-cart-form]").hidden = true;
           $("[data-cart-lines]").hidden = true;
@@ -605,7 +607,7 @@
   }
   function remember(number, totalPaid, f, ids) {
     var list = history();
-    list.unshift({ n: number, at: new Date().toISOString(), total: totalPaid, pay: f.get("pay"),
+    list.unshift({ n: number, at: new Date().toISOString(), total: totalPaid, pay: f.get("pay"), rep: +f.get("repeat") || 0,
                    items: ids.map(function (id) { return { id: id, q: cart[id] }; }) });
     store(OKEY, list.slice(0, 30));
     store(MEKEY, { name: f.get("name"), phone: f.get("phone"), address: f.get("address"), at: new Date().toISOString() });
@@ -639,7 +641,8 @@
       var st = status && status[o.n], chip = st ? '<span class="st-chip st-' + esc(st.status) + '">' + esc(A.s["st_" + st.status] || st.status) + "</span>" +
         (st.paid ? '<span class="st-chip st-paid">' + esc(A.s.st_paid) + "</span>" : "") : "";
       var items = o.items.filter(function (x) { return A.p[x.id]; }).map(function (x) { return esc(amount(x.id, x.q) + " " + A.p[x.id].n); }).join(" · ");
-      return '<li><div class="mo-top"><b dir="ltr">' + esc(o.n) + "</b><span>" + esc(dateOf(o.at)) + "</span>" + chip + "</div>" +
+      var rep = o.rep ? '<span class="st-chip st-rep">🔁 ' + esc(A.s["rep_" + o.rep] || "") + "</span>" : "";
+      return '<li><div class="mo-top"><b dir="ltr">' + esc(o.n) + "</b><span>" + esc(dateOf(o.at)) + "</span>" + chip + rep + "</div>" +
         '<p class="mo-items">' + items + '</p><div class="mo-bot"><b>' + money(o.total) + '</b><button type="button" class="btn ghost" data-again="' + i + '">' +
         esc(A.s.mo_again) + "</button></div></li>";
     }).join("");

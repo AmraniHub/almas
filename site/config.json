@@ -18,6 +18,7 @@
     "swift": "CIHMMAMC"
   },
   "maps_url": "https://maps.google.com/?cid=5907200103412499017",
+  "google_place_id": "ChIJtWORhyeDDA0RSYINRTKX-lE",
   "geo": [35.8273678, -5.5647085],
   "review_url": "https://search.google.com/local/writereview?placeid=ChIJtWORhyeDDA0RSYINRTKX-lE",
   "_review_note": "review_url opens Google's review form for the shop (Place ID ChIJtWORhyeDDA0RSYINRTKX-lE = cid 5907200103412499017).",

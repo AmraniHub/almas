@@ -431,6 +431,17 @@ html[dir="rtl"] .as-form button svg { transform: scaleX(-1); }
 .sh-fb { background: #1877f2; color: #fff; }
 .sh-copy { background: var(--card); border: 1px solid var(--line) !important; color: var(--ink); }
 
+/* repeat this order (standing orders) */
+.rep .note { margin: 0 0 8px; font-size: .8rem; }
+.rep-opts { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 8px; }
+.chip-opt { margin: 0; cursor: pointer; }
+.chip-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chip-opt span { display: inline-block; padding: 7px 12px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: .84rem; font-weight: 600; }
+.chip-opt input:checked + span { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip-opt input:focus-visible + span { outline: 3px solid var(--saffron); outline-offset: 2px; }
+.st-rep { background: #e8eefb; color: #1f3f8a; }
+.standing-info { padding-block: 28px 8px; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
