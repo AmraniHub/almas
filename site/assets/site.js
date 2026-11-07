@@ -341,10 +341,11 @@
       c.fillStyle = "#65584d"; c.font = "600 38px Cairo, sans-serif"; c.fillText(A.s.kicker, W / 2, 425);
       c.fillStyle = "#a14e33"; c.font = "800 54px Cairo, sans-serif"; c.fillText(A.s.sh_title, W / 2, 530);
       // the products: up to 6 photos, two per row, with their names
-      var cols = shown.length === 1 ? 1 : 2, size = cols === 1 ? 640 : 440, gap = 40, top = 590;
-      var rows = Math.ceil(shown.length / cols), x0 = (W - (cols * size + (cols - 1) * gap)) / 2;
-      var rowH = size + 90;
-      if (rows === 3) { size = 380; rowH = size + 82; x0 = (W - (2 * size + gap)) / 2; }
+      // the photos take whatever room is left between the title and the footer band, whatever their number
+      var cols = shown.length === 1 ? 1 : 2, gap = 40, top = 590, rows = Math.ceil(shown.length / cols);
+      var room = (H - 250 - 40 - (ids.length > shown.length ? 60 : 0)) - top;
+      var rowH = Math.floor(room / rows), size = Math.min(cols === 1 ? 640 : 440, rowH - 78);
+      var x0 = (W - (cols * size + (cols - 1) * gap)) / 2;
       shown.forEach(function (id, i) {
         var col = i % cols, row = Math.floor(i / cols);
         if (rtl) col = cols - 1 - col;
@@ -358,8 +359,8 @@
       });
       var after = top + rows * rowH;
       if (ids.length > shown.length) {
-        c.fillStyle = "#65584d"; c.font = "600 38px Cairo, sans-serif";
-        c.fillText(A.s.sh_more.replace("{n}", ids.length - shown.length), W / 2, after + 10);
+        c.fillStyle = "#a14e33"; c.font = "800 46px Cairo, sans-serif";
+        c.direction = "ltr"; c.fillText("+" + (ids.length - shown.length), W / 2, after + 44); c.direction = rtl ? "rtl" : "ltr";
       }
       // footer: the shop's link and Instagram on the dark band
       c.fillStyle = "#211a16"; c.fillRect(0, H - 250, W, 250);
