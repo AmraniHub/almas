@@ -157,7 +157,29 @@ form .btn { width: 100%; margin-top: 8px; }
 .visit-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: center; }
 @media (min-width: 860px) { .visit-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 40px; } }
 .map { width: 100%; height: 320px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-deep); }
-.btn.review { color: #8a5a00; border-color: #d39a30; }
+/* visit: one tile per way to reach the shop, each in its own colour with its icon */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+@media (max-width: 340px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
+.tile { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 16px;
+  text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  box-shadow: 0 6px 16px -12px rgba(33, 26, 22, .5); transition: transform .15s ease, box-shadow .15s ease; }
+.tile:hover { transform: translateY(-2px); box-shadow: 0 12px 22px -14px rgba(33, 26, 22, .55); }
+.tile-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; }
+.tile-ic svg { width: 22px; height: 22px; }
+.tile-tx { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.tile-tx b { font-size: .92rem; }
+.tile-tx small { font-size: .78rem; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile-pin { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tile-pin .tile-ic { background: var(--terracotta); color: #fff; }
+.tile-phone .tile-ic { background: #f3e2c4; color: #8a5a00; }
+.tile-wa { background: #1f7a4d; color: #fff; border-color: #1f7a4d; }
+.tile-wa .tile-ic { background: rgba(255, 255, 255, .16); color: #fff; }
+.tile-google { background: #fff; }
+.tile-google .tile-ic { background: #fff; border: 1px solid var(--line); }
+.tile-google .stars { color: #f4b400; letter-spacing: 1px; font-size: .9rem; }
+.tile-insta { color: #fff; border: 0; background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 75%, #515bd4); }
+.tile-insta .tile-ic { background: rgba(255, 255, 255, .18); color: #fff; }
+.tile:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }
 
 /* /pro/ */
 .pro-hero { padding-block: 44px 36px; }
