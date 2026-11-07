@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#faf7f2">
+<title>Almas · Back office</title>
+<link rel="stylesheet" href="/admin/app.css">
+<script src="/admin/app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#overview">Almas <span>back office</span></a>
+  <button id="logout" class="ghost small hide" type="button">Log out</button>
+</header>
+<nav id="nav" class="nav hide">
+  <a href="#overview" data-tab="overview">Overview</a>
+  <a href="#orders" data-tab="orders">Orders</a>
+  <a href="#customers" data-tab="customers">Customers</a>
+  <a href="#quotes" data-tab="quotes">Quotes</a>
+  <a href="#reviews" data-tab="reviews">Reviews</a>
+  <a href="#products" data-tab="products">Products</a>
+</nav>
+<main id="main">
+  <section id="login" class="card login hide">
+    <h1>Sign in</h1>
+    <p class="muted">Enter the admin key (the file almas-admin.txt).</p>
+    <form id="loginForm" autocomplete="on">
+      <input id="key" type="password" name="key" autocomplete="current-password" placeholder="Admin key" required>
+      <button type="submit">Sign in</button>
+      <p id="loginMsg" class="err" role="alert"></p>
+    </form>
+  </section>
+  <div id="view"></div>
+</main>
+<div id="toast" class="toast hide" role="status"></div>
+</body>
+</html>
