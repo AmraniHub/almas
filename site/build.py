@@ -1,24 +1,26 @@
-"""Build the Almas website and its Meta catalogue feeds into docs/ (served by GitHub Pages).
+"""Build the Almas website and its Meta catalogue feeds into public/ (Vercel builds and serves it).
 
 Everything comes from the shop's live catalogue (the till's names and prices, published by the Aronium agent at
 config.catalog_url), so the site, the app and the ads always show the same products at the same prices.
 
-    python site/build.py            fetch the live catalogue, write docs/
+    python site/build.py            fetch the live catalogue, write public/
     python site/build.py --offline  use the catalogue built into the app (app/assets/catalog/products.json)
+    ALMAS_BASE_URL / ALMAS_OUT      override config.base_url / the output folder
 
 Writes, for Arabic (root), French (/fr/) and English (/en/): the home page with every shelf, one page per product
 (the page a catalogue ad opens), plus feed/meta.csv (French, the main Meta catalogue feed), feed/meta-ar.csv and
-feed/meta-en.csv (Meta language overrides), sitemap.xml, robots.txt and 404.html. It never touches
-docs/privacy-policy.html (the app's Play listing links to it) or docs/store/.
+feed/meta-en.csv (Meta language overrides), sitemap.xml, robots.txt and 404.html, and copies site/static/,
+docs/privacy-policy.html and docs/store/ in.
 
 Product images: the shop's real photo when one was uploaded to the cloud (catalogue field "img"), else the card
-drawn by site/cards.py (docs/img/p/<id>.jpg), else the shelf's card (docs/img/cat/<shelf>.jpg).
-Stdlib only, so the daily GitHub Action needs nothing installed.
+drawn by site/cards.py (site/static/img/p/<id>.jpg), else the shelf's card (site/static/img/cat/<shelf>.jpg).
+Stdlib only, so Vercel's build image needs nothing installed.
 """
 import csv
 import hashlib
 import html
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -29,10 +31,12 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-DOCS = ROOT / "docs"
+DOCS = ROOT / "docs"      # GitHub Pages: only the app's privacy page and the Play images now
+STATIC = HERE / "static"  # copied as-is into the site: product cards, shelf cards, logos
 CFG = json.loads((HERE / "config.json").read_text(encoding="utf-8"))
-BASE = CFG["base_url"].rstrip("/")
-PREFIX = "/" + BASE.split("://", 1)[1].split("/", 1)[1] if BASE.count("/") > 2 else ""  # "/almas" on GitHub Pages
+OUT = Path(os.environ.get("ALMAS_OUT") or ROOT / "public")
+BASE = (os.environ.get("ALMAS_BASE_URL") or CFG["base_url"]).rstrip("/")
+PREFIX = "/" + BASE.split("://", 1)[1].split("/", 1)[1] if BASE.count("/") > 2 else ""  # "" at a domain's root
 LANGS = ("ar", "fr", "en")
 LOCALE = {"ar": "ar_MA", "fr": "fr_MA", "en": "en_US"}
 MONEY = {"ar": "{} درهم", "fr": "{} DH", "en": "{} MAD"}
@@ -198,7 +202,7 @@ def image_of(p):
     """(absolute URL, is_real_photo) of the product's picture."""
     if p.get("img"):
         return f"{CFG['image_base']}/{p['id'][1:]}.jpg?v={p['img']}", True
-    if (DOCS / "img" / "p" / f"{p['id']}.jpg").exists():
+    if (STATIC / "img" / "p" / f"{p['id']}.jpg").exists():
         return f"{BASE}/img/p/{p['id']}.jpg", False
     return f"{BASE}/img/cat/{p['cat']}.jpg", False
 
@@ -504,7 +508,7 @@ def not_found():
 
 def feeds(products, cats):
     """The Meta catalogue: feed/meta.csv (French, the main feed) and the Arabic and English language overrides."""
-    out = DOCS / "feed"
+    out = OUT / "feed"
     out.mkdir(exist_ok=True)
     cols = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand",
             "google_product_category", "product_type", "custom_label_0", "custom_label_1"]
@@ -555,53 +559,39 @@ def write(path, text):
 STAMP = hashlib.sha256(b"".join((HERE / "assets" / n).read_bytes() for n in ("site.css", "site.js"))).hexdigest()[:10]
 
 
-def price_day(products):
-    """The day the names or prices last changed (kept in docs/feed/state.json), not the day of the build."""
-    state_file = DOCS / "feed" / "state.json"
-    digest = hashlib.sha256(json.dumps([[p["id"], p["ar"], p["fr"], p["en"], p["price"], p["unit"]] for p in products],
-                                       ensure_ascii=False, sort_keys=True).encode()).hexdigest()
-    try:
-        state = json.loads(state_file.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        state = {}
-    if state.get("digest") != digest:
-        state = {"digest": digest, "day": datetime.now(timezone.utc).strftime("%Y-%m-%d")}
-        write(state_file, json.dumps(state) + "\n")
-    return datetime.strptime(state["day"], "%Y-%m-%d")
-
-
 def main():
     data, source = fetch_catalog("--offline" in sys.argv)
     cats = {c["id"]: c for c in data["categories"]}
     products = [p for p in data["products"] if p.get("cat") in cats and p.get("price")]
     order = {c: i for i, c in enumerate(cats)}
     products.sort(key=lambda p: (order[p["cat"]], -(p.get("rank") or 0), p["fr"]))
-    changed = price_day(products)
-    day = {"ar": changed.strftime("%d/%m/%Y"), "fr": changed.strftime("%d/%m/%Y"), "en": changed.strftime("%Y-%m-%d")}
+    # every build reads the till's prices afresh (Vercel builds on each push and once a day), so the day shown
+    # is the day they were last read
+    now = datetime.now(timezone.utc)
+    day = {"ar": now.strftime("%d/%m/%Y"), "fr": now.strftime("%d/%m/%Y"), "en": now.strftime("%Y-%m-%d")}
 
-    # site assets
-    (DOCS / "assets").mkdir(parents=True, exist_ok=True)
+    # a fresh folder each time: a product the shop removed leaves no page behind for an ad to land on
+    shutil.rmtree(OUT, ignore_errors=True)
+    shutil.copytree(STATIC, OUT)
+    shutil.copyfile(DOCS / "privacy-policy.html", OUT / "privacy-policy.html")
+    shutil.copytree(DOCS / "store", OUT / "store")
+    (OUT / "assets").mkdir(parents=True, exist_ok=True)
     for name_ in ("site.css", "site.js"):
-        shutil.copyfile(HERE / "assets" / name_, DOCS / "assets" / name_)
+        shutil.copyfile(HERE / "assets" / name_, OUT / "assets" / name_)
 
-    old = {pp.name for pp in (DOCS / "p").glob("*")} if (DOCS / "p").exists() else set()
     for lang in LANGS:
-        base = DOCS if lang == "ar" else DOCS / lang
-        write(DOCS / "assets" / f"data-{lang}.js",
+        base = OUT if lang == "ar" else OUT / lang
+        write(OUT / "assets" / f"data-{lang}.js",
               "window.ALMAS=" + json.dumps(page_data(lang, products, cats), ensure_ascii=False) + ";" + chr(10))
         write(base / "index.html", home(lang, products, cats, day[lang]))
         for p in products:
             write(base / "p" / p["id"] / "index.html", product_page(lang, p, products, cats))
-        # a product the shop removed: its pages go, so no ad or search result lands on a stale price
-        for gone in old - {p["id"] for p in products}:
-            shutil.rmtree(base / "p" / gone, ignore_errors=True)
-    write(DOCS / "404.html", not_found())
+    write(OUT / "404.html", not_found())
     feeds(products, cats)
-    write(DOCS / "sitemap.xml", sitemap(products))
-    write(DOCS / "robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
-    write(DOCS / ".nojekyll", "")
+    write(OUT / "sitemap.xml", sitemap(products))
+    write(OUT / "robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
     missing = [p["id"] for p in products if not image_of(p)[0].startswith(CFG["image_base"])
-               and not (DOCS / "img" / "p" / f"{p['id']}.jpg").exists()]
+               and not (STATIC / "img" / "p" / f"{p['id']}.jpg").exists()]
     print(f"built {len(products)} products x {len(LANGS)} languages from the {source} catalogue; "
           f"{sum(1 for p in products if p.get('img'))} with a real photo; {len(missing)} without a card "
           f"(shelf card used){': ' + ', '.join(missing) if missing else ''}")

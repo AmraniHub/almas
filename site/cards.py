@@ -7,7 +7,7 @@ its shelf colour. It is drawn by Chromium through Playwright, because Pillow on 
     python site/cards.py          draw the cards that are missing
     python site/cards.py --all    redraw every card (after a design change)
 
-Run on the laptop after the shop adds products; commit docs/img. The daily build uses the shelf card for any
+Run on the laptop after the shop adds products; commit site/static/img. The daily build uses the shelf card for any
 product drawn here later, and a real photo (uploaded on the cloud's /app/photos page) always wins over a card.
 """
 import base64
@@ -22,7 +22,7 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build  # noqa: E402
 
-OUT = build.DOCS / "img"
+OUT = build.STATIC / "img"
 LOGO = build.ROOT / "app" / "assets" / "branding" / "almas_logo.png"
 
 PAGE = """<!doctype html><html><head><meta charset="utf-8">

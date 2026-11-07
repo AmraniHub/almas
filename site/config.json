@@ -1,6 +1,6 @@
 {
-  "_note": "Every business fact the site shows. A blank value hides its line (pixel, Play link, domain verification). Change base_url when Almas gets its own domain, then rebuild.",
-  "base_url": "https://amranihub.github.io/almas",
+  "_note": "Every business fact the site shows. A blank value hides its line (pixel, Play link, domain verification). Change base_url when Almas gets its own domain; Vercel rebuilds on push.",
+  "base_url": "https://almas-epices.vercel.app",
   "brand_ar": "معشبة ألماس",
   "brand_fr": "Almas Épices & Herbes",
   "brand_en": "Almas Spices & Herbs",

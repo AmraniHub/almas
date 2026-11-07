@@ -43,3 +43,5 @@ lib/firebase_options.dart
 # nested repos kept on the laptop only (crm holds Firebase keys)
 crm/
 website/
+public/
+.vercel/

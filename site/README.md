@@ -1,7 +1,8 @@
 # Almas website and Meta catalogue
 
-Live at **https://amranihub.github.io/almas/** (GitHub Pages, branch `main`, folder `docs/`): Arabic at the
-root, French at `/fr/`, English at `/en/`, one page per product at `/p/<id>/`. Free hosting, no server.
+Live at **https://almas-epices.vercel.app/** (Vercel project `almas-epices`, built from this repo by `vercel.json`): Arabic at the
+root, French at `/fr/`, English at `/en/`, one page per product at `/p/<id>/`. GitHub Pages (`docs/`) keeps only the app's
+privacy page (Play links to it) and a redirect to Vercel.
 
 Everything comes from the shop's live catalogue, the same feed the Almas app reads
 (`https://aronium-shop.amrani4online.workers.dev/app/catalog.json`, published by the Aronium agent on the till).
@@ -10,10 +11,10 @@ So the till, the app, the website and the ads show the same 128 products at the 
 | File | What |
 |---|---|
 | `site/config.json` | Every business fact the site uses. A blank value hides its line. |
-| `site/build.py` | Writes `docs/`: pages, feeds, sitemap. Stdlib only. `--offline` uses the app's built-in catalogue. |
-| `site/cards.py` | Draws the 800x800 product cards in `docs/img/` (needs Playwright; run on the laptop). |
+| `site/build.py` | Writes `public/`: pages, feeds, sitemap. Vercel runs it on every push. Stdlib only. `--offline` uses the app's built-in catalogue. |
+| `site/cards.py` | Draws the 800x800 product cards in `site/static/img/` (needs Playwright; run on the laptop). |
 | `site/assets/` | `site.css`, `site.js` (cart, live prices, WhatsApp order, pixel events). |
-| `.github/workflows/site.yml` | Rebuilds daily (GitHub runs it hours late) and on any change to `site/`. "Run workflow" rebuilds now. |
+| `.github/workflows/site.yml` | Asks Vercel for a fresh build daily (deploy hook secret). "Run workflow" rebuilds now. |
 
 ## What the site says, and where it came from
 
@@ -28,9 +29,9 @@ and carries the till's Arabic name on every line, so the shop reads website orde
 The feed is ready; three things are the owner's, in Meta Business Suite:
 
 1. **Commerce Manager > Catalogues > Add catalogue > E-commerce > Upload product info > Data feed > Scheduled feed**
-   with `https://amranihub.github.io/almas/feed/meta.csv`, daily. Then add the two language overrides
+   with `https://almas-epices.vercel.app/feed/meta.csv`, daily. Then add the two language overrides
    (Data sources > the feed > Settings > Add language and country version):
-   `https://amranihub.github.io/almas/feed/meta-ar.csv` (Arabic) and `.../feed/meta-en.csv` (English).
+   `https://almas-epices.vercel.app/feed/meta-ar.csv` (Arabic) and `.../feed/meta-en.csv` (English).
 2. **Pixel**: create one (Events Manager) or reuse one, put its id in `site/config.json` `meta_pixel_id`, push.
    The site then sends PageView, ViewContent (product pages), AddToCart, InitiateCheckout and Lead (WhatsApp order
    sent) with `content_ids` equal to the feed ids (`p13`...), which is what matches visitors to catalogue items.
@@ -50,10 +51,10 @@ Meta refuses items without an image and none of the products had a photo, so eac
 French name on its shelf colour). A real photo always wins: upload it from a phone on the cloud's `/app/photos`
 page, and the next build uses it on the site and in the feed (`custom_label_1` says `photo` or `carte`, so ads can
 favour photographed items). New products get the shelf card until `python site/cards.py` draws theirs; commit
-`docs/img` afterwards.
+`site/static/img` afterwards.
 
 ## A domain of its own
 
-`almas.ma` belongs to someone else. With a domain: set `base_url`, add `docs/CNAME`, point the DNS at GitHub Pages,
-rebuild, and change the feed URL in Commerce Manager. A domain also lets Meta verify it
-(`meta_domain_verification`), which `amranihub.github.io` cannot.
+`almas.ma` belongs to someone else. With a domain: set `base_url`, point the DNS at Vercel,
+add it to the Vercel project, and change the feed URL in Commerce Manager. A domain also lets Meta verify it
+(`meta_domain_verification`), which a `vercel.app` address cannot.
