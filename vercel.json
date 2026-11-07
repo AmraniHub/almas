@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "npm install --omit=dev --no-audit --no-fund",
+  "installCommand": "echo no install",
   "buildCommand": "python3 site/build.py",
   "outputDirectory": "public",
   "trailingSlash": true,
