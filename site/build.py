@@ -88,7 +88,7 @@ T = {
         "biz_body": "اطلب بالكيلو باسم مؤسستك وعنوانها. وللكميات الكبيرة، اطلب منا الثمن عبر واتساب.",
         "biz_cta": "اطلب ثمن الكميات الكبيرة",
         "biz_msg": "السلام عليكم ألماس، عندي مؤسسة وبغيت الثمن ديال كميات كبيرة من: ",
-        "nav_pro": "للمهنيين", "t_dir": "الطريق للمحل", "t_call": "اتصل بنا", "t_wa": "واتساب", "t_review": "قيمنا على Google", "t_insta": "إنستغرام",
+        "nav_pro": "للمهنيين", "t_waze": "Waze", "t_waze_sub": "سوق حتى للمحل", "t_dir": "الطريق للمحل", "t_call": "اتصل بنا", "t_wa": "واتساب", "t_review": "قيمنا على Google", "t_insta": "إنستغرام",
         "review": "قيم ألماس على Google",
         "insta": "إنستغرام",
         "directions": "الطريق للمحل",
@@ -158,7 +158,7 @@ T = {
         "biz_body": "Commandez au kilo avec le nom et l'adresse de votre établissement. Pour les grandes quantités, demandez-nous un prix sur WhatsApp.",
         "biz_cta": "Demander un prix pour de grandes quantités",
         "biz_msg": "Bonjour Almas, j'ai un établissement et je voudrais un prix pour de grandes quantités de : ",
-        "nav_pro": "Professionnels", "t_dir": "Itinéraire", "t_call": "Appeler", "t_wa": "WhatsApp", "t_review": "Avis Google", "t_insta": "Instagram",
+        "nav_pro": "Professionnels", "t_waze": "Waze", "t_waze_sub": "Y aller en voiture", "t_dir": "Itinéraire", "t_call": "Appeler", "t_wa": "WhatsApp", "t_review": "Avis Google", "t_insta": "Instagram",
         "review": "Notez Almas sur Google",
         "insta": "Instagram",
         "directions": "Itinéraire vers la boutique",
@@ -228,7 +228,7 @@ T = {
         "biz_body": "Order by the kilo with your business name and address. For large quantities, ask us for a price on WhatsApp.",
         "biz_cta": "Ask for a bulk price",
         "biz_msg": "Hello Almas, I run a business and would like a price for large quantities of: ",
-        "nav_pro": "Businesses", "t_dir": "Directions", "t_call": "Call", "t_wa": "WhatsApp", "t_review": "Google review", "t_insta": "Instagram",
+        "nav_pro": "Businesses", "t_waze": "Waze", "t_waze_sub": "Drive there", "t_dir": "Directions", "t_call": "Call", "t_wa": "WhatsApp", "t_review": "Google review", "t_insta": "Instagram",
         "review": "Rate Almas on Google",
         "insta": "Instagram",
         "directions": "Directions to the shop",
@@ -438,6 +438,7 @@ ICON = {
     "phone": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3h3l1.5 4.2-2 1.3a12 12 0 0 0 6.4 6.4l1.3-2 4.2 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.6 5.2 2 2 0 0 1 6.6 3z" fill="currentColor"/></svg>',
     "wa": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 7.6c.3-.6.6-.6.9-.6h.6c.2 0 .5 0 .7.5l.9 2.1c.1.3 0 .5-.1.7l-.6.7c-.2.2-.2.4 0 .7a7 7 0 0 0 3.2 2.8c.3.1.5.1.7-.1l.8-.9c.2-.3.5-.3.8-.2l2 .9c.4.2.4.4.4.6 0 .9-.6 1.8-1.4 2.1-.8.3-1.9.3-4-.6a11 11 0 0 1-4.6-4.2c-.9-1.4-1-2.8-.3-4.5z" fill="currentColor"/></svg>',
     "google": '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
+    "waze": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.7 0-8.3 3.4-8.3 7.8 0 1.6.5 3 1.4 4.2-.4 1-1.1 1.6-2 1.9.9.9 2.4 1.2 3.7.7a9.6 9.6 0 0 0 5.2 1.5c4.7 0 8.3-3.4 8.3-7.9S16.7 3.5 12 3.5z" fill="#fff" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9.4" cy="10" r="1.1" fill="currentColor"/><circle cx="14.6" cy="10" r="1.1" fill="currentColor"/><path d="M9.1 13.1c.8 1 1.8 1.5 2.9 1.5s2.1-.5 2.9-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8.2" cy="20.2" r="1.7" fill="currentColor"/><circle cx="15.8" cy="20.2" r="1.7" fill="currentColor"/></svg>',
     "insta": '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg>',
 }
 
@@ -459,6 +460,7 @@ def visit(lang):
     # built outside the template: quotes nested inside an f-string need Python 3.12, Vercel's may be older
     tiles = [
         tile("pin", f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}", t["t_dir"], "Google Maps"),
+        tile("waze", f"https://waze.com/ul?ll={lat},{lng}&navigate=yes", t["t_waze"], esc(t["t_waze_sub"])),
         tile("phone", "tel:" + CFG["phone"], t["t_call"], esc(CFG["phone_display"]), True),
         tile("wa", "https://wa.me/" + CFG["whatsapp"], t["t_wa"], esc(CFG.get("whatsapp_display", "")), True),
         tile("google", CFG.get("review_url") or CFG["maps_url"], t["t_review"], '<span class="stars">★★★★★</span>'),

@@ -172,6 +172,8 @@ form .btn { width: 100%; margin-top: 8px; }
 .tile-pin { background: var(--ink); color: #fff; border-color: var(--ink); }
 .tile-pin .tile-ic { background: var(--terracotta); color: #fff; }
 .tile-phone .tile-ic { background: #f3e2c4; color: #8a5a00; }
+.tile-waze { background: #33ccff; color: #05293a; border-color: #33ccff; }
+.tile-waze .tile-ic { background: rgba(255, 255, 255, .55); color: #05293a; }
 .tile-wa { background: #1f7a4d; color: #fff; border-color: #1f7a4d; }
 .tile-wa .tile-ic { background: rgba(255, 255, 255, .16); color: #fff; }
 .tile-google { background: #fff; }
