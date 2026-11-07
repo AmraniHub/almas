@@ -16,5 +16,6 @@ jobs:
         env:
           HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          if [ -z "$HOOK" ]; then echo "VERCEL_DEPLOY_HOOK is not set"; exit 1; fi
+          # no hook until the Vercel GitHub app can see this repo (a hook needs a git-linked project): skip, do not fail
+          if [ -z "$HOOK" ]; then echo "VERCEL_DEPLOY_HOOK is not set yet: nothing to do"; exit 0; fi
           curl -sf -X POST "$HOOK" -o /dev/null && echo "rebuild requested"
