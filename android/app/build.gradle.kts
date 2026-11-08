@@ -27,8 +27,8 @@ android {
         applicationId = "com.almas.app"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.2.0"
+        versionCode = 14
+        versionName = "1.2.1"
     }
 
     signingConfigs {

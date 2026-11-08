@@ -4,7 +4,7 @@
 
 /// The app's version, sent to the site in the user agent (` AlmasApp/<version>`).
 /// test/site_links_test.dart checks it against pubspec.yaml and build.gradle.kts.
-const String kAppVersion = '1.2.0';
+const String kAppVersion = '1.2.1';
 
 /// Where the shop lives today.
 const String kSiteOrigin = 'https://almas-epices.vercel.app';
