@@ -571,3 +571,38 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
   background: rgba(33, 26, 22, .16); }
 .product-img .ph::after { font-size: clamp(1rem, 3vw, 1.35rem); right: 14px; bottom: 14px; }
 .product-img .ph { border-radius: 24px; overflow: hidden; }
+
+/* product page: the buy box (quick quantities, add / order now, in-cart line) and the phone's sticky buy bar */
+.buy { margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 20px; background: var(--card); display: grid; gap: 14px; box-shadow: 0 18px 40px -30px rgba(33, 26, 22, .5); }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.preset { min-height: 40px; padding: 0 14px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; font-size: .9rem; cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+.preset:hover { border-color: var(--ink); }
+.preset.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.buy-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.buy-btns .btn { width: 100%; padding: 0 12px; min-height: 52px; font-size: 1rem; }
+.add-btn svg, .bb-add svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.add-btn.done { background: var(--wa); border-color: var(--wa); color: #fff; }
+.now-btn { background: var(--terracotta); border-color: var(--terracotta); color: #fff; box-shadow: 0 12px 24px -14px rgba(161, 78, 51, .9); }
+.now-btn:hover { filter: brightness(1.06); }
+.in-cart { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 9px 12px; border-radius: 12px; background: #dff3e7; color: #17603b; font-weight: 700; font-size: .9rem; }
+.in-cart[hidden] { display: none; }
+.in-cart .link-btn { color: #17603b; padding: 0; }
+.buy-trust { margin: 0; color: var(--body); font-size: .84rem; }
+.wa-small { display: inline-flex; align-items: center; gap: 7px; color: var(--wa); font-weight: 700; font-size: .9rem; text-decoration: none; justify-self: start; }
+.wa-small svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.wa-small:hover { text-decoration: underline; }
+@media (max-width: 380px) { .buy-btns { grid-template-columns: 1fr; } }
+.buybar { position: fixed; inset-inline: 0; bottom: 0; z-index: 29; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); background: rgba(255, 252, 248, .97); backdrop-filter: blur(10px); border-top: 1px solid var(--line); box-shadow: 0 -12px 28px -20px rgba(33, 26, 22, .6); transform: translateY(110%); transition: transform .25s ease; }
+.buybar.on { transform: none; }
+.buybar[hidden] { display: none; }
+.buybar-in { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+.buybar img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex: none; }
+.bb-t { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.25; }
+.bb-t > b { font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bb-t small { color: var(--body); font-size: .82rem; }
+.bb-t small b { color: var(--terracotta); }
+.buybar .btn { min-height: 46px; padding: 0 16px; flex: none; }
+.buybar .bb-add { width: 46px; padding: 0; }
+.buybar .bb-add.done { background: var(--wa); border-color: var(--wa); color: #fff; }
+body.has-buybar .as-fab { bottom: calc(80px + env(safe-area-inset-bottom)); transition: bottom .25s ease; }
+body.has-buybar .to-top { bottom: calc(82px + env(safe-area-inset-bottom)); }

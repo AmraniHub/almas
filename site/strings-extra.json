@@ -100,7 +100,13 @@
     "as_listen": "استمع",
     "hours_line": "مفتوح كل يوم من الساعة {o} إلى {c}",
     "open_now": "مفتوح الآن",
-    "closed_now": "مغلق الآن · يفتح على الساعة {o}"
+    "closed_now": "مغلق الآن · يفتح على الساعة {o}",
+    "order_now": "اطلب الآن",
+    "in_cart": "في سلّتك:",
+    "view_cart": "عرض السلة",
+    "or_wa": "أو اطلب عبر واتساب",
+    "buy_trust": "الدفع عند الاستلام أو بتحويل بنكي · أو استلم طلبك من المتجر",
+    "qty_pick": "الكمية"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -203,7 +209,13 @@
     "as_listen": "Écouter",
     "hours_line": "Ouvert tous les jours de {o} à {c}",
     "open_now": "Ouvert maintenant",
-    "closed_now": "Fermé · ouvre à {o}"
+    "closed_now": "Fermé · ouvre à {o}",
+    "order_now": "Commander maintenant",
+    "in_cart": "Dans votre panier :",
+    "view_cart": "Voir le panier",
+    "or_wa": "ou commander sur WhatsApp",
+    "buy_trust": "Paiement à la livraison ou par virement · ou retrait au magasin",
+    "qty_pick": "Quantité"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -306,7 +318,13 @@
     "as_listen": "Listen",
     "hours_line": "Open every day, {o} to {c}",
     "open_now": "Open now",
-    "closed_now": "Closed · opens at {o}"
+    "closed_now": "Closed · opens at {o}",
+    "order_now": "Order now",
+    "in_cart": "In your cart:",
+    "view_cart": "View cart",
+    "or_wa": "or order on WhatsApp",
+    "buy_trust": "Pay on delivery or by bank transfer · or collect at the shop",
+    "qty_pick": "Quantity"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -409,6 +427,12 @@
     "as_listen": "Escuchar",
     "hours_line": "Abierto todos los días de {o} a {c}",
     "open_now": "Abierto ahora",
-    "closed_now": "Cerrado · abre a las {o}"
+    "closed_now": "Cerrado · abre a las {o}",
+    "order_now": "Pedir ahora",
+    "in_cart": "En tu cesta:",
+    "view_cart": "Ver la cesta",
+    "or_wa": "o pide por WhatsApp",
+    "buy_trust": "Pago a la entrega o por transferencia · o recógelo en la tienda",
+    "qty_pick": "Cantidad"
   }
 }

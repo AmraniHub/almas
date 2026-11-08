@@ -420,3 +420,73 @@ test("standing order: requested pending, activated by the owner, each run is a r
   assert.equal(after.next_date, d.toISOString().slice(0, 10), "the next date moves on by its rhythm");
   assert.equal(after.last_order, run.order_id);
 });
+
+test("Google Sheet: shows the script with this shop's key, refuses a wrong URL, connects with a test row, then copies each new order", async () => {
+  assert.equal((await adminLogin()).status, 200);
+  let d = await (await admin("sheet")).json();
+  assert.equal(d.connected, false);
+  const secret = (d.script.match(/var SECRET = "([0-9a-f]{48})";/) || [])[1];
+  assert.ok(secret, "the script carries a 48-hex secret");
+  assert.equal(((await (await admin("sheet")).json()).script.match(/var SECRET = "([0-9a-f]{48})";/) || [])[1], secret, "the secret is stable");
+
+  const bad = await admin("sheet", { url: "https://evil.example.com/macros/s/x/exec" });
+  assert.equal(bad.status, 400);
+
+  const sent = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opt) => {
+    if (String(url).startsWith("https://script.google.com/")) {
+      const b = JSON.parse(opt.body);
+      sent.push(b);
+      return new Response(JSON.stringify(b.secret === secret ? { ok: true, added: b.rows.length } : { ok: false, error: "secret" }),
+        { headers: { "content-type": "application/json" } });
+    }
+    return realFetch(url, opt);
+  };
+  try {
+    const url = "https://script.google.com/macros/s/AKfycbTESTTESTTESTTESTTEST123/exec";
+    const ok = await admin("sheet", { url });
+    assert.equal(ok.status, 200);
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].kind, "test");
+    assert.equal((await (await admin("sheet")).json()).connected, true);
+
+    const o = { ...ORDER, id: "AL-SHEET-0001", phone: "+212 6 11 22 33 44", name: "=HYPERLINK(1)" };
+    assert.equal((await ingest("order", o)).status, 200);
+    await new Promise((r) => setTimeout(r, 20));
+    const row = sent.find((s) => s.kind === "order");
+    assert.ok(row, "the order went to the sheet");
+    assert.equal(row.head[0], "Date");
+    assert.equal(row.rows[0][1], "AL-SHEET-0001");
+    assert.match(row.rows[0][5], /0\.5 kg/);
+    // the same order again (a retry) is not copied twice
+    const before = sent.length;
+    await ingest("order", o);
+    await new Promise((r) => setTimeout(r, 20));
+    assert.equal(sent.length, before);
+
+    const off = await admin("sheet/disconnect", {});
+    assert.equal(off.status, 200);
+    assert.equal((await (await admin("sheet")).json()).connected, false);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test("Google Sheet: an unreachable sheet never fails the customer's order", async () => {
+  assert.equal((await adminLogin()).status, 200);
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opt) => String(url).startsWith("https://script.google.com/")
+    ? new Response(JSON.stringify({ ok: true, added: 1 }), { headers: { "content-type": "application/json" } }) : realFetch(url, opt);
+  await admin("sheet", { url: "https://script.google.com/macros/s/AKfycbTESTTESTTESTTESTTEST456/exec" });
+  globalThis.fetch = async (url, opt) => { if (String(url).startsWith("https://script.google.com/")) throw new Error("network down"); return realFetch(url, opt); };
+  try {
+    const r = await ingest("order", { ...ORDER, id: "AL-SHEET-0002" });
+    assert.equal(r.status, 200);
+    assert.equal(rows("select id from orders where id = 'AL-SHEET-0002'").length, 1);
+    await new Promise((r2) => setTimeout(r2, 20));
+  } finally {
+    globalThis.fetch = realFetch;
+    await admin("sheet/disconnect", {});
+  }
+});

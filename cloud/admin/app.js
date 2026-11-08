@@ -602,6 +602,57 @@ async function productsView(params) {
           p.pending ? h("a", { href: "#reviews?status=pending" }, " +" + p.pending + " pending") : null))))));
 }
 
+// ---------- Google Sheet ----------
+
+async function sheetView() {
+  markNav("sheet");
+  const d = await api("sheet");
+  const copy = async (btn) => {
+    try { await navigator.clipboard.writeText(d.script); btn.textContent = "Copied ✓"; }
+    catch (e) { code.select(); document.execCommand("copy"); btn.textContent = "Copied ✓"; }
+    setTimeout(() => { btn.textContent = "Copy the code"; }, 2000);
+  };
+  const code = h("textarea", { class: "code", readonly: true, rows: 12, spellcheck: "false" });
+  code.value = d.script;
+  const urlIn = h("input", { type: "url", placeholder: "https://script.google.com/macros/s/.../exec", value: d.url || "" });
+  const busy = (btn, fn) => async () => {
+    btn.disabled = true;
+    try { await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; }
+  };
+  const connectBtn = h("button", { type: "button" }, d.connected ? "Save and test again" : "Connect");
+  connectBtn.onclick = busy(connectBtn, async () => { await api("sheet", { url: urlIn.value.trim() }); toast("Connected: a test row is in the tab “Test”."); sheetView(); });
+  const testBtn = h("button", { type: "button", class: "ghost" }, "Send a test row");
+  testBtn.onclick = busy(testBtn, async () => { await api("sheet/test", {}); toast("Test row sent to the tab “Test”."); });
+  const backBtn = h("button", { type: "button", class: "ghost" }, "Copy all past orders into the sheet");
+  backBtn.onclick = busy(backBtn, async () => {
+    if (!confirm("Add every order so far to the tab “Orders”? Run it once, or rows will be repeated.")) return;
+    const r = await api("sheet/backfill", {}); toast(r.added + " orders added to the sheet.");
+  });
+  const offBtn = h("button", { type: "button", class: "ghost small" }, "Disconnect");
+  offBtn.onclick = busy(offBtn, async () => { await api("sheet/disconnect", {}); toast("Disconnected."); sheetView(); });
+  const copyBtn = h("button", { type: "button", class: "ghost" }, "Copy the code");
+  copyBtn.onclick = () => copy(copyBtn);
+  clear(view(), h("h1", {}, "Google Sheet"),
+    h("p", { class: d.connected ? "ok" : "muted" }, d.connected
+      ? "Connected. Every new order, business request, standing order and review is added to your sheet a few seconds after it arrives."
+      : "Not connected yet. Once connected, every new order, business request, standing order and review is also added to a Google Sheet of yours."),
+    d.connected ? h("div", { class: "card" }, h("h2", {}, "Connected sheet"),
+      h("p", { class: "small muted break" }, d.url),
+      h("div", { class: "actions" }, testBtn, backBtn, offBtn)) : null,
+    h("div", { class: "card" }, h("h2", {}, d.connected ? "Set up again" : "Connect in 5 steps"),
+      h("ol", { class: "steps" },
+        h("li", {}, "Open ", h("a", { href: "https://sheets.new", target: "_blank", rel: "noopener" }, "a new Google Sheet"), " in the Google account that should own the orders, and name it, for example “Almas orders”."),
+        h("li", {}, "In the sheet: Extensions → Apps Script. Delete what is in the editor, paste the code below, then press Save."),
+        h("li", {}, "Deploy → New deployment → the gear → Web app. Execute as: Me. Who has access: Anyone. Press Deploy."),
+        h("li", {}, "Google asks for permission: Authorize access → your account → Advanced → Go to the project → Allow. It is your own script, writing only to this sheet."),
+        h("li", {}, "Copy the Web app URL, paste it here and press Connect. A test row appears in the tab “Test”.")),
+      h("div", { class: "actions" }, copyBtn),
+      code,
+      h("p", { class: "small muted" }, "The code holds this shop's private key: anyone without it cannot write to your sheet. Do not share it."),
+      h("label", {}, "Web app URL", urlIn),
+      h("div", { class: "actions" }, connectBtn)));
+}
+
 // ---------- router ----------
 
 async function render() {
@@ -621,6 +672,7 @@ async function render() {
     else if (tab === "reviews") await reviewsView(params);
     else if (tab === "products") await productsView(params);
     else if (tab === "standing") await standingView(params);
+    else if (tab === "sheet") await sheetView();
     else await overviewView();
     window.scrollTo(0, 0);
   } catch (e) {

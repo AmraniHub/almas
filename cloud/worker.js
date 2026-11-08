@@ -542,9 +542,11 @@ async function runStanding(env, b) {
   }
   if (!items.length) throw new Http(409, "none of its products is in the catalogue any more");
   const total = Math.round(items.reduce((t, i) => t + i.line, 0) * 100) / 100;
-  await ingestOrder(env, { id: orderId, at: nowIso(), lang: s.lang, name: s.name, phone: s.phone, address: s.address, pay: s.pay,
-                           notes: "[standing order #" + s.id + ", every " + s.every_days + " days]" + (s.notes ? " " + s.notes : ""),
-                           source: "standing", total, items });
+  const made = { id: orderId, at: nowIso(), lang: s.lang, name: s.name, phone: s.phone, address: s.address, pay: s.pay,
+                 notes: "[standing order #" + s.id + ", every " + s.every_days + " days]" + (s.notes ? " " + s.notes : ""),
+                 source: "standing", total, items };
+  const res = await ingestOrder(env, made);
+  if (res && res.ok && !res.duplicate) later(env, sheetPush(env, "order", made));
   const base = s.next_date && s.next_date > today ? s.next_date : today;
   await env.DB.prepare("update standing set last_order = ?, last_done = ?, next_date = ?, updated_at = ? where id = ?")
     .bind(orderId, today, addDays(base, s.every_days), nowIso(), s.id).run();
@@ -912,6 +914,7 @@ async function admin(req, env, url) {
       case "/admin/api/reviews": return json(await listReviews(env, p));
       case "/admin/api/products": return json(await products(env));
       case "/admin/api/standing": return json(await listStanding(env, p));
+      case "/admin/api/sheet": return json(await sheetInfo(env));
       case "/admin/export/orders.csv": return exportOrders(env);
       case "/admin/export/customers.csv": return exportCustomers(env);
     }
@@ -929,9 +932,174 @@ async function admin(req, env, url) {
       case "/admin/api/standing": return json(await updateStanding(env, b));
       case "/admin/api/standing/run": return json(await runStanding(env, b));
       case "/admin/api/standing/delete": return json(await deleteStanding(env, b));
+      case "/admin/api/sheet": return json(await sheetConnect(env, b));
+      case "/admin/api/sheet/test": { const r = await sheetSend(env, "test", [[nowIso(), "Test from the Almas back office."]]); if (!r.ok) throw new Http(400, r.error); return json(r); }
+      case "/admin/api/sheet/backfill": return json(await sheetBackfill(env));
+      case "/admin/api/sheet/disconnect": await setSetting(env, "sheet_url", ""); return json({ ok: true, connected: false });
     }
   }
   throw new Http(404, "not found");
+}
+
+// ---------- Google Sheet: every new order, request and review also lands as a row in the owner's own sheet ----------
+// The owner pastes a small Apps Script into his sheet (the back office shows it, with this shop's secret in it) and
+// deploys it as a web app; its URL is kept in D1. Rows go out after the reply (waitUntil), so a slow or missing
+// sheet never delays or fails a customer's order: D1 stays the record, the sheet is a copy.
+
+const SHEET_URL_RE = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]{20,}\/exec$/;
+const SHEET_HEADS = {
+  order: ["Date", "Order", "Name", "Phone", "Address", "Items", "Total (DH)", "Payment", "Language", "Notes", "Source"],
+  quote: ["Date", "Request", "Business", "Contact", "Phone", "City", "Type", "Event date", "Guests", "How often", "Items"],
+  standing: ["Date", "From order", "Name", "Phone", "Business", "Every (days)", "Items", "Address", "Notes"],
+  review: ["Date", "Product", "Stars", "Name", "Text", "Order", "Language"],
+  test: ["Date", "Message"],
+};
+
+async function setting(env, k) {
+  const r = await first(env, "select v from settings where k = ?", k);
+  return r ? r.v : "";
+}
+async function setSetting(env, k, v) {
+  await env.DB.prepare("insert into settings (k, v, updated_at) values (?, ?, ?) on conflict(k) do update set v = excluded.v, updated_at = excluded.updated_at")
+    .bind(k, v, nowIso()).run();
+}
+async function sheetSecret(env) {
+  let s = await setting(env, "sheet_secret");
+  if (!s) {
+    s = hex(crypto.getRandomValues(new Uint8Array(24)));
+    await setSetting(env, "sheet_secret", s);
+  }
+  return s;
+}
+
+const cell = (v, max = 500) => text(v == null ? "" : v, max, true);
+function itemsText(items) {
+  return (Array.isArray(items) ? items : []).slice(0, 60).map((i) => {
+    const q = Number(i && i.qty) || 0;
+    const unit = i && i.unit === "kg" ? " kg" : " x";
+    return q + unit + " " + cell((i && (i.name_till || i.name || i.product)) || "", 80);
+  }).join("; ");
+}
+function sheetRow(kind, b) {
+  const at = iso(b.at) || nowIso();
+  if (kind === "order") return [at, cell(b.id, 40), cell(b.name, 80), cell(b.phone, 30), cell(b.address, 300), itemsText(b.items),
+    num(b.total, 0, 100000000) ?? "", oneOf(b.pay, PAYS, "cod"), oneOf(b.lang, LANGS, "ar"), cell(b.notes, 600), cell(b.source, 40)];
+  if (kind === "quote") return [at, cell(b.id, 40), cell(b.business, 100), cell(b.contact, 80), cell(b.phone, 30), cell(b.city, 60),
+    cell(b.type, 40), cell(b.date, 10), cell(b.guests, 6), cell(b.freq, 30), cell(b.items, 1500)];
+  if (kind === "standing") return [at, cell(b.from_order, 40), cell(b.name, 80), cell(b.phone, 30), cell(b.business, 100),
+    Number(b.every_days) || "", itemsText(b.items), cell(b.address, 300), cell(b.notes, 600)];
+  if (kind === "review") return [at, cell(b.product, 20), Number(b.rating) || "", cell(b.name, 60), cell(b.text, 1000),
+    cell(b.order_id, 40), oneOf(b.lang, LANGS, "ar")];
+  return null;
+}
+
+// one POST to the owner's Apps Script; it answers through a redirect, which fetch follows
+async function sheetSend(env, kind, rows) {
+  const url = await setting(env, "sheet_url");
+  if (!url) return { ok: false, error: "not connected" };
+  const secret = await sheetSecret(env);
+  try {
+    const r = await fetch(url, {
+      method: "POST", headers: { "Content-Type": "application/json" }, redirect: "follow",
+      body: JSON.stringify({ secret, kind, head: SHEET_HEADS[kind], rows }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const t = await r.text();
+    let j = null;
+    try { j = JSON.parse(t); } catch (e) { /* Google answered with a page: wrong URL or the script is not deployed for "Anyone" */ }
+    if (!j) return { ok: false, error: "the sheet did not answer (HTTP " + r.status + "): check the web app URL and that access is set to Anyone" };
+    if (!j.ok) return { ok: false, error: "the sheet refused: " + (j.error || "unknown") };
+    return { ok: true, added: j.added || rows.length };
+  } catch (e) {
+    return { ok: false, error: "could not reach the sheet: " + String((e && e.message) || e).slice(0, 120) };
+  }
+}
+
+async function sheetPush(env, kind, b) {
+  const row = sheetRow(kind, b);
+  if (!row) return;
+  const r = await sheetSend(env, kind, [row]);
+  if (!r.ok && r.error !== "not connected") console.error("almas-shop sheet", kind, r.error);
+}
+
+function sheetScript(secret) {
+  return [
+    "// Almas: new orders, business requests, standing orders and reviews arrive in this sheet as rows.",
+    "// Paste all of this into Extensions > Apps Script, then Deploy > New deployment > Web app,",
+    "// Execute as: Me, Who has access: Anyone. Copy the Web app URL into the Almas back office.",
+    "var SECRET = \"" + secret + "\";",
+    "var TABS = { order: \"Orders\", quote: \"Business requests\", standing: \"Standing orders\", review: \"Reviews\", test: \"Test\" };",
+    "",
+    "function doPost(e) {",
+    "  var b;",
+    "  try { b = JSON.parse(e.postData.contents); } catch (err) { return out({ ok: false, error: \"bad json\" }); }",
+    "  if (!b || b.secret !== SECRET) return out({ ok: false, error: \"secret\" });",
+    "  var tab = TABS[b.kind];",
+    "  if (!tab || !b.rows || !b.rows.length) return out({ ok: false, error: \"nothing to add\" });",
+    "  var lock = LockService.getScriptLock();",
+    "  lock.waitLock(20000);",
+    "  try {",
+    "    var ss = SpreadsheetApp.getActiveSpreadsheet();",
+    "    var sh = ss.getSheetByName(tab) || ss.insertSheet(tab);",
+    "    if (sh.getLastRow() === 0 && b.head) {",
+    "      sh.appendRow(b.head);",
+    "      sh.getRange(1, 1, 1, b.head.length).setFontWeight(\"bold\").setBackground(\"#f3dfc0\");",
+    "      sh.setFrozenRows(1);",
+    "    }",
+    "    var rows = b.rows.map(function (r) { return r.map(clean); });",
+    "    sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);",
+    "  } finally {",
+    "    lock.releaseLock();",
+    "  }",
+    "  return out({ ok: true, added: b.rows.length });",
+    "}",
+    "",
+    "// a cell that starts with = + - or @ would run as a formula, and a phone like 06 12 34 56 78 would lose its 0:",
+    "// both are kept as text",
+    "function clean(v) {",
+    "  if (v === null || v === undefined) return \"\";",
+    "  if (typeof v === \"string\" && (/^[=+\\-@]/.test(v) || /^0[0-9 ]+$/.test(v))) return \"'\" + v;",
+    "  return v;",
+    "}",
+    "",
+    "function out(o) {",
+    "  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);",
+    "}",
+    "",
+  ].join(NL);
+}
+
+async function sheetInfo(env) {
+  const url = await setting(env, "sheet_url");
+  return { ok: true, connected: !!url, url, script: sheetScript(await sheetSecret(env)) };
+}
+async function sheetConnect(env, b) {
+  const url = text(b.url, 300).trim();
+  if (!SHEET_URL_RE.test(url)) throw new Http(400, "Paste the Web app URL: it starts with https://script.google.com/macros/s/ and ends with /exec");
+  await setSetting(env, "sheet_url", url);
+  const r = await sheetSend(env, "test", [[nowIso(), "Almas is connected to this sheet."]]);
+  if (!r.ok) {
+    await setSetting(env, "sheet_url", "");
+    throw new Http(400, r.error);
+  }
+  return { ok: true, connected: true, url };
+}
+async function sheetBackfill(env) {
+  const [orders, items] = await env.DB.batch([
+    env.DB.prepare("select * from orders order by at asc limit 2000"),
+    env.DB.prepare("select order_id, name, name_till, product, qty, unit from order_items order by order_id, idx"),
+  ]);
+  const byOrder = {};
+  for (const i of items.results || []) (byOrder[i.order_id] = byOrder[i.order_id] || []).push(i);
+  const rows = (orders.results || []).map((o) => sheetRow("order", { ...o, items: byOrder[o.id] || [] }));
+  if (!rows.length) return { ok: true, added: 0 };
+  let added = 0;
+  for (let i = 0; i < rows.length; i += 200) {
+    const r = await sheetSend(env, "order", rows.slice(i, i + 200));
+    if (!r.ok) throw new Http(502, r.error + (added ? " (" + added + " rows were added before this)" : ""));
+    added += r.added;
+  }
+  return { ok: true, added };
 }
 
 async function route(req, env) {
@@ -947,19 +1115,28 @@ async function route(req, env) {
     if (req.method !== "POST") throw new Http(405, "POST only");
     if (!(await secretEquals(env, req.headers.get("X-Almas-Secret"), env.INGEST_SECRET))) throw new Http(401, "secret");
     const b = await body(req);
-    if (path === "/ingest/order") return json(await ingestOrder(env, b));
-    if (path === "/ingest/paid") return json(await ingestPaid(env, b));
-    if (path === "/ingest/quote") return json(await ingestQuote(env, b));
-    if (path === "/ingest/review") return json(await ingestReview(env, b));
-    if (path === "/ingest/standing") return json(await ingestStanding(env, b));
-    throw new Http(404, "not found");
+    const kinds = { "/ingest/order": ["order", ingestOrder], "/ingest/paid": [null, ingestPaid], "/ingest/quote": ["quote", ingestQuote],
+      "/ingest/review": ["review", ingestReview], "/ingest/standing": ["standing", ingestStanding] };
+    const k = kinds[path];
+    if (!k) throw new Http(404, "not found");
+    const res = await k[1](env, b);
+    if (k[0] && res && res.ok && !res.duplicate) later(env, sheetPush(env, k[0], b));
+    return json(res);
   }
   if (path === "/admin" || path.startsWith("/admin/")) return admin(req, env, url);
   throw new Http(404, "not found");
 }
 
+// work that runs after the reply has gone (the Google Sheet copy)
+function later(env, promise) {
+  const p = Promise.resolve(promise).catch((e) => console.error("almas-shop later", e && e.stack ? e.stack : e));
+  if (env.__ctx && env.__ctx.waitUntil) env.__ctx.waitUntil(p);
+  return p;
+}
+
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
+    env = Object.assign({}, env, { __ctx: ctx });
     try {
       return await route(req, env);
     } catch (e) {

@@ -119,3 +119,6 @@ create table if not exists standing (
 create index if not exists standing_due on standing (status, next_date);
 create index if not exists standing_phone on standing (phone_norm);
 create unique index if not exists standing_from on standing (from_order) where from_order <> '';
+
+-- small key/value settings set from the back office (the Google Sheet link and its secret)
+create table if not exists settings (k text primary key, v text not null default '', updated_at text);

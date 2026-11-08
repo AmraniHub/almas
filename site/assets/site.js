@@ -8,6 +8,7 @@
   var KEY = "almas-cart-v1";
   var cart = {};
   var showQty = null; // the product page's quantity display, refreshed when live prices arrive
+  var onCart = null;  // the product page's "in your cart" line, refreshed whenever the cart changes
   try { cart = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { cart = {}; }
 
   function $(s, r) { return (r || document).querySelector(s); }
@@ -80,6 +81,7 @@
       if (count()) c.removeAttribute("data-zero"); else c.setAttribute("data-zero", "");
       if (was && was !== c.textContent) { c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
     }
+    if (onCart) onCart();
     var list = $("[data-cart-lines]");
     if (!list) return;
     if (count()) { var dn = $("[data-done]"); if (dn) dn.hidden = true; list.hidden = false; } // a new cart after an order
@@ -248,21 +250,78 @@
   if (pid && A.p[pid]) {
     var q = 1; // 1 kg or one piece, the unit the price is shown for
     var box = $("[data-qty-for]"), lab = $("[data-qty-label]"), qp = $("[data-qty-price]");
+    var bbQty = $("[data-bb-qty]"), bbPrice = $("[data-bb-price]");
     var show = function () {
       if (lab) lab.textContent = amount(pid, q);
       if (qp) { qp.textContent = money(q * A.p[pid].price); qp.classList.remove("bump"); void qp.offsetWidth; qp.classList.add("bump"); }
       var qe = $("[data-eur-qty]"); if (qe) qe.textContent = eur(q * A.p[pid].price);
+      if (bbQty) bbQty.textContent = amount(pid, q);
+      if (bbPrice) bbPrice.textContent = money(q * A.p[pid].price);
+      $$("[data-preset]").forEach(function (b) { b.classList.toggle("on", Math.abs(+b.getAttribute("data-preset") - q) < 0.001); });
     };
     showQty = show;
     if (box) $$("[data-step]", box).forEach(function (b) {
       b.onclick = function () { q = Math.max(step(pid), Math.round((q + step(pid) * +b.getAttribute("data-step")) * 100) / 100); show(); };
     });
+    $$("[data-preset]").forEach(function (b) {
+      b.onclick = function () { q = +b.getAttribute("data-preset"); show(); };
+    });
     show();
-    var addq = $("[data-add-qty]");
-    if (addq) addq.onclick = function () {
-      add(pid, q); track("AddToCart", [pid], q * A.p[pid].price);
-      addq.textContent = A.s.added + " ✓"; setTimeout(openCart, 250);
+    /* "in your cart: 1.5 kg" under the buttons, kept true when the cart changes in the drawer */
+    var inCart = $("[data-in-cart]"), inCartText = $("[data-in-cart-text]");
+    onCart = function () {
+      if (!inCart) return;
+      var have = cart[pid];
+      inCart.hidden = !have;
+      if (have) inCartText.textContent = A.s.in_cart + " " + amount(pid, have) + " · " + money(have * A.p[pid].price);
     };
+    onCart();
+    var flash = function (btn, label) {
+      btn.classList.add("done");
+      if (label) { var old = label.textContent; label.textContent = A.s.added + " ✓"; }
+      setTimeout(function () { btn.classList.remove("done"); if (label) label.textContent = old; }, 1600);
+    };
+    var addIt = function (btn, label) {
+      add(pid, q); track("AddToCart", [pid], q * A.p[pid].price);
+      flash(btn, label);
+    };
+    /* order now: this quantity goes in the cart (replacing an earlier amount of the same product, not adding to it),
+       then the order form opens with the cursor in the first empty field */
+    var orderNow = function () {
+      var before = cart[pid] || 0;
+      if (Math.abs(before - q) > 0.001) add(pid, q - before);
+      track("InitiateCheckout", [pid], q * A.p[pid].price);
+      if (typeof showCart === "function") showCart();
+      openCart();
+      setTimeout(function () {
+        var f = $("[data-order-form]");
+        if (!f) return;
+        f.scrollIntoView({ block: "start", behavior: "smooth" });
+        var empty = $$("input[required]", f).filter(function (i) { return !i.value; })[0];
+        if (empty) empty.focus({ preventScroll: true });
+      }, 320);
+    };
+    var addq = $("[data-add-qty]");
+    if (addq) addq.onclick = function () { addIt(addq, $("[data-add-label]", addq)); };
+    var nowb = $("[data-order-now]");
+    if (nowb) nowb.onclick = orderNow;
+    /* the sticky buy bar on phones: shows once the buy box has scrolled away, hides near the reviews' form and footer */
+    var bar = $("[data-buybar]"), buyBox = $("[data-buy]");
+    if (bar && buyBox && "IntersectionObserver" in window) {
+      bar.hidden = false;
+      var bba = $("[data-bb-add]", bar), bbn = $("[data-bb-now]", bar);
+      if (bba) bba.onclick = function () { addIt(bba, null); };
+      if (bbn) bbn.onclick = orderNow;
+      var above = false;
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          above = !e.isIntersecting && e.boundingClientRect.top < 0;
+          var on = above && window.innerWidth < 900;
+          bar.classList.toggle("on", on);
+          document.body.classList.toggle("has-buybar", on);
+        });
+      }).observe(buyBox);
+    }
     var one = $("[data-order-one]");
     if (one) one.onclick = function () {
       var p = A.p[pid];

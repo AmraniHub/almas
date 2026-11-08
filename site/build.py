@@ -915,7 +915,7 @@ def page_data(lang, products, cats):
                                 "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
                                 "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no",
                                 "sh_btn", "sh_title", "sh_more", "sh_text", "sh_saved", "name", "kicker",
-                                "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen")},
+                                "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen", "in_cart", "order_now")},
         "maps": CFG["maps_url"], "pro": url(lang, "pro/"),
         "waze": (f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={CFG['geo'][0]}%2C{CFG['geo'][1]}&navigate=yes" if CFG.get("google_place_id")
                  else f"https://waze.com/ul?ll={CFG['geo'][0]},{CFG['geo'][1]}&navigate=yes"),
@@ -1088,6 +1088,17 @@ def share_box(lang, p, n):
             f'</div></div>')
 
 
+def presets(p, lang):
+    """One-tap quantities: by weight for what is sold by the kilo, by count for pieces."""
+    t = T[lang]
+    if p["unit"] == "kg":
+        vals = [(0.25, "250 g" if lang != "ar" else "250 غ"), (0.5, "500 g" if lang != "ar" else "500 غ"),
+                (1, "1 kg" if lang != "ar" else "1 كلغ"), (2, "2 kg" if lang != "ar" else "2 كلغ")]
+    else:
+        vals = [(n, str(n)) for n in (1, 2, 3, 5)]
+    return "".join(f'<button type="button" class="preset" data-preset="{v}">{esc(label)}</button>' for v, label in vals)
+
+
 def product_page(lang, p, products, cats):
     t = T[lang]
     cat = cats[p["cat"]]
@@ -1136,12 +1147,21 @@ def product_page(lang, p, products, cats):
 {f'<p class="about">{esc(about(p, lang))}</p>' if about(p, lang) else ""}
 <ul class="names">{names}</ul>
 <p class="big-price"><b data-price="{p['id']}">{esc(money(lang, p['price']))}</b> <small>{esc(unit)}</small> <small class="eur" data-eur-unit="{p['id']}"></small></p>
+<div class="buy" data-buy>
+<div class="presets" role="group" aria-label="{esc(t['qty_pick'])}">{presets(p, lang)}</div>
 <div class="qty-row"><div class="qty" data-qty-for="{p['id']}"><button type="button" data-step="-1" aria-label="-">−</button><output data-qty-label></output><button type="button" data-step="1" aria-label="+">+</button></div>
 <p class="qty-price"><small>{esc(t['qty_for'])}</small><b data-qty-price></b><small class="eur" data-eur-qty></small></p></div>
-<div class="cta"><button type="button" class="btn" data-add-qty="{p['id']}">{esc(t['add'])}</button>
-<a class="btn ghost wa-link" data-order-one="{p['id']}" href="{esc(one)}" rel="noopener">{esc(t['order_one'])}</a></div>
+<div class="buy-btns"><button type="button" class="btn ghost add-btn" data-add-qty="{p['id']}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span data-add-label>{esc(t['add'])}</span></button>
+<button type="button" class="btn now-btn" data-order-now="{p['id']}">{esc(t['order_now'])}</button></div>
+<p class="in-cart" data-in-cart hidden><span data-in-cart-text></span> <button type="button" class="link-btn" data-open-cart>{esc(t['view_cart'])}</button></p>
+<p class="buy-trust">{esc(t['buy_trust'])}</p>
+<a class="wa-small" data-order-one="{p['id']}" href="{esc(one)}" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z"/></svg>{esc(t['or_wa'])}</a>
+</div>
+<div class="buybar" data-buybar hidden><div class="buybar-in"><img src="{PREFIX}/img/thumb/{p['id']}.jpg" alt="" width="44" height="44" onerror="this.remove()"><span class="bb-t"><b>{esc(n)}</b><small><span data-bb-qty></span> · <b data-bb-price></b></small></span>
+<button type="button" class="btn ghost bb-add" data-bb-add aria-label="{esc(t['add'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg></button>
+<button type="button" class="btn now-btn" data-bb-now>{esc(t['order_now'])}</button></div></div>
 {share_box(lang, p, n)}
-<p class="note">{esc(t['order_note'])}<br>{esc(t['pay_note'])}</p>
+<p class="note">{esc(t['order_note'])}</p>
 </div>
 </section>
 {reviews_block(lang, p)}

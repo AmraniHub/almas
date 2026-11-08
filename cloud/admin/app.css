@@ -114,3 +114,13 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .chip.pending { background: #fff1d6; color: #8a5a00; } .chip.active { background: #dff3e7; color: #1f7a4d; } .chip.paused, .chip.stopped { background: #eee; color: #666; }
 .items-line { display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .items-line .it { background: #f3ece2; border-radius: 8px; padding: 1px 8px; white-space: nowrap; }
+
+/* Google Sheet page */
+.code { display: block; width: 100%; margin-top: .7rem; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.45; white-space: pre; background: #fbf8f3; }
+.steps { padding-inline-start: 1.2rem; margin: .4rem 0 0; }
+.steps li { margin-bottom: .45rem; }
+p.ok { color: #17603b; font-weight: 600; }
+.card label { display: block; margin-top: .9rem; font-weight: 600; }
+.card label input { display: block; margin-top: .3rem; }
+.card label input { width: 100%; }
+.break { word-break: break-all; }
