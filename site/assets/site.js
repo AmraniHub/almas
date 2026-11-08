@@ -647,13 +647,21 @@
       }, { passive: false });
     }
     // inside the products, the search box tucks away (the header's search button stays): only the shelf row is pinned
-    var shop = $("#products"), compactTick = false;
+    // Tucking the box away makes the bar shorter and moves the page; with one threshold that move crossed it back and
+    // the bar flickered open/closed many times a second. So: tuck in well inside the products, come back out only
+    // well above them (a gap larger than the box's height), and never change twice within the animation.
+    var shop = $("#products"), compactTick = false, compactAt = 0;
     var compact = function () {
       compactTick = false;
       if (!tools || !shop) return;
       var sb2 = $("[data-search-box]");
-      var inside = window.pageYOffset > shop.offsetTop + 60 && document.activeElement !== sb2 && !(sb2 && sb2.value);
-      tools.classList.toggle("compact", inside);
+      var y = window.pageYOffset, top = shop.offsetTop, is = tools.classList.contains("compact");
+      var busy = document.activeElement === sb2 || !!(sb2 && sb2.value);
+      var want = busy ? false : is ? y > top - 40 : y > top + 140;
+      if (want === is) return;
+      if (Date.now() - compactAt < 400) { setTimeout(compact, 420); return; } // look again once the animation is over
+      compactAt = Date.now();
+      tools.classList.toggle("compact", want);
     };
     window.addEventListener("scroll", function () { if (!compactTick) { compactTick = true; requestAnimationFrame(compact); } }, { passive: true });
     compact();
