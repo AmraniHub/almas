@@ -67,3 +67,13 @@ The Vercel functions copy every order, quote, card payment and review there (env
 `ALMAS_CLOUD_SECRET`); Telegram stays the instant alert. A review shows on the site only once published in the
 admin. Redeploy with `python cloud/deploy.py` (keeps secrets; `--rotate` logs everyone out and needs the Vercel
 secret updated). Tests: `node --test cloud/tests/worker.test.mjs`, live: `python cloud/live-test.py`.
+
+## Google Sheet copy of orders (connected 2026-11-08)
+
+Every new order, business request, standing order and review is also appended to the Google Sheet
+**"Almas – orders"** in the contact@morasset.com Drive
+(https://docs.google.com/spreadsheets/d/1egc2DBPbbxvki7PBgSPefxedjYPOSdBkGkAYecLe-5g/edit), one tab per kind.
+The sheet's bound Apps Script ("Untitled project", web app "Anyone", runs as contact@morasset.com) checks a shop
+secret that the back office generates. The Worker posts after replying (waitUntil), so a slow or missing sheet never
+blocks an order; D1 stays the record. Reconnect, test, backfill or disconnect in the back office: tab **Google Sheet**.
+If the script is redeployed as a NEW deployment its URL changes: paste the new one there.
