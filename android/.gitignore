@@ -9,5 +9,8 @@ GeneratedPluginRegistrant.java
 # See https://flutter.dev/to/reference-keystore
 key.properties
 **/*.keystore
+
+# Firebase config of the June demo app, kept on the laptop only (the shell no longer uses Firebase)
+app/firebase_options.dart.june
 **/*.jks
 

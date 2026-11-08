@@ -1,7 +1,7 @@
 name: almas
-description: Design-forward B2B spices storefront for Almas.
+description: Almas spices - the shop's website (almas-epices.vercel.app) in a native Android shell.
 publish_to: "none"
-version: 1.1.0+11
+version: 1.2.0+13
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -9,56 +9,27 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
 
-  # UI & fonts
-  google_fonts: ^6.3.0
+  # The shop itself: the website, full screen
+  webview_flutter: ^4.13.0
+  webview_flutter_android: ^4.10.0
 
-  # State management
-  flutter_riverpod: ^2.6.1
-
-  # Navigation
-  go_router: ^14.6.2
-
-  # Firebase
-  firebase_core: ^3.13.0
-  firebase_analytics: ^11.3.3
-  cloud_firestore: ^5.6.5
-  # firebase_messaging: ^15.2.4   # enable when adding push notifications
-  # firebase_auth: ^5.5.1         # enable when adding login
-
-  # Images
-  cached_network_image: ^3.4.1
-
-  # URL launching (phone, WhatsApp, website, Waze)
+  # Links that leave the site (WhatsApp, phone, Waze, Maps, Instagram...)
   url_launcher: ^6.3.1
 
-  # Local notifications (push display)
-  flutter_local_notifications: ^18.0.1
-
-  # Location / GPS
-  geolocator: ^13.0.2
-
-  # Shared preferences (local cache)
+  # Last language page the visitor opened
   shared_preferences: ^2.3.5
 
-  # Image picker (admin product photo upload)
-  image_picker: ^1.1.2
-
-  # HTTP
-  http: ^1.2.2
-
-  # Payments
-  flutter_stripe: ^10.1.1
+  # The site's "share my order" picture goes to the Android share sheet through
+  # MainActivity + ShareProvider (no plugin: share_plus pins an AGP/Kotlin
+  # buildscript that is not in the Gradle cache).
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
 
-dependency_overrides:
-  path_provider_android: 2.2.23
-
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png

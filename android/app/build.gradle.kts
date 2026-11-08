@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
 }
 
 val keystoreProperties = Properties()
@@ -15,10 +14,11 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.almas.app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
+    // the installed NDK (28.2): AGP needs it to strip libflutter.so in release, else the bundle ships debug symbols
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -26,9 +26,9 @@ android {
     defaultConfig {
         applicationId = "com.almas.app"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = 12
-        versionName = "1.1.1"
+        targetSdk = 36
+        versionCode = 13
+        versionName = "1.2.0"
     }
 
     signingConfigs {
@@ -60,10 +60,6 @@ android {
             isMinifyEnabled = false
         }
     }
-}
-
-dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
 
 flutter {
