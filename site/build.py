@@ -866,6 +866,14 @@ def cart_drawer(lang):
 </div>"""
 
 
+def waze_url():
+    """Waze straight to the shop's own place (from its Google listing), not to a dropped pin."""
+    lat, lng = CFG["geo"][0], CFG["geo"][1]
+    if CFG.get("google_place_id"):
+        return f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={lat}%2C{lng}&navigate=yes"
+    return f"https://waze.com/ul?ll={lat},{lng}&navigate=yes"
+
+
 def footer(lang):
     """The footer as buttons, grouped: talk to us, find us, follow, your orders and the app; privacy as a small line."""
     t = T[lang]
@@ -883,7 +891,8 @@ def footer(lang):
     groups = [
         a("phone", "tel:" + CFG["phone"], esc(CFG["phone_display"]), True)
         + a("wa", "https://wa.me/" + CFG["whatsapp"], "WhatsApp " + f'<bdi dir="ltr">{esc(CFG.get("whatsapp_display", ""))}</bdi>'),
-        a("pin", CFG["maps_url"], esc(t["map"])) + a("star", CFG.get("review_url") or CFG["maps_url"], esc(t["review"])),
+        a("pin", CFG["maps_url"], esc(t["map"])) + a("waze", waze_url(), esc(t["foot_waze"]))
+        + a("star", CFG.get("review_url") or CFG["maps_url"], esc(t["review"])),
         (a("insta", f"https://www.instagram.com/{insta}/", "@" + esc(insta), True) if insta else "") + play
         + f'<button type="button" class="fb" data-open-orders-foot><span class="fb-ic">{ic("orders")}</span><span>{esc(t["my_orders"])}</span></button>'
         + f'<button type="button" class="fb fb-app" data-install><span class="fb-ic">{ic("app")}</span><span>{esc(t["app_link"])}</span></button>',

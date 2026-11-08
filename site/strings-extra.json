@@ -106,7 +106,8 @@
     "view_cart": "عرض السلة",
     "or_wa": "أو اطلب عبر واتساب",
     "buy_trust": "الدفع عند الاستلام أو بتحويل بنكي · أو استلم طلبك من المتجر",
-    "qty_pick": "الكمية"
+    "qty_pick": "الكمية",
+    "foot_waze": "الطريق عبر Waze"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -215,7 +216,8 @@
     "view_cart": "Voir le panier",
     "or_wa": "ou commander sur WhatsApp",
     "buy_trust": "Paiement à la livraison ou par virement · ou retrait au magasin",
-    "qty_pick": "Quantité"
+    "qty_pick": "Quantité",
+    "foot_waze": "Itinéraire Waze"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -324,7 +326,8 @@
     "view_cart": "View cart",
     "or_wa": "or order on WhatsApp",
     "buy_trust": "Pay on delivery or by bank transfer · or collect at the shop",
-    "qty_pick": "Quantity"
+    "qty_pick": "Quantity",
+    "foot_waze": "Directions on Waze"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -433,6 +436,7 @@
     "view_cart": "Ver la cesta",
     "or_wa": "o pide por WhatsApp",
     "buy_trust": "Pago a la entrega o por transferencia · o recógelo en la tienda",
-    "qty_pick": "Cantidad"
+    "qty_pick": "Cantidad",
+    "foot_waze": "Cómo llegar con Waze"
   }
 }
