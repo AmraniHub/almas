@@ -595,17 +595,37 @@ def head(lang, title, desc, path, image, extra=""):
 </head>"""
 
 
+# Flags drawn as SVG: emoji flags show as two letters on Windows and on some Android phones.
+# Arabic carries Morocco's flag, since the shop and its customers are Moroccan.
+FLAGS = {
+    "ar": '<rect width="30" height="20" fill="#c1272d"/><path d="M15 4.8L18.06 14.21L10.06 8.39H19.94L11.94 14.21Z" fill="none" stroke="#006233" stroke-width=".9"/>',
+    "fr": '<rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ed2939"/>',
+    "en": '<rect width="30" height="20" fill="#012169"/><path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/>'
+          '<path d="M0 0L30 20M30 0L0 20" stroke="#c8102e" stroke-width="1.6"/><path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6.5"/>'
+          '<path d="M15 0v20M0 10h30" stroke="#c8102e" stroke-width="3.6"/>',
+    "es": '<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>',
+}
+
+
+def flag(l):
+    return f'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true">{FLAGS[l]}</svg>'
+
+
 def header(lang, path):
     t = T[lang]
     current = ' aria-current="true"'
-    switch = "".join(f'<a href="{url(l, path)}" hreflang="{l}" lang="{l}"{current if l == lang else ""}>'
-                     f'<span class="long">{esc(T[l]["langname"])}</span><span class="short">{esc(T[l]["short"])}</span></a>' for l in LANGS)
+    items = "".join(f'<a href="{url(l, path)}" hreflang="{l}" lang="{l}"{current if l == lang else ""}>'
+                    f'{flag(l)}<span>{esc(T[l]["langname"])}</span></a>' for l in LANGS)
+    switch = (f'<details class="langs" data-langs><summary aria-label="{esc(t["langname"])}">{flag(lang)}'
+              f'<span class="long">{esc(t["langname"])}</span><span class="short">{esc(t["short"])}</span>'
+              f'<svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>'
+              f'<div class="langs-menu">{items}</div></details>')
     return f"""<header class="top">
 <div class="wrap top-in">
 <a class="brand" href="{url(lang)}"><img src="{PREFIX}/img/logo-192.png" alt="" width="40" height="40"><span><b>{esc(t['name'])}</b><small>{esc(t['kicker'])}</small></span></a>
 <button class="search-btn" type="button" data-open-search aria-label="{esc(t['search_btn'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
 <a class="nav-pro" href="{url(lang, 'pro/')}">{esc(t['nav_pro'])}</a>
-<nav class="langs" aria-label="Language">{switch}</nav>
+<nav class="langs-nav" aria-label="Language">{switch}</nav>
 <button class="cart-btn" type="button" data-open-cart aria-label="{esc(t['cart'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span class="count" data-cart-count>0</span></button>
 </div>
 </header>"""

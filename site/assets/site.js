@@ -920,6 +920,12 @@
   if (asForm) asForm.onsubmit = function (e) { e.preventDefault(); var i = $("input", asForm); ask(i.value); i.value = ""; };
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && as && !as.hidden) asShow(false); });
 
+  /* language dropdown: closes on a tap outside it or on Escape */
+  $$("[data-langs]").forEach(function (d) {
+    document.addEventListener("click", function (e) { if (d.open && !d.contains(e.target)) d.open = false; });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && d.open) { d.open = false; d.querySelector("summary").focus(); } });
+  });
+
   /* open now / closed: Morocco keeps UTC+0 all year since September 2026, so the shop's hours are read in UTC */
   $$("[data-open-badge]").forEach(function (b) {
     var now = new Date(), m = now.getUTCHours() * 60 + now.getUTCMinutes();
