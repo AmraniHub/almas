@@ -187,7 +187,7 @@ test("public reviews show nothing pending", async () => {
   const d = await r.json();
   assert.equal(d.count, 0);
   assert.deepEqual(d.reviews, []);
-  assert.equal(r.headers.get("Cache-Control"), "public, max-age=60");
+  assert.equal(r.headers.get("Cache-Control"), "public, max-age=15");
   assert.deepEqual(await (await call("/public/ratings")).json(), {});
 });
 
@@ -200,7 +200,7 @@ test("CORS: the site and localhost are allowed, anyone else is not", async () =>
   assert.equal(await get("https://almas-epices.vercel.app.evil.example"), null);
   assert.equal(await get("http://localhost.evil.example"), null);
   const r = await call("/public/ratings", { headers: { Origin: "https://almas-epices.vercel.app" } });
-  assert.equal(r.headers.get("Cache-Control"), "public, max-age=300");
+  assert.equal(r.headers.get("Cache-Control"), "public, max-age=60");
 });
 
 test("admin API refuses a request without a session", async () => {

@@ -344,13 +344,13 @@ async function publicApi(req, env, url) {
     return json({
       product, avg: round1(a.a), count: a.n || 0,
       reviews: (rows.results || []).map((r) => ({ rating: r.rating, text: r.text, name: r.name, date: String(r.at).slice(0, 10), verified: r.verified ? 1 : 0, lang: r.lang })),
-    }, 200, { ...c, "Cache-Control": "public, max-age=60" });
+    }, 200, { ...c, "Cache-Control": "public, max-age=15" });
   }
   if (url.pathname === "/public/ratings") {
     const rows = await all(env, "select product, avg(rating) a, count(*) n from reviews where status = 'published' group by product");
     const out = {};
     for (const r of rows) out[r.product] = { avg: round1(r.a), count: r.n };
-    return json(out, 200, { ...c, "Cache-Control": "public, max-age=300" });
+    return json(out, 200, { ...c, "Cache-Control": "public, max-age=60" });
   }
   return json({ ok: false, error: "not found" }, 404, c);
 }

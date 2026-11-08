@@ -5,6 +5,22 @@
   "use strict";
   var A = window.ALMAS;
   if (!A) return;
+  /* messages to the visitor (order failed, link copied, microphone refused...) are an on-page notice, not a pop-up:
+     the Android app's WebView can drop window.alert() silently, so a customer would never learn the order failed */
+  var notice = function (msg) {
+    var n = document.querySelector(".notice");
+    if (!n) {
+      n = document.createElement("div");
+      n.className = "notice"; n.setAttribute("role", "alert");
+      n.onclick = function () { n.classList.remove("on"); };
+      document.body.appendChild(n);
+    }
+    n.textContent = String(msg == null ? "" : msg);
+    n.classList.add("on");
+    clearTimeout(n._t);
+    n._t = setTimeout(function () { n.classList.remove("on"); }, Math.min(9000, 3500 + n.textContent.length * 40));
+  };
+  try { window.alert = notice; } catch (e) { /* keep the browser's own */ }
   var KEY = "almas-cart-v1";
   var cart = {};
   var showQty = null; // the product page's quantity display, refreshed when live prices arrive
@@ -734,10 +750,21 @@
     }).catch(function () {});
     var rf = $("[data-rv-form]", rv), ro = $("[data-rv-open]", rv);
     if (ro && rf) ro.onclick = function () { rf.hidden = false; ro.hidden = true; var t = $("textarea", rf); if (t) t.focus(); };
+    // while the form is on screen the floating buttons and the buy bar step aside: they covered the fifth star
+    if (rf && "IntersectionObserver" in window) new IntersectionObserver(function (es) {
+      es.forEach(function (x) { document.body.classList.toggle("writing", x.isIntersecting && !rf.hidden); });
+    }, { threshold: 0.05 }).observe(rf);
+    // problems are said inside the form: an alert() is silently dropped by the Android app's WebView
+    var rvErr = document.createElement("p");
+    rvErr.className = "rv-err"; rvErr.setAttribute("role", "alert"); rvErr.hidden = true;
+    if (rf) { var sendBtn = $("[data-rv-send]", rf); rf.insertBefore(rvErr, sendBtn || null); }
+    var rvSay = function (msg) { rvErr.textContent = msg || ""; rvErr.hidden = !msg; };
+    if (rf) $$("input, textarea", rf).forEach(function (x) { x.addEventListener("input", function () { rvSay(""); }); x.addEventListener("change", function () { rvSay(""); }); });
     if (rf) rf.onsubmit = function (e) {
       e.preventDefault();
       var f = new FormData(rf), btn = $("[data-rv-send]", rf);
-      if (!f.get("rating") || String(f.get("text") || "").trim().length < 3) return alert(A.s.rv_need);
+      if (!f.get("rating") || String(f.get("text") || "").trim().length < 3 || !String(f.get("name") || "").trim()) { rvSay(A.s.rv_need); var st = $(".stars-in input", rf); if (!f.get("rating") && st) st.focus(); return; }
+      rvSay("");
       var label = btn ? btn.textContent : "";
       if (btn) { btn.disabled = true; btn.textContent = A.s.sending; }
       var body = { lang: A.lang, product: rid, rating: +f.get("rating"), text: f.get("text"), name: f.get("name"),
@@ -750,7 +777,7 @@
           if (btn) btn.hidden = true;
           $("[data-rv-done]", rf).hidden = false;
         })
-        .catch(function () { if (btn) { btn.disabled = false; btn.textContent = label; } alert(A.s.rv_fail); });
+        .catch(function () { if (btn) { btn.disabled = false; btn.textContent = label; } rvSay(A.s.rv_fail); });
     };
   }
 

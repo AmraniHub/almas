@@ -1199,7 +1199,7 @@ def reviews_block(lang, p):
 <div class="rv-head"><h2>{esc(t['rv_title'])}</h2><p class="rv-sum" data-rv-sum></p>
 <button type="button" class="btn ghost" data-rv-open>{esc(t['rv_write'])}</button></div>
 <ul class="rv-list" data-rv-list><li class="rv-none">{esc(t['rv_none'])}</li></ul>
-<form class="rv-form" data-rv-form hidden>
+<form class="rv-form" data-rv-form novalidate hidden>
 <fieldset class="rv-stars"><legend>{esc(t['rv_rating'])}</legend><div class="stars-in" dir="ltr">{stars}</div></fieldset>
 <label>{esc(t['rv_text'])}<textarea name="text" rows="3" maxlength="600" required></textarea></label>
 <label>{esc(t['rv_name'])}<input name="name" maxlength="80" autocomplete="name" required></label>
