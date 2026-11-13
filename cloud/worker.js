@@ -245,6 +245,7 @@ async function ingestPaid(env, b) {
     "update orders set paid = 1, paid_at = coalesce(paid_at, ?), stripe_session = coalesce(nullif(?, ''), stripe_session), " +
     "admin_note = ?, updated_at = ? where id = ?"
   ).bind(at, text(b.stripe_session, 200), note, at, id).run();
+  await syncOrderPoints(env, id);
   return { ok: true };
 }
 
@@ -298,6 +299,130 @@ async function ingestReview(env, b) {
   return { ok: true, verified };
 }
 
+// ---------- loyalty points ----------
+// Earned when the owner marks an order delivered (a card order also has to be paid): 1 point per 10 MAD actually
+// paid, so the part paid with points earns nothing. Spent in steps of 100 points = 10 MAD, from a balance of 100,
+// on at most 10% of an order (a saffron-only basket, the thinnest margin at the till, still sells above cost).
+// The balance lapses 12 months after the last order that earned points. Points have no cash value and are not
+// sold or transferred. The same numbers are in site/config.json "points"; a test keeps the two equal.
+const POINTS = { mad_per_point: 10, step: 100, step_mad: 10, min: 100, max_share: 0.1, life_days: 365 };
+
+const earnedFor = (total) => Math.max(0, Math.floor(Number(total || 0) / POINTS.mad_per_point + 1e-9));
+// how many points an order of `total` MAD may spend, out of `balance`: whole steps only
+function spendable(balance, total) {
+  if (balance < POINTS.min) return 0;
+  const byBalance = Math.floor(balance / POINTS.step);
+  const byOrder = Math.floor((Number(total || 0) * POINTS.max_share) / POINTS.step_mad + 1e-9);
+  return Math.max(0, Math.min(byBalance, byOrder)) * POINTS.step;
+}
+const pointsMad = (pts) => Math.round((pts / POINTS.step) * POINTS.step_mad * 100) / 100;
+
+// The balance of one phone, after writing off points that lapsed. pending = points of orders on their way.
+async function pointsState(env, pn, history = 0) {
+  const lifeMs = POINTS.life_days * 86400000;
+  // a hold whose order never arrived (the back office was unreachable when the order was filed) goes back after a day
+  await env.DB.prepare("delete from points where phone_norm = ? and kind = 'redeem' and at < ? and order_id not in (select id from orders)")
+    .bind(pn, new Date(Date.now() - 86400000).toISOString()).run();
+  const row = await first(env,
+    "select coalesce(sum(points), 0) bal, max(case when points > 0 and kind in ('earn', 'adjust') then at end) last from points where phone_norm = ?", pn);
+  let balance = row ? Number(row.bal) : 0;
+  const last = row && row.last ? row.last : null;
+  if (balance > 0 && last && Date.parse(last) + lifeMs < Date.now()) {
+    await env.DB.prepare(
+      "insert into points (phone_norm, kind, points, order_id, mad, note, at) " +
+      "select ?, 'expire', -s, '', 0, 'lapsed: no order earned points for 12 months', ? from (select coalesce(sum(points), 0) s from points where phone_norm = ?) where s > 0"
+    ).bind(pn, nowIso(), pn).run();
+    balance = 0;
+  }
+  const open = await all(env,
+    "select o.total from orders o where o.phone_norm = ? and o.status not in ('delivered', 'cancelled') and o.at >= ? " +
+    "and not exists (select 1 from points p where p.order_id = o.id and p.kind = 'earn')", pn, dayStart(90));
+  const state = {
+    balance, mad: pointsMad(Math.floor(balance / POINTS.step) * POINTS.step),
+    pending: open.reduce((s, o) => s + earnedFor(o.total), 0),
+    expires: balance > 0 && last ? new Date(Date.parse(last) + lifeMs).toISOString().slice(0, 10) : "",
+    rules: POINTS,
+  };
+  if (history) {
+    state.history = await all(env, "select kind, points, order_id, mad, note, at from points where phone_norm = ? order by at desc, id desc limit ?", pn, history);
+  }
+  return state;
+}
+
+// The phone must have placed one of the orders the browser remembers: knowing a number alone shows nothing.
+async function phoneProof(env, pn, ids) {
+  const list = (Array.isArray(ids) ? ids : []).map((x) => text(x, 40)).filter((x) => ID_RE.test(x)).slice(0, 30);
+  if (pn.length < 9 || !list.length) return false;
+  return !!(await first(env, `select 1 x from orders where phone_norm = ? and id in (${list.map(() => "?").join(",")}) limit 1`, pn, ...list));
+}
+
+// /ingest/points-redeem, from /api/order before the shop is told: hold the points for the order being placed.
+// Returns the points and MAD actually taken (0 when the customer has no proof, too few points, or a small basket).
+async function ingestRedeem(env, b) {
+  const id = text(b.id, 40);
+  if (!ID_RE.test(id)) throw new Http(400, "id");
+  const pn = phoneNorm(text(b.phone, 30));
+  const total = num(b.total, 0, 100000000);
+  if (pn.length < 9 || total === null) throw new Http(400, "phone and total");
+  const held = await first(env, "select points, mad from points where order_id = ? and kind = 'redeem'", id);
+  if (held) return { ok: true, points: -held.points, discount: held.mad };
+  if (!(await phoneProof(env, pn, b.known))) return { ok: true, points: 0, discount: 0, reason: "proof" };
+  const want = Math.max(0, Math.floor(Number(b.points) || 0));
+  const st = await pointsState(env, pn);
+  const pts = Math.min(spendable(st.balance, total), Math.floor(want / POINTS.step) * POINTS.step);
+  if (pts <= 0) return { ok: true, points: 0, discount: 0, reason: st.balance < POINTS.min ? "balance" : "basket" };
+  const discount = pointsMad(pts);
+  // one statement: two orders placed at the same moment cannot both spend the same points
+  const r = await env.DB.prepare(
+    "insert into points (phone_norm, kind, points, order_id, mad, note, at) select ?, 'redeem', ?, ?, ?, '', ? " +
+    "where (select coalesce(sum(points), 0) from points where phone_norm = ?) >= ?"
+  ).bind(pn, -pts, id, discount, nowIso(), pn, pts).run();
+  if (!r.meta || !r.meta.changes) return { ok: true, points: 0, discount: 0, reason: "balance" };
+  return { ok: true, points: pts, discount, balance: st.balance - pts };
+}
+
+// /ingest/points-release: the order could not be placed after all (the shop could not be told): give the points back
+async function ingestRelease(env, b) {
+  const id = text(b.id, 40);
+  if (!ID_RE.test(id)) throw new Http(400, "id");
+  if (await first(env, "select 1 x from orders where id = ? and status <> 'cancelled'", id)) return { ok: true, released: 0 };
+  const r = await env.DB.prepare("delete from points where order_id = ? and kind = 'redeem'").bind(id).run();
+  return { ok: true, released: r.meta ? r.meta.changes : 0 };
+}
+
+// After any change to an order: delivered (and paid, for a card) = its points are earned; cancelled = nothing
+// earned and the points it spent come back; any other status = not earned yet. Idempotent.
+async function syncOrderPoints(env, id) {
+  const o = await first(env, "select id, phone_norm, status, pay, paid, total from orders where id = ?", id);
+  if (!o || o.status === "cancelled") {
+    await env.DB.prepare("delete from points where order_id = ? and kind in ('earn', 'redeem')").bind(id).run();
+    return;
+  }
+  const earns = o.status === "delivered" && (o.pay !== "card" || o.paid) && earnedFor(o.total) > 0;
+  if (!earns) {
+    await env.DB.prepare("delete from points where order_id = ? and kind = 'earn'").bind(id).run();
+    return;
+  }
+  if (await first(env, "select 1 x from points where order_id = ? and kind = 'earn'", id)) return;
+  await pointsState(env, o.phone_norm); // a balance that had lapsed is written off before the new points arrive
+  await env.DB.prepare("insert or ignore into points (phone_norm, kind, points, order_id, mad, note, at) values (?, 'earn', ?, ?, ?, '', ?)")
+    .bind(o.phone_norm, earnedFor(o.total), id, o.total, nowIso()).run();
+}
+
+async function adjustPoints(env, b) {
+  const pn = phoneNorm(text(b.phone_norm, 20));
+  const pts = Math.trunc(Number(b.points));
+  const note = text(b.note, 200);
+  if (pn.length < 9) throw new Http(400, "phone");
+  if (!Number.isFinite(pts) || !pts || Math.abs(pts) > 100000) throw new Http(400, "points: a whole number, not 0");
+  if (!note) throw new Http(400, "say why in the note");
+  const st = await pointsState(env, pn);
+  if (st.balance + pts < 0) throw new Http(400, `the balance is ${st.balance}: it cannot go below 0`);
+  await env.DB.prepare("insert into points (phone_norm, kind, points, order_id, mad, note, at) values (?, 'adjust', ?, '', 0, ?, ?)")
+    .bind(pn, pts, note, nowIso()).run();
+  return { ok: true, points: await pointsState(env, pn, 100) };
+}
+
 // ---------- public (read by the website, CORS) ----------
 
 function cors(req) {
@@ -331,6 +456,21 @@ async function publicApi(req, env, url) {
     const orders = {};
     for (const r of rows) orders[r.id] = { status: r.status, paid: r.paid ? 1 : 0 };
     return json({ ok: true, orders }, 200, { ...c, "Cache-Control": "no-store" });
+  }
+  // The visitor's points: the same proof as "My orders" (the phone AND one of its order numbers), same rate limit.
+  if (url.pathname === "/public/points") {
+    if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405, c);
+    const b = await body(req);
+    const pn = phoneNorm(text(b.phone, 30));
+    const iph = await ipHash(env, req.headers.get("CF-Connecting-IP") || "");
+    const t = nowSec(), k = "mine:" + iph;
+    const n = await first(env, "select count(*) n from hits where k = ? and at > ?", k, t - 3600);
+    if (n && n.n >= 60) return json({ ok: false, error: "slow down" }, 429, c);
+    await env.DB.prepare("insert into hits (k, at) values (?, ?)").bind(k, t).run();
+    if (!(await phoneProof(env, pn, b.ids))) return json({ ok: false, error: "unknown" }, 404, { ...c, "Cache-Control": "no-store" });
+    const st = await pointsState(env, pn, 10);
+    st.history = st.history.map((r) => ({ kind: r.kind, points: r.points, order: r.order_id, date: String(r.at).slice(0, 10) }));
+    return json({ ok: true, ...st }, 200, { ...c, "Cache-Control": "no-store" });
   }
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
   if (url.pathname === "/public/reviews") {
@@ -596,6 +736,12 @@ async function overview(env) {
     standing_due: (await all(env, "select * from standing where status = 'active' and next_date <> '' and next_date <= ? order by next_date limit 30",
       addDays(ymd(new Date()), 1))).map(standingRow),
     standing_pending: ((await first(env, "select count(*) n from standing where status = 'pending'")) || {}).n || 0,
+    // what customers could still take off future orders (an upper bound: lapsed balances are written off lazily)
+    points_out: await (async () => {
+      const r = await first(env, "select coalesce(sum(points), 0) p, count(distinct phone_norm) n from points");
+      const p = r ? Number(r.p) : 0;
+      return { points: p, customers: r ? r.n : 0, mad: pointsMad(p), rules: POINTS };
+    })(),
   };
 }
 
@@ -625,12 +771,14 @@ async function listOrders(env, p) {
 async function getOrder(env, id) {
   const o = await first(env, "select * from orders where id = ?", id);
   if (!o) throw new Http(404, "no such order");
-  const [items, cust, revs] = await env.DB.batch([
+  const [items, cust, revs, pts] = await env.DB.batch([
     env.DB.prepare("select * from order_items where order_id = ? order by idx").bind(id),
     env.DB.prepare("select c.*, (select count(*) from orders where phone_norm = c.phone_norm) orders from customers c where phone_norm = ?").bind(o.phone_norm),
     env.DB.prepare("select id, product, rating, status, verified from reviews where order_id = ? order by id").bind(id),
+    env.DB.prepare("select kind, points, mad, at from points where order_id = ? order by id").bind(id),
   ]);
-  return { ok: true, order: o, items: items.results || [], customer: (cust.results || [])[0] || null, reviews: revs.results || [] };
+  return { ok: true, order: o, items: items.results || [], customer: (cust.results || [])[0] || null, reviews: revs.results || [],
+    points: pts.results || [], points_rules: POINTS };
 }
 
 async function updateOrder(env, b) {
@@ -652,6 +800,7 @@ async function updateOrder(env, b) {
   args.push(nowIso(), id);
   const r = await env.DB.prepare("update orders set " + sets.join(", ") + " where id = ?").bind(...args).run();
   if (!r.meta || !r.meta.changes) throw new Http(404, "no such order");
+  await syncOrderPoints(env, id);
   return getOrder(env, id);
 }
 
@@ -662,6 +811,7 @@ async function deleteOrder(env, b) {
     env.DB.prepare("delete from orders where id = ?").bind(id),
   ]);
   if (!res[1].meta || !res[1].meta.changes) throw new Http(404, "no such order");
+  await syncOrderPoints(env, id); // the order is gone: what it earned goes, what it spent comes back
   return { ok: true };
 }
 
@@ -696,7 +846,7 @@ async function getCustomer(env, pn) {
     env.DB.prepare("select id, at, total, status, pay, paid from orders where phone_norm = ? order by at desc limit 200").bind(pn),
     env.DB.prepare("select id, at, type, business, status from quotes where phone_norm = ? order by at desc limit 200").bind(pn),
   ]);
-  return { ok: true, customer: c, orders: orders.results || [], quotes: quotes.results || [] };
+  return { ok: true, customer: c, orders: orders.results || [], quotes: quotes.results || [], points: await pointsState(env, pn, 100) };
 }
 
 async function updateCustomer(env, b) {
@@ -932,6 +1082,7 @@ async function admin(req, env, url) {
       case "/admin/api/standing": return json(await updateStanding(env, b));
       case "/admin/api/standing/run": return json(await runStanding(env, b));
       case "/admin/api/standing/delete": return json(await deleteStanding(env, b));
+      case "/admin/api/points": return json(await adjustPoints(env, b));
       case "/admin/api/sheet": return json(await sheetConnect(env, b));
       case "/admin/api/sheet/test": { const r = await sheetSend(env, "test", [[nowIso(), "Test from the Almas back office."]]); if (!r.ok) throw new Http(400, r.error); return json(r); }
       case "/admin/api/sheet/backfill": return json(await sheetBackfill(env));
@@ -1116,7 +1267,8 @@ async function route(req, env) {
     if (!(await secretEquals(env, req.headers.get("X-Almas-Secret"), env.INGEST_SECRET))) throw new Http(401, "secret");
     const b = await body(req);
     const kinds = { "/ingest/order": ["order", ingestOrder], "/ingest/paid": [null, ingestPaid], "/ingest/quote": ["quote", ingestQuote],
-      "/ingest/review": ["review", ingestReview], "/ingest/standing": ["standing", ingestStanding] };
+      "/ingest/review": ["review", ingestReview], "/ingest/standing": ["standing", ingestStanding],
+      "/ingest/points-redeem": [null, ingestRedeem], "/ingest/points-release": [null, ingestRelease] };
     const k = kinds[path];
     if (!k) throw new Http(404, "not found");
     const res = await k[1](env, b);

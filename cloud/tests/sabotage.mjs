@@ -36,6 +36,11 @@ const CASES = [
   ["paid_at overwritten", "paid = 1, paid_at = coalesce(paid_at, ?)", "paid = 1, paid_at = ?"],
   ["invisible marks not cleaned from the key", "invisibleClean(b.key)", 'String(b.key || "")'],
   ["published reviews dropped from ratings", "from reviews where status = 'published' group by product\");", "from reviews where status = 'nothing' group by product\");"],
+  ["points balance check removed", "where (select coalesce(sum(points), 0) from points where phone_norm = ?) >= ?\"", "where ? <> '' or ? > 0\""],
+  ["points earned before delivery", 'o.status === "delivered" && (o.pay', 'o.status !== "cancelled" && (o.pay'],
+  ["points spent without the phone's order number", "if (!(await phoneProof(env, pn, b.known))) return", "if (false) return"],
+  ["points 10% cap removed", "Number(total || 0) * POINTS.max_share", "Number(total || 0) * 100"],
+  ["lapsed points kept", "if (balance > 0 && last && Date.parse(last) + lifeMs < Date.now()) {", "if (false) {"],
 ];
 
 const dir = mkdtempSync(join(tmpdir(), "almas-sabotage-"));
@@ -54,7 +59,7 @@ for (const [label, ...pairs] of CASES) {
   }
   const file = join(dir, "worker.js");
   writeFileSync(file, broken, "utf8");
-  const run = spawnSync(process.execPath, ["--test", join(HERE, "worker.test.mjs")], {
+  const run = spawnSync(process.execPath, ["--test", join(HERE, "worker.test.mjs"), join(HERE, "points.test.mjs")], {
     env: { ...process.env, ALMAS_WORKER_SRC: file }, encoding: "utf8",
   });
   const failed = (run.stdout.match(/^# fail (\d+)/m) || [])[1];

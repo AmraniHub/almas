@@ -268,7 +268,8 @@ async function overviewView() {
       kpi("Orders to handle", d.to_handle, "status new", "#orders?status=new", d.to_handle > 0),
       kpi("Unpaid bank transfers", d.unpaid_bank.orders, money(d.unpaid_bank.amount), "#orders?pay=bank&paid=0", d.unpaid_bank.orders > 0),
       kpi("Pending reviews", d.pending_reviews, "to publish or hide", "#reviews", d.pending_reviews > 0),
-      kpi("New quote requests", d.new_quotes, "restaurants, hotels, events", "#quotes?status=new", d.new_quotes > 0)),
+      kpi("New quote requests", d.new_quotes, "restaurants, hotels, events", "#quotes?status=new", d.new_quotes > 0),
+      d.points_out ? kpi("Loyalty points out", d.points_out.points, "worth up to " + money(d.points_out.mad) + " · " + d.points_out.customers + " customers") : null),
     (d.standing_due || []).length || d.standing_pending ? h("div", { class: "card" }, h("h2", {}, "Standing orders"),
       d.standing_pending ? h("p", {}, h("a", { href: "#standing?status=pending" }, d.standing_pending + (d.standing_pending === 1 ? " new request" : " new requests")), " waiting for your OK.") : null,
       (d.standing_due || []).length ? h("div", { class: "rows" }, d.standing_due.map(standingRowView)) : null) : null,
@@ -356,7 +357,8 @@ function ordersView(params) {
   h("div", { class: "actions noprint" }, h("a", { class: "btn ghost small", href: "/admin/export/orders.csv" }, "Export CSV")));
 }
 
-function itemsTable(items, total) {
+function itemsTable(items, total, points) {
+  const spent = (points || []).find((r) => r.kind === "redeem");
   return h("table", {},
     h("thead", {}, h("tr", {}, h("th", {}, "Product"), h("th", { class: "num" }, "Qty"), h("th", { class: "num" }, "Unit price"), h("th", { class: "num" }, "Line"))),
     h("tbody", {}, items.map((i) => h("tr", {},
@@ -364,7 +366,8 @@ function itemsTable(items, total) {
       h("td", { class: "num" }, qty(i.qty, i.unit)),
       h("td", { class: "num" }, money(i.unit_price) + (i.unit === "kg" ? "/kg" : "")),
       h("td", { class: "num" }, money(i.line))))),
-    h("tfoot", {}, h("tr", {}, h("td", { colspan: 3 }, "Total"), h("td", { class: "num" }, money(total)))));
+    h("tfoot", {}, spent ? h("tr", {}, h("td", { colspan: 3 }, "Loyalty points (" + -spent.points + ")"), h("td", { class: "num" }, "-" + money(spent.mad))) : null,
+      h("tr", {}, h("td", { colspan: 3 }, spent ? "To collect" : "Total"), h("td", { class: "num" }, money(total)))));
 }
 
 async function orderView(id) {
@@ -388,7 +391,7 @@ async function orderView(id) {
     h("div", { class: "actions" }, chip(o.status), o.pay !== "cod" ? chip(o.paid ? "paid" : "unpaid") : null, h("span", { class: "muted small" }, when(o.at))),
     h("div", { class: "grid2" },
       h("div", {},
-        h("div", { class: "card" }, h("h2", {}, "Items"), itemsTable(d.items, o.total),
+        h("div", { class: "card" }, h("h2", {}, "Items"), itemsTable(d.items, o.total, d.points),
           h("div", { class: "actions" },
             waButton(o.phone_norm, orderMessage(o), "WhatsApp confirmation"),
             h("a", { class: "btn ghost", href: "#slip/" + encodeURIComponent(o.id) }, "Packing slip"))),
@@ -413,6 +416,7 @@ async function orderView(id) {
             o.source ? [h("dt", {}, "Source"), h("dd", {}, o.source)] : null),
           d.customer ? h("div", { class: "actions" }, h("a", { class: "btn ghost small", href: "#customer/" + encodeURIComponent(d.customer.phone_norm) },
             "Customer file (" + d.customer.orders + " order" + (d.customer.orders === 1 ? "" : "s") + ")")) : null),
+        h("div", { class: "card" }, h("h2", {}, "Loyalty points"), orderPoints(o, d.points || [], d.points_rules)),
         d.reviews.length ? h("div", { class: "card" }, h("h2", {}, "Reviews from this order"),
           d.reviews.map((r) => h("div", {}, h("span", { class: "stars" }, stars(r.rating)), " ", r.product, " ", chip(r.status), r.verified ? [" ", chip("verified")] : null))) : null,
         h("div", { class: "card noprint" }, h("h2", {}, "Delete"),
@@ -422,6 +426,40 @@ async function orderView(id) {
             toast("Order deleted");
             location.hash = "orders";
           })))));
+}
+
+const POINT_KIND = { earn: "earned", redeem: "spent", adjust: "set by you", expire: "lapsed" };
+function orderPoints(o, rows, rules) {
+  const spent = rows.find((r) => r.kind === "redeem"), earned = rows.find((r) => r.kind === "earn");
+  const due = rules ? Math.floor(Number(o.total || 0) / rules.mad_per_point + 1e-9) : 0;
+  return h("div", {},
+    spent ? h("p", {}, "Paid " + -spent.points + " points = " + money(spent.mad) + " off. The total above is what the customer pays.") : null,
+    earned ? h("p", {}, "Earned " + earned.points + " points (on " + money(earned.mad) + ").")
+      : o.status === "cancelled" ? h("p", { class: "muted" }, "Cancelled: no points earned, and any points it spent went back to the customer.")
+      : h("p", { class: "muted" }, due + " points will be added when you set the status to delivered" + (o.pay === "card" ? " (and the card payment is in)" : "") + "."));
+}
+function pointsCard(c, st) {
+  if (!st) return null;
+  const amount = h("input", { type: "number", step: "1", placeholder: "e.g. 50 or -50", class: "pts-n" });
+  const why = h("input", { maxlength: 200, placeholder: "Why (required), e.g. bought at the shop" });
+  return h("div", { class: "card" }, h("h2", {}, "Loyalty points: " + st.balance),
+    h("p", { class: "small muted" }, (st.mad > 0 ? "Worth " + money(st.mad) + " off future orders"
+      : "Not usable yet: points are spent from " + (st.rules ? st.rules.min : 100)) + (st.expires ? " · lapse on " + st.expires + " unless they order again" : "") +
+      (st.pending ? " · " + st.pending + " more when their open orders are delivered" : "") + "."),
+    (st.history || []).length ? h("table", {}, h("tbody", {}, st.history.map((r) => h("tr", {},
+      h("td", {}, when(r.at, false)), h("td", {}, POINT_KIND[r.kind] || r.kind, r.note ? h("div", { class: "small muted", dir: "auto" }, r.note) : null),
+      h("td", {}, r.order_id ? h("a", { href: "#order/" + encodeURIComponent(r.order_id) }, r.order_id) : ""),
+      h("td", { class: "num" }, (r.points > 0 ? "+" : "") + r.points))))) : h("p", { class: "empty" }, "No points yet."),
+    h("div", { class: "field" }, h("label", {}, "Add or remove points"), h("div", { class: "actions" }, amount, why,
+      h("button", { type: "button", onclick: async () => {
+        try {
+          await api("points", { phone_norm: c.phone_norm, points: Number(amount.value), note: why.value });
+          toast("Points saved");
+          render();
+        } catch (e) {
+          toast(e.message, true);
+        }
+      } }, "Save"))));
 }
 
 async function slipView(id) {
@@ -440,7 +478,7 @@ async function slipView(id) {
         h("dt", {}, "Address"), h("dd", { dir: "auto" }, o.address || "—"),
         h("dt", {}, "Notes"), h("dd", { dir: "auto" }, o.notes || "—"),
         h("dt", {}, "Payment"), h("dd", {}, (PAY[o.pay] || o.pay) + (o.pay === "cod" ? " — collect " + money(o.total) : o.paid ? " — paid" : " — NOT PAID"))),
-      h("h2", {}, "Items"), itemsTable(d.items, o.total)));
+      h("h2", {}, "Items"), itemsTable(d.items, o.total, d.points)));
 }
 
 function customersView(params) {
@@ -487,6 +525,7 @@ async function customerView(pn) {
             h("div", { class: "main" }, h("b", { dir: "auto" }, q.business), " ", h("span", { class: "id" }, q.id), h("div", { class: "small muted" }, when(q.at), " · ", q.type)),
             h("div", { class: "side" }, chip(q.status))))) : h("p", { class: "empty" }, "No quote requests."))),
       h("div", {},
+        pointsCard(c, d.points),
         h("div", { class: "card" }, h("h2", {}, "Customer file"),
           field("Name", f.name), field("Kind", f.kind), field("Business", f.business), field("Tags", f.tags),
           field("Follow up on", f.follow_up), field("Notes", f.notes),

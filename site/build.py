@@ -793,6 +793,38 @@ def pro_page(lang, products, cats):
 """
 
 
+PTS = {k: v for k, v in (CFG.get("points") or {}).items() if not k.startswith("_")}
+if not PTS.get("mad_per_point"):
+    PTS = {}
+
+
+def pts_how(lang):
+    """The points rules, in this language, with the numbers from config.json (the ones the back office applies)."""
+    if not PTS:
+        return ""
+    t = T[lang]
+    fill = {"{per}": PTS["mad_per_point"], "{step}": PTS["step"], "{mad}": PTS["step_mad"], "{min}": PTS["min"],
+            "{share}": round(PTS["max_share"] * 100), "{months}": round(PTS["life_days"] / 30.4)}
+    rules = []
+    for k in ("pts_r1", "pts_r2", "pts_r3", "pts_r4"):
+        line = t[k]
+        for a, b in fill.items():
+            line = line.replace(a, str(b))
+        rules.append(f"<li>{esc(line)}</li>")
+    return f'<details class="pts-how"><summary>{esc(t["pts_how"])}</summary><ul>{"".join(rules)}</ul></details>'
+
+
+def pts_find(lang):
+    """Points on another device (the app and the browser keep separate lists): the phone and one order number."""
+    if not PTS:
+        return ""
+    t = T[lang]
+    return f"""<form class="pts-find" data-pts-find hidden><b>{esc(t['pts_find_t'])}</b><p class="note">{esc(t['pts_find_sub'])}</p>
+<label>{esc(t['f_phone'])}<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required></label>
+<label>{esc(t['pts_find_order'])}<input name="order" required autocapitalize="characters" placeholder="AL-261113-1234" dir="ltr"></label>
+<button class="btn ghost" type="submit">{esc(t['pts_find_go'])}</button><p class="note" data-pts-find-msg hidden></p></form>"""
+
+
 def cart_drawer(lang):
     t = T[lang]
     return widgets(lang) + f"""<div class="search" data-search-panel hidden role="dialog" aria-modal="true" aria-label="{esc(t['search_btn'])}">
@@ -810,8 +842,10 @@ def cart_drawer(lang):
 <div class="drawer-body">
 <div class="orders" data-orders hidden>
 <button type="button" class="back" data-back-cart>← {esc(t['back_cart'])}</button>
+<div class="pts-card" data-pts-card hidden><span class="pts-k">{esc(t['pts_title'])}</span><b data-pts-bal></b><span data-pts-sub></span>{pts_how(lang)}</div>
 <ul class="mo-list" data-mo-list></ul>
 <p class="mo-none" data-mo-none>{esc(t['mo_none'])}</p>
+{pts_find(lang)}
 <p class="note">{esc(t['mo_note'])}</p>
 <button type="button" class="link-btn" data-forget>{esc(t['mo_forget'])}</button>
 </div>
@@ -821,6 +855,12 @@ def cart_drawer(lang):
 <div class="upsell" data-upsell hidden><h3>{esc(t['upsell'])}</h3><ul data-upsell-list></ul></div>
 <div data-cart-form hidden>
 <p class="total"><span>{esc(t['subtotal'])}</span><span class="tot-r"><b data-cart-total></b><small class="eur" data-eur-total title="{esc(t['eur_note'])}"></small></span></p>
+<div class="pts" data-pts hidden>
+<label class="pts-use" data-pts-use hidden><input type="checkbox" data-pts-box checked> <span data-pts-use-text></span></label>
+<p class="total pts-due" data-pts-due hidden><span>{esc(t['pts_due'])}</span><b data-pts-due-v></b></p>
+<p class="pts-earn"><span data-pts-earn></span> <small data-pts-short></small></p>
+{pts_how(lang)}
+</div>
 <form data-order-form>
 <p class="saved-me" data-saved-me hidden>{esc(t['saved_me'])} <button type="button" class="link-btn" data-clear-me>{esc(t['clear_me'])}</button></p>
 <label>{esc(t['f_name'])}<input name="name" autocomplete="name" required></label>
@@ -912,7 +952,7 @@ def page_data(lang, products, cats):
     data = {
         "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"], "api": CFG.get("order_api", ""),
         "qapi": CFG.get("quote_api", ""), "rapi": CFG.get("review_api", ""), "aapi": CFG.get("assistant_api", ""),
-        "cloud": CFG.get("cloud_url", ""), "eur": round(1 / MAD_PER_EUR, 5),
+        "cloud": CFG.get("cloud_url", ""), "eur": round(1 / MAD_PER_EUR, 5), "pts": PTS,
         "packs": {k["id"]: {"items": k["items"], "when": k["when"], "badge": k["badge"]} for k in PACKS["packs"]},
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
@@ -924,7 +964,9 @@ def page_data(lang, products, cats):
                                 "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
                                 "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no",
                                 "sh_btn", "sh_title", "sh_more", "sh_text", "sh_saved", "name", "kicker",
-                                "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen", "in_cart", "order_now")},
+                                "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen", "in_cart", "order_now",
+                                "pts_earn", "pts_use", "pts_bal", "pts_worth", "pts_pend", "pts_exp", "pts_short", "pts_used",
+                                "pts_none", "pts_later", "pts_due", "pts_find_no")},
         "maps": CFG["maps_url"], "pro": url(lang, "pro/"),
         "waze": (f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={CFG['geo'][0]}%2C{CFG['geo'][1]}&navigate=yes" if CFG.get("google_place_id")
                  else f"https://waze.com/ul?ll={CFG['geo'][0]},{CFG['geo'][1]}&navigate=yes"),

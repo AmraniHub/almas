@@ -126,6 +126,7 @@
     var te = $("[data-eur-total]");
     if (te) te.textContent = eur(total());
     renderUpsell();
+    renderPoints();
   }
 
   /* upsell: what goes with the cart, from the shelves that complete it, best sellers first */
@@ -505,7 +506,7 @@
 
   /* the order: sent to the shop (Telegram, through /api/order, priced again there from the till), then a
      confirmation; WhatsApp carries the same text, the app's layout with the till's Arabic name on every line */
-  function orderText(f, number) {
+  function orderText(f, number, d) {
     var s = A.s, ids = Object.keys(cart);
     var lines = [s.order_head + " (" + s.o_from + ")", ""];
     if (number) lines.push(s.o_number + ": " + number);
@@ -521,6 +522,7 @@
       lines.push("• " + amount(id, cart[id]) + " " + (p.t || p.ar) + (p.t === p.n ? "" : " (" + p.n + ")") + " — " + money(cart[id] * p.price));
     });
     lines.push("", "*" + s.o_total + ": " + money(total()) + "*");
+    if (d && d.points_used) lines.push("🎁 " + s.pts_used.replace("{p}", d.points_used).replace("{m}", money(d.discount)), "*" + s.pts_due + ": " + money(d.total) + "*");
     return lines.join("\n");
   }
   var form = $("[data-order-form]");
@@ -538,6 +540,8 @@
       var body = { lang: A.lang, name: f.get("name"), phone: f.get("phone"), address: f.get("address"), notes: f.get("notes"),
                    pay: f.get("pay"), website: f.get("website"), dest: f.get("dest"), country: f.get("country"), collector: f.get("collector"), repeat: +f.get("repeat") || 0,
                    items: ids.map(function (id) { return { id: id, q: cart[id] }; }) };
+      var spend = pointsToSpend();
+      if (spend) { body.redeem = spend; body.known = pastOrders().map(function (o) { return o.n; }); }
       var fallback = function () {
         alert(A.s.fail);
         window.location.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, ""));
@@ -553,9 +557,9 @@
           if (d.url) { window.location.href = d.url; return; } // card: Stripe's payment page, then /merci/
           try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }); } catch (err) {}
           var wa = $("[data-done-wa]");
-          if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number));
+          if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number, d));
           $("[data-done-body]").textContent = A.s.done_body.replace("{n}", d.number).replace("{t}", money(d.total)) +
-            (+f.get("repeat") ? " " + A.s.rep_done.replace("{e}", A.s["rep_" + f.get("repeat")]) : "");
+            (+f.get("repeat") ? " " + A.s.rep_done.replace("{e}", A.s["rep_" + f.get("repeat")]) : "") + pointsDone(d, spend);
           var db = $("[data-done-bank]"); if (db) db.hidden = f.get("pay") !== "bank";
           $("[data-cart-form]").hidden = true;
           $("[data-cart-lines]").hidden = true;
@@ -566,7 +570,7 @@
           cart = {}; save();
           var c = $("[data-cart-count]"); if (c) { c.textContent = ""; c.setAttribute("data-zero", ""); }
         })
-        .catch(function () { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } fallback(); });
+        .catch(function (err) { if (window.console) console.error("almas order", err); if (btn) { btn.disabled = false; btn.textContent = A.s.send; } fallback(); });
     };
   }
   /* /pro/: price request from a restaurant, hotel or wedding organiser, to the shop's Telegram */
@@ -1147,7 +1151,7 @@
     catch (e) { return iso.slice(0, 10); }
   }
   function renderOrders(status) {
-    var list = pastOrders(), ul = $("[data-mo-list]"), none = $("[data-mo-none]");
+    var list = pastOrders().filter(function (o) { return !o.found; }), ul = $("[data-mo-list]"), none = $("[data-mo-none]");
     if (!ul) return;
     none.hidden = list.length > 0;
     ul.innerHTML = list.map(function (o, i) {
@@ -1199,6 +1203,104 @@
     renderOrders(null); fg.textContent = A.s.mo_forgot; fg.disabled = true;
   };
   if (/[?&]orders=1/.test(location.search)) setTimeout(showOrders, 50);
+
+  /* Loyalty points: earned on delivered orders, spent from the cart. The balance comes from the back office for the
+     phone remembered on this device, proved by one of its order numbers (the same rule as My orders); the back
+     office decides again what may really be spent when the order is sent. No phone, no orders: only "this order
+     earns N points" is shown. */
+  var PTS = A.pts && A.pts.mad_per_point ? A.pts : null, ptsState = null, ptsAt = 0;
+  function ptsEarn(amount) { return PTS ? Math.max(0, Math.floor(amount / PTS.mad_per_point + 1e-9)) : 0; }
+  function ptsMad(p) { return Math.round(p / PTS.step * PTS.step_mad * 100) / 100; }
+  function ptsSpendable(amount) {
+    if (!PTS || !ptsState || ptsState.balance < PTS.min) return 0;
+    return Math.max(0, Math.min(Math.floor(ptsState.balance / PTS.step), Math.floor(amount * PTS.max_share / PTS.step_mad + 1e-9))) * PTS.step;
+  }
+  function pointsToSpend() {
+    var box = $("[data-pts-box]"), use = $("[data-pts-use]");
+    return PTS && box && use && !use.hidden && box.checked ? ptsSpendable(total()) : 0;
+  }
+  function renderPoints() {
+    var wrap = $("[data-pts]");
+    if (!PTS || !wrap) return; // also when render() runs before this part of the file has set PTS
+    var sum = total(), spend = ptsSpendable(sum), box = $("[data-pts-box]"), use = $("[data-pts-use]");
+    wrap.hidden = !count();
+    use.hidden = !spend;
+    var on = spend && box.checked, pay = sum - (on ? ptsMad(spend) : 0);
+    $("[data-pts-use-text]").textContent = spend ? A.s.pts_use.replace("{p}", spend).replace("{b}", ptsState.balance).replace("{m}", money(ptsMad(spend))) : "";
+    $("[data-pts-due]").hidden = !on;
+    $("[data-pts-due-v]").textContent = money(pay);
+    $("[data-pts-earn]").textContent = A.s.pts_earn.replace("{n}", ptsEarn(pay));
+    var bal = ptsState ? ptsState.balance + ptsState.pending : 0, short = $("[data-pts-short]");
+    short.textContent = ptsState && !spend && bal < PTS.min && bal > 0
+      ? A.s.pts_short.replace("{n}", PTS.min - bal).replace("{mad}", PTS.step_mad) : "";
+  }
+  function loadPoints(force) {
+    var m = me(), list = pastOrders();
+    if (!PTS || !A.cloud || !m || !m.phone || !list.length) return Promise.resolve(null);
+    if (!force && Date.now() - ptsAt < 60000) return Promise.resolve(ptsState);
+    ptsAt = Date.now();
+    return fetch(A.cloud + "/public/points", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: m.phone, ids: list.map(function (o) { return o.n; }) }) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { ptsState = d && d.ok ? d : null; renderPoints(); renderPointsCard(); return ptsState; })
+      .catch(function () { return null; });
+  }
+  /* "Your points on this device": a customer who ordered in the app and now uses the browser (or a new phone) types
+     the phone and one order number; the number joins this device's list as proof, without showing as an order. */
+  var findForm = $("[data-pts-find]");
+  function showFind() { if (findForm) findForm.hidden = !PTS || !!ptsState; }
+  if (findForm) findForm.onsubmit = function (e) {
+    e.preventDefault();
+    var phone = String(findForm.phone.value || "").trim(), n = String(findForm.order.value || "").trim().toUpperCase().replace(/\s+/g, "");
+    var msg = $("[data-pts-find-msg]"), btn = $("button", findForm);
+    btn.disabled = true;
+    fetch(A.cloud + "/public/points", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: phone, ids: [n] }) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        btn.disabled = false;
+        if (!d || !d.ok) { msg.textContent = A.s.pts_find_no; msg.hidden = false; return; }
+        var list = load(OKEY, []);
+        if (!list.some(function (o) { return o && o.n === n; })) list.push({ n: n, at: new Date().toISOString(), found: 1, items: [] });
+        store(OKEY, list.slice(0, 30));
+        var m = me() || { name: "", address: "" };
+        m.phone = phone; m.at = new Date().toISOString();
+        store(MEKEY, m);
+        ptsState = d; ptsAt = Date.now();
+        msg.hidden = true; findForm.hidden = true;
+        renderPointsCard(); renderPoints(); showOrdersBtn();
+      })
+      .catch(function () { btn.disabled = false; msg.textContent = A.s.pts_find_no; msg.hidden = false; });
+  };
+  function renderPointsCard() {
+    var card = $("[data-pts-card]");
+    if (!card) return;
+    card.hidden = !(PTS && ptsState);
+    if (card.hidden) return;
+    var st = ptsState, bits = [];
+    $("[data-pts-bal]").textContent = A.s.pts_bal.replace("{b}", st.balance);
+    if (st.mad > 0) bits.push(A.s.pts_worth.replace("{m}", money(st.mad)));
+    else if (st.balance + st.pending < PTS.min) bits.push(A.s.pts_short.replace("{n}", PTS.min - st.balance - st.pending).replace("{mad}", PTS.step_mad));
+    if (st.pending) bits.push(A.s.pts_pend.replace("{n}", st.pending));
+    if (st.expires) bits.push(A.s.pts_exp.replace("{d}", dateOf(st.expires + "T12:00:00Z")));
+    $("[data-pts-sub]").textContent = bits.join(" · ");
+  }
+  function pointsDone(d, asked) {
+    if (!PTS) return "";
+    var out = "";
+    if (d.points_used) out += " " + A.s.pts_used.replace("{p}", d.points_used).replace("{m}", money(d.discount));
+    else if (asked) out += " " + A.s.pts_none;
+    var n = ptsEarn(d.total);
+    if (n) out += " " + A.s.pts_later.replace("{n}", n);
+    ptsAt = 0; // the balance changed: ask again next time
+    if (d.points_used && ptsState) ptsState.balance -= d.points_used;
+    return out;
+  }
+  var ptsBox = $("[data-pts-box]");
+  if (ptsBox) ptsBox.onchange = renderPoints;
+  $$("[data-open-cart]").forEach(function (b) { b.addEventListener("click", function () { loadPoints(false); }); });
+  $$("[data-open-orders], [data-open-orders-foot]").forEach(function (b) { b.addEventListener("click", function () { showFind(); loadPoints(true).then(showFind); }); });
+  if (/[?&]orders=1/.test(location.search)) loadPoints(true).then(showFind);
+  renderPoints();
 
   /* the app: installable from any page (footer link, after an order); the sheet offers itself once to a returning
      customer, never to a first-time visitor who came from an ad. "Not now" is remembered for 30 days. */

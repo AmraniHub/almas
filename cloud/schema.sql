@@ -122,3 +122,19 @@ create unique index if not exists standing_from on standing (from_order) where f
 
 -- small key/value settings set from the back office (the Google Sheet link and its secret)
 create table if not exists settings (k text primary key, v text not null default '', updated_at text);
+
+-- loyalty points: one signed row per movement. kind = earn (an order was delivered), redeem (spent on an order),
+-- adjust (set by the owner, with a note), expire (the balance lapsed 12 months after the last earning). The balance
+-- is the sum. One earn and one redeem at most per order (a retried request or a second status change adds nothing).
+create table if not exists points (
+  id integer primary key autoincrement,
+  phone_norm text not null,
+  kind text not null,
+  points integer not null,
+  order_id text not null default '',
+  mad real not null default 0,
+  note text not null default '',
+  at text not null
+);
+create index if not exists points_phone on points (phone_norm, at);
+create unique index if not exists points_order on points (order_id, kind) where order_id <> '';

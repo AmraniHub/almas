@@ -124,3 +124,6 @@ p.ok { color: #17603b; font-weight: 600; }
 .card label input { display: block; margin-top: .3rem; }
 .card label input { width: 100%; }
 .break { word-break: break-all; }
+
+/* loyalty points: the add/remove amount */
+.pts-n { max-width: 140px; }

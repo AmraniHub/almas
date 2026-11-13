@@ -276,7 +276,7 @@ form .btn { width: 100%; margin-top: 8px; }
 .q-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 16px; }
 @media (min-width: 700px) { .q-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 1rem; }
-.quote .btn { width: auto; min-width: 240px; }
+.quote .btn { width: auto; min-width: min(240px, 100%); }
 .pay { border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px 4px; margin: 4px 0 12px; background: var(--card); }
 .pay legend { font-weight: 700; font-size: .9rem; padding: 0 6px; }
 .pay .opt { display: flex; align-items: center; gap: 10px; color: var(--ink); font-size: .95rem; min-height: 44px; margin: 0; cursor: pointer; }
@@ -615,3 +615,47 @@ body.writing .buybar, body.writing .to-top, body.writing .as-fab { opacity: 0; p
 /* the on-page notice that replaces alert() pop-ups */
 .notice { position: fixed; z-index: 200; inset-inline: 12px; bottom: calc(16px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto; padding: 14px 18px; border-radius: 16px; background: var(--ink); color: #fff; font-weight: 700; line-height: 1.45; box-shadow: 0 18px 40px -16px rgba(33, 26, 22, .7); opacity: 0; transform: translateY(16px); pointer-events: none; transition: opacity .2s ease, transform .2s ease; cursor: pointer; }
 .notice.on { opacity: 1; transform: none; pointer-events: auto; }
+
+/* narrow screens. A 360 px phone with a large system font or display size lays pages out at 260-300 CSS px, and
+   nothing may be wider than the screen there: a page that scrolls sideways makes Chrome size the fixed cart drawer
+   to the wider page, so the drawer stopped short of the screen edge with the page showing beside it (2026-11-13). */
+html, body { overflow-x: clip; }
+.brand img { flex: none; }
+.with-mic, .with-mic input { min-width: 0; }
+@media (max-width: 480px) { .drawer-in { inset-inline: 0; width: auto; } }
+@media (max-width: 340px) {
+  .wrap { padding-inline: 12px; }
+  .top-in { gap: 6px; }
+  .search-btn, .cart-btn { width: 40px; height: 40px; }
+  .langs summary { padding: 0 7px; gap: 4px; height: 38px; }
+  .langs .caret { display: none; }
+  .nav-pro { padding: 5px 7px; font-size: .72rem; }
+  .card-buy { padding: 8px 9px 10px; gap: 6px; }
+  .buybar img { display: none; }
+  .buybar-in { gap: 6px; }
+  .buybar .btn { padding: 0 12px; }
+}
+@media (max-width: 299px) { .nav-pro { display: none; } }
+
+/* loyalty points: in the cart (earn line, "use my points"), and the balance card in My orders */
+.pts[hidden], .pts-card[hidden], .pts-use[hidden], .pts-due[hidden] { display: none; }
+.pts { margin: -6px 0 14px; display: grid; gap: 8px; }
+.pts-earn { margin: 0; color: var(--olive); font-weight: 700; font-size: .9rem; }
+.pts-earn small { display: block; color: var(--body); font-weight: 600; }
+.pts-earn small:empty { display: none; }
+.pts-use { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 12px; border-radius: 12px; background: #fbefd6; border: 1px solid #ecd29b; color: var(--ink); font-weight: 700; font-size: .92rem; cursor: pointer; }
+.pts-use input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--terracotta); }
+.pts-due { margin: 0; font-size: 1.05rem; }
+.pts-due b { color: var(--terracotta); }
+.pts-how { font-size: .84rem; color: var(--body); }
+.pts-how summary { cursor: pointer; font-weight: 700; color: var(--ink); }
+.pts-how ul { margin: 6px 0 0; padding-inline-start: 18px; display: grid; gap: 4px; }
+.pts-card { display: grid; gap: 2px; margin: 8px 0 12px; padding: 14px 16px; border-radius: 16px; background: linear-gradient(135deg, #fbefd6, #f3dfc0); border: 1px solid #ecd29b; }
+.pts-card .pts-k { font-size: .8rem; font-weight: 700; color: var(--terracotta); }
+.pts-card > b { font-size: 1.5rem; line-height: 1.2; }
+.pts-card > span:not(.pts-k) { font-size: .88rem; color: var(--body); overflow-wrap: anywhere; }
+.pts-card .pts-how { margin-top: 6px; }
+.pts-find { display: grid; gap: 4px; margin: 10px 0 14px; padding: 14px 16px; border-radius: 16px; border: 1px dashed #ecd29b; background: var(--card); }
+.pts-find[hidden] { display: none; }
+.pts-find .note { margin: 0 0 6px; }
+.pts-find .btn { margin-top: 2px; }

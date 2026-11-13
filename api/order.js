@@ -80,6 +80,21 @@ export default async function handler(req, res) {
   const now = new Date();
   const number = `AL-${now.toISOString().slice(2, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
   const wa = moroccanWa(phone);
+
+  // loyalty points: the back office decides how many may be spent (proof = one of this phone's earlier order
+  // numbers, kept by the browser) and holds them for this order number. No back office = no discount, never a block.
+  const want = Math.max(0, Math.floor(Number(b.redeem) || 0));
+  let used = 0, discount = 0, pointsNote = "";
+  if (want > 0) {
+    const known = (Array.isArray(b.known) ? b.known : []).map((x) => clean(x, 40)).filter(Boolean).slice(0, 30);
+    const r = await cloud("/ingest/points-redeem", { id: number, phone, total: Math.round(total * 100) / 100, points: want, known });
+    if (r && r.ok && r.points > 0) {
+      used = r.points;
+      discount = Math.min(Number(r.discount) || 0, total);
+    } else pointsNote = (r && r.reason) || "unavailable";
+  }
+  const release = () => (used ? cloud("/ingest/points-release", { id: number }) : null);
+  const due = Math.round((total - discount) * 100) / 100;
   const text = [
     `🛒 طلب جديد من الموقع — ${number}`,
     "",
@@ -94,6 +109,8 @@ export default async function handler(req, res) {
     ...lines.map((l) => `• ${amount(l.unit, l.q)} ${l.ar} (${l.fr}) — ${money(l.line)}`),
     "",
     `المجموع: ${money(total)}`,
+    used ? `🎁 نقاط الوفاء: ${used} نقطة = خصم ${money(discount)}` : "",
+    used ? `💰 المبلغ المطلوب: ${money(due)}` : "",
     `لغة الزبون: ${LANG[lang]}`,
   ].filter((x, i, a) => x !== "" || (a[i - 1] !== "" && i > 0)).join("\n");
 
@@ -106,6 +123,9 @@ export default async function handler(req, res) {
       const s = await stripe("POST", "checkout/sessions", {
         mode: "payment",
         locale: lang === "ar" ? "fr" : lang, // Stripe Checkout has no Arabic
+        ...(discount > 0 ? { discounts: [{ coupon: (await stripe("POST", "coupons", {
+          amount_off: Math.round(discount * 100), currency: "mad", duration: "once", max_redemptions: 1, name: `Almas: ${used} points`,
+        })).id }] } : {}),
         success_url: `${base}/merci/?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${base}/?cancel=${number}`,
         client_reference_id: number,
@@ -122,17 +142,22 @@ export default async function handler(req, res) {
       });
       url = s.url;
     } catch (e) {
+      await release();
       return res.status(502).json({ ok: false, error: "card", detail: String(e.message || e).slice(0, 200) });
     }
   }
 
   const sent = await telegram(text + (pay === "card" ? "\n⏳ في انتظار الأداء بالبطاقة" : ""));
-  if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
+  if (!sent) {
+    await release();
+    return res.status(502).json({ ok: false, error: "telegram unreachable" });
+  }
   await cloud("/ingest/order", {
     id: number, at: now.toISOString(), lang, name, phone, address, pay, source: dest === "ma" ? "web" : "web-europe",
-    notes: [dest === "eu_ship" ? `[Europe: ship to ${country || "?"}]` : dest === "eu_pickup" ? `[Europe: collected in Morocco by ${collector || "?"}]` : "", notes]
+    notes: [dest === "eu_ship" ? `[Europe: ship to ${country || "?"}]` : dest === "eu_pickup" ? `[Europe: collected in Morocco by ${collector || "?"}]` : "",
+      used ? `[Points: ${used} = -${Math.round(discount * 100) / 100} MAD off ${Math.round(total * 100) / 100} MAD]` : "", notes]
       .filter(Boolean).join(" "),
-    total: Math.round(total * 100) / 100,
+    total: due, // what the customer pays: points are earned on this, never on the part paid with points
     items: lines.map((l) => ({ product: l.id, name_till: l.ar, name: l.fr, qty: l.q, unit: l.unit, unit_price: l.price,
                                line: Math.round(l.line * 100) / 100 })),
   });
@@ -143,7 +168,7 @@ export default async function handler(req, res) {
     });
   }
   return res.status(200).json({
-    ok: true, number, total: Math.round(total * 100) / 100, url,
+    ok: true, number, total: due, subtotal: Math.round(total * 100) / 100, points_used: used, discount, points_note: pointsNote, url,
     lines: lines.map((l) => ({ id: l.id, q: l.q, line: Math.round(l.line * 100) / 100 })),
   });
 }

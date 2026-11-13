@@ -33,5 +33,7 @@
   "meta_pixel_id": "",
   "meta_domain_verification": "",
   "google_site_verification": "",
-  "play_url": ""
+  "play_url": "",
+  "points": {"mad_per_point": 10, "step": 100, "step_mad": 10, "min": 100, "max_share": 0.1, "life_days": 365,
+    "_note": "Loyalty points, the same numbers as POINTS in cloud/worker.js (a test checks): 1 point per 10 MAD paid on a delivered order, 100 points = 10 MAD off, from 100 points, at most 10% of an order, lapse 12 months after the last earning. Set \"mad_per_point\" to 0 to hide points on the site."}
 }
