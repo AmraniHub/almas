@@ -127,3 +127,4 @@ p.ok { color: #17603b; font-weight: 600; }
 
 /* loyalty points: the add/remove amount */
 .pts-n { max-width: 140px; }
+@media (min-width: 820px) { .grid2.even { grid-template-columns: 1fr 1fr; } }

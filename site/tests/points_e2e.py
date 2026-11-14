@@ -69,6 +69,7 @@ def run(p, lang, width, phone, zoom=1.0):
     fill_cart(1500)
     earn = page.inner_text("[data-pts-earn]")
     check(page.is_hidden("[data-pts-use]"), f"{tag}: a new customer is not offered points to spend")
+    check(page.is_hidden("[data-pts-banner]"), f"{tag}: a new customer sees no points banner")
     check(any(ch.isdigit() for ch in earn), f"{tag}: the cart says what this order earns ({earn.strip()})")
     page.eval_on_selector("[data-order-form] input[name=name]", "e => e.scrollIntoView({block: 'start'})")
     shot(page, f"{tag}-1-cart-first-order")
@@ -83,6 +84,15 @@ def run(p, lang, width, phone, zoom=1.0):
     get("/test/status", {"id": first["n"], "status": "delivered"})
     bal = get("/test/points?phone=" + pn)["points"]["balance"]
     check(bal - bal0 == int(first["total"] // 10), f"{tag}: delivered = +{bal - bal0} points in the back office (balance {bal})")
+
+    # 2b. back on the site, the home page greets the returning customer with the balance
+    page.goto(BASE + prefix + "/", wait_until="networkidle")
+    if zoom != 1:
+        page.evaluate("z => { document.documentElement.style.zoom = z; }", str(zoom))
+    page.wait_for_selector("[data-pts-banner]:not([hidden])", timeout=15000)
+    banner = page.inner_text("[data-pts-banner]")
+    check(str(bal) in banner, f"{tag}: the home page banner shows the balance ({banner.strip()})")
+    shot(page, f"{tag}-2b-home-banner")
 
     # 3. second order: the cart offers the points, the total drops, the shop is told
     fill_cart(400)

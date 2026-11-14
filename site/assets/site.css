@@ -659,3 +659,11 @@ html, body { overflow-x: clip; }
 .pts-find[hidden] { display: none; }
 .pts-find .note { margin: 0 0 6px; }
 .pts-find .btn { margin-top: 2px; }
+/* the returning customer's points, under the header */
+.pts-bar-w { padding-block: 10px 0; }
+.pts-bar-w[hidden] { display: none; }
+.pts-bar { width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; padding: 10px 14px; border-radius: 14px; border: 1px solid #ecd29b; background: #fbefd6; color: var(--ink); font: inherit; font-weight: 700; font-size: .92rem; text-align: start; cursor: pointer; }
+.pts-bar span { min-width: 0; overflow-wrap: anywhere; }
+.pts-bar-go { color: var(--terracotta); font-size: .84rem; white-space: nowrap; }
+.pts-pro { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; border: 1px solid #ecd29b; background: #fbefd6; font-weight: 700; font-size: .92rem; }
+.pts-pro[hidden], .pts-how[hidden] { display: none; }

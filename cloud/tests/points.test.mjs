@@ -188,7 +188,7 @@ test("the owner adjusts points with a note, never below zero, and sees them on t
   assert.equal(o.points[0].kind, "earn");
   assert.equal(o.points[0].points, 70);
   const ov = await admin("overview");
-  assert.ok(ov.points_out.points > 0);
+  assert.ok(ov.points_out.home.points > 0);
 });
 
 test("a hold whose order never reached the back office goes back after a day", async () => {
@@ -200,4 +200,89 @@ test("a hold whose order never reached the back office goes back after a day", a
   env.DB.raw.prepare("update points set at = ? where order_id = 'AL-PT-0022'").run(new Date(Date.now() - 2 * 86400000).toISOString());
   const d = await (await publicPoints(phone, ["AL-PT-0021"], "10.4.4.4")).json();
   assert.equal(d.balance, 100);
+});
+
+test("the reorder list and the order page carry the customer's points, for the owner's WhatsApp messages", async () => {
+  const pn = "212611000030", phone = "0611000030";
+  const ago = (d) => new Date(Date.now() - d * 86400000).toISOString();
+  await order("AL-PT-0030", phone, 1500, { at: ago(50) });
+  await order("AL-PT-0031", phone, 200, { at: ago(40) }); // usually every 10 days, 40 days ago: clearly due
+  await status("AL-PT-0030", "delivered");
+  const ov = await admin("overview");
+  const r = ov.reorder.find((x) => x.phone_norm === pn);
+  assert.ok(r, "due to reorder");
+  assert.deepEqual([r.points, r.points_mad], [150, 10]);
+  const o = await admin("order?id=AL-PT-0030");
+  assert.equal(o.customer_points.balance, 150);
+  assert.equal(o.points.find((x) => x.kind === "earn").points, 150);
+  // a balance that lapsed reads as 0 in the reminder
+  env.DB.raw.prepare("update points set at = ? where phone_norm = ?").run(ago(400), pn);
+  const ov2 = await admin("overview");
+  assert.equal(ov2.reorder.find((x) => x.phone_norm === pn).points, 0);
+});
+
+test("businesses have their own programme: 1 point per 20 MAD, from 200, at most 5% of an order", async () => {
+  const pn = "212611000040", phone = "0611000040";
+  await order("AL-PT-0040", phone, 5000);
+  await admin("customer", { phone_norm: pn, kind: "pro" }); // a restaurant: the owner files it as pro
+  await status("AL-PT-0040", "delivered");
+  assert.equal(balance(pn), 250); // 5000 / 20
+  let r = await ingest("points-redeem", { id: "AL-PT-0041", phone, total: 150, points: 250, known: ["AL-PT-0040"] });
+  assert.deepEqual([r.points, r.reason], [0, "basket"]); // 5% of 150 MAD = 7.50 MAD: less than one step of 10 MAD
+  r = await ingest("points-redeem", { id: "AL-PT-0042", phone, total: 4000, points: 250, known: ["AL-PT-0040"] });
+  assert.deepEqual([r.points, r.discount], [200, 20]); // whole steps of 100 out of 250, within 5% of 4000
+  const st = await (await publicPoints(phone, ["AL-PT-0040"], "10.5.5.5")).json();
+  assert.equal(st.kind, "pro");
+  assert.equal(st.rules.mad_per_point, 20);
+});
+
+test("the owner changes the rules and can switch a programme off; the website reads them", async () => {
+  const pn = "212611000050", phone = "0611000050";
+  const bad = await admin("points/rules", { home: { mad_per_point: 0 } });
+  assert.equal(bad.ok, false);
+  assert.equal((await admin("points/rules", { home: { step: 100, min: 50 } })).ok, false); // min below one step
+  const saved = await admin("points/rules", { home: { mad_per_point: 5, step: 100, step_mad: 10, min: 100, max_share: 0.2, life_days: 180, enabled: true } });
+  assert.equal(saved.rules.home.mad_per_point, 5);
+  assert.equal(saved.rules.pro.mad_per_point, 20, "the business programme is untouched");
+  const pub = await (await call("/public/points-rules", { headers: { Origin: SITE } })).json();
+  assert.equal(pub.home.mad_per_point, 5);
+  await order("AL-PT-0050", phone, 300);
+  await status("AL-PT-0050", "delivered");
+  assert.equal(balance(pn), 60); // 300 / 5 under the new rule
+  // switched off: nothing new is earned or spent, the balance stays
+  await admin("points/rules", { home: { ...saved.rules.home, enabled: false } });
+  await order("AL-PT-0051", phone, 500);
+  await status("AL-PT-0051", "delivered");
+  assert.equal(balance(pn), 60);
+  await admin("points", { phone_norm: pn, points: 100, note: "test" });
+  const r = await ingest("points-redeem", { id: "AL-PT-0052", phone, total: 2000, points: 100, known: ["AL-PT-0050"] });
+  assert.deepEqual([r.points, r.reason], [0, "off"]);
+  assert.equal((await (await call("/public/points-rules")).json()).home.enabled, false);
+  // back to the defaults for the other tests
+  const d = await admin("points/rules", { home: { enabled: true, mad_per_point: 10, step: 100, step_mad: 10, min: 100, max_share: 0.1, life_days: 365 } });
+  assert.deepEqual({ ...d.rules.home, enabled: undefined }, { ...d.defaults.home, enabled: undefined });
+});
+
+test("the Points tab lists every customer with points, with their programme and what is outstanding", async () => {
+  const d = await admin("points/list");
+  assert.ok(d.customers.length > 3);
+  const pro = d.customers.find((c) => c.phone_norm === "212611000040");
+  assert.equal(pro.kind, "pro");
+  assert.equal(pro.balance, 50);
+  assert.ok(d.total.home.points > 0 && d.total.pro.points === 50);
+  const only = await admin("points/list?kind=pro");
+  assert.deepEqual(only.customers.map((c) => c.phone_norm), ["212611000040"]);
+  const q = await admin("points/list?q=611000040");
+  assert.deepEqual(q.customers.map((c) => c.phone_norm), ["212611000040"]);
+});
+
+test("points under the programme's minimum are worth nothing yet, everywhere", async () => {
+  const pn = "212611000060", phone = "0611000060";
+  await order("AL-PT-0060", phone, 3000);
+  await admin("customer", { phone_norm: pn, kind: "pro" });
+  await status("AL-PT-0060", "delivered"); // 150 business points, the minimum is 200
+  const st = await (await publicPoints(phone, ["AL-PT-0060"], "10.6.6.6")).json();
+  assert.deepEqual([st.balance, st.mad], [150, 0]);
+  const row = (await admin("points/list?q=611000060")).customers[0];
+  assert.deepEqual([row.balance, row.mad], [150, 0]);
 });

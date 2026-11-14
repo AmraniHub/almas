@@ -1204,25 +1204,47 @@
   };
   if (/[?&]orders=1/.test(location.search)) setTimeout(showOrders, 50);
 
-  /* Loyalty points: earned on delivered orders, spent from the cart. The balance comes from the back office for the
-     phone remembered on this device, proved by one of its order numbers (the same rule as My orders); the back
-     office decides again what may really be spent when the order is sent. No phone, no orders: only "this order
-     earns N points" is shown. */
-  var PTS = A.pts && A.pts.mad_per_point ? A.pts : null, ptsState = null, ptsAt = 0;
-  function ptsEarn(amount) { return PTS ? Math.max(0, Math.floor(amount / PTS.mad_per_point + 1e-9)) : 0; }
-  function ptsMad(p) { return Math.round(p / PTS.step * PTS.step_mad * 100) / 100; }
+  /* Loyalty points: earned on delivered orders, spent from the cart. Two programmes, set by the owner in the back
+     office: home cooks and businesses (a customer file marked pro). The rules come live from the back office
+     (/public/points-rules, kept 10 minutes in this tab; the numbers built into the page are only the fallback). The
+     balance comes from the back office for the phone remembered on this device, proved by one of its order numbers
+     (the same rule as My orders), and carries that customer's own programme. The back office decides again what may
+     really be spent when the order is sent. A switched-off programme shows nothing. */
+  var PTS = A.pts && A.pts.mad_per_point ? A.pts : null, ptsState = null, ptsAt = 0, PSKEY = "almas-pts-v1", PRKEY = "almas-ptsr-v1";
+  try { var cached = JSON.parse(sessionStorage.getItem(PSKEY) || "null"); if (cached && Date.now() - cached.at < 600000) { ptsState = cached.st; ptsAt = cached.at; } } catch (e) {}
+  try { var cr = JSON.parse(sessionStorage.getItem(PRKEY) || "null"); if (cr && Date.now() - cr.at < 600000 && cr.home) PTS = cr.home; } catch (e) {}
+  function keepPoints() { try { sessionStorage.setItem(PSKEY, JSON.stringify({ at: ptsAt, st: ptsState })); } catch (e) {} }
+  function ptsRules() { return ptsState && ptsState.rules ? ptsState.rules : PTS; } // this customer's programme
+  function ptsOn() { var r = ptsRules(); return !!(r && r.mad_per_point && r.enabled !== false); }
+  function ptsEarn(amount) { var r = ptsRules(); return ptsOn() ? Math.max(0, Math.floor(amount / r.mad_per_point + 1e-9)) : 0; }
+  function ptsMad(p) { var r = ptsRules(); return Math.round(p / r.step * r.step_mad * 100) / 100; }
   function ptsSpendable(amount) {
-    if (!PTS || !ptsState || ptsState.balance < PTS.min) return 0;
-    return Math.max(0, Math.min(Math.floor(ptsState.balance / PTS.step), Math.floor(amount * PTS.max_share / PTS.step_mad + 1e-9))) * PTS.step;
+    var r = ptsRules();
+    if (!ptsOn() || !ptsState || ptsState.balance < r.min) return 0;
+    return Math.max(0, Math.min(Math.floor(ptsState.balance / r.step), Math.floor(amount * r.max_share / r.step_mad + 1e-9))) * r.step;
   }
   function pointsToSpend() {
     var box = $("[data-pts-box]"), use = $("[data-pts-use]");
-    return PTS && box && use && !use.hidden && box.checked ? ptsSpendable(total()) : 0;
+    return ptsOn() && box && use && !use.hidden && box.checked ? ptsSpendable(total()) : 0;
+  }
+  // the four rules under "How do points work?", with the numbers of this customer's programme
+  function renderRules() {
+    var r = ptsRules();
+    $$("[data-pts-how]").forEach(function (d) { d.hidden = !ptsOn(); });
+    if (!ptsOn()) return;
+    var fill = { "{per}": r.mad_per_point, "{step}": r.step, "{mad}": r.step_mad, "{min}": r.min,
+                 "{share}": Math.round(r.max_share * 100), "{months}": Math.round(r.life_days / 30.4) };
+    $$("[data-pts-rule]").forEach(function (li) {
+      var t = A.s["pts_r" + li.getAttribute("data-pts-rule")] || "";
+      Object.keys(fill).forEach(function (k) { t = t.split(k).join(String(fill[k])); });
+      if (t) li.textContent = t;
+    });
   }
   function renderPoints() {
     var wrap = $("[data-pts]");
     if (!PTS || !wrap) return; // also when render() runs before this part of the file has set PTS
-    var sum = total(), spend = ptsSpendable(sum), box = $("[data-pts-box]"), use = $("[data-pts-use]");
+    if (!ptsOn()) { wrap.hidden = true; return; }
+    var r = ptsRules(), sum = total(), spend = ptsSpendable(sum), box = $("[data-pts-box]"), use = $("[data-pts-use]");
     wrap.hidden = !count();
     use.hidden = !spend;
     var on = spend && box.checked, pay = sum - (on ? ptsMad(spend) : 0);
@@ -1231,24 +1253,36 @@
     $("[data-pts-due-v]").textContent = money(pay);
     $("[data-pts-earn]").textContent = A.s.pts_earn.replace("{n}", ptsEarn(pay));
     var bal = ptsState ? ptsState.balance + ptsState.pending : 0, short = $("[data-pts-short]");
-    short.textContent = ptsState && !spend && bal < PTS.min && bal > 0
-      ? A.s.pts_short.replace("{n}", PTS.min - bal).replace("{mad}", PTS.step_mad) : "";
+    short.textContent = ptsState && !spend && bal < r.min && bal > 0
+      ? A.s.pts_short.replace("{n}", r.min - bal).replace("{mad}", r.step_mad) : "";
+  }
+  function renderAllPoints() { renderRules(); renderPoints(); renderPointsCard(); renderBanner(); showFind(); }
+  function loadRules() {
+    if (!PTS || !A.cloud) return;
+    try { var c = JSON.parse(sessionStorage.getItem(PRKEY) || "null"); if (c && Date.now() - c.at < 600000) return; } catch (e) {}
+    fetch(A.cloud + "/public/points-rules").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.home || !d.home.mad_per_point) return;
+      PTS = d.home;
+      if (ptsState && d[ptsState.kind]) ptsState.rules = d[ptsState.kind];
+      try { sessionStorage.setItem(PRKEY, JSON.stringify({ at: Date.now(), home: d.home, pro: d.pro })); } catch (e) {}
+      renderAllPoints();
+    }).catch(function () {});
   }
   function loadPoints(force) {
     var m = me(), list = pastOrders();
     if (!PTS || !A.cloud || !m || !m.phone || !list.length) return Promise.resolve(null);
-    if (!force && Date.now() - ptsAt < 60000) return Promise.resolve(ptsState);
+    if (!force && Date.now() - ptsAt < 600000) return Promise.resolve(ptsState);
     ptsAt = Date.now();
     return fetch(A.cloud + "/public/points", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone: m.phone, ids: list.map(function (o) { return o.n; }) }) })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { ptsState = d && d.ok ? d : null; renderPoints(); renderPointsCard(); return ptsState; })
+      .then(function (d) { ptsState = d && d.ok ? d : null; keepPoints(); renderAllPoints(); return ptsState; })
       .catch(function () { return null; });
   }
   /* "Your points on this device": a customer who ordered in the app and now uses the browser (or a new phone) types
      the phone and one order number; the number joins this device's list as proof, without showing as an order. */
   var findForm = $("[data-pts-find]");
-  function showFind() { if (findForm) findForm.hidden = !PTS || !!ptsState; }
+  function showFind() { if (findForm) findForm.hidden = !ptsOn() || !!ptsState; }
   if (findForm) findForm.onsubmit = function (e) {
     e.preventDefault();
     var phone = String(findForm.phone.value || "").trim(), n = String(findForm.order.value || "").trim().toUpperCase().replace(/\s+/g, "");
@@ -1265,21 +1299,21 @@
         var m = me() || { name: "", address: "" };
         m.phone = phone; m.at = new Date().toISOString();
         store(MEKEY, m);
-        ptsState = d; ptsAt = Date.now();
-        msg.hidden = true; findForm.hidden = true;
-        renderPointsCard(); renderPoints(); showOrdersBtn();
+        ptsState = d; ptsAt = Date.now(); keepPoints();
+        msg.hidden = true;
+        renderAllPoints(); showOrdersBtn();
       })
       .catch(function () { btn.disabled = false; msg.textContent = A.s.pts_find_no; msg.hidden = false; });
   };
   function renderPointsCard() {
     var card = $("[data-pts-card]");
     if (!card) return;
-    card.hidden = !(PTS && ptsState);
+    card.hidden = !(ptsOn() && ptsState);
     if (card.hidden) return;
-    var st = ptsState, bits = [];
+    var st = ptsState, r = ptsRules(), bits = [];
     $("[data-pts-bal]").textContent = A.s.pts_bal.replace("{b}", st.balance);
     if (st.mad > 0) bits.push(A.s.pts_worth.replace("{m}", money(st.mad)));
-    else if (st.balance + st.pending < PTS.min) bits.push(A.s.pts_short.replace("{n}", PTS.min - st.balance - st.pending).replace("{mad}", PTS.step_mad));
+    else if (st.balance + st.pending < r.min) bits.push(A.s.pts_short.replace("{n}", r.min - st.balance - st.pending).replace("{mad}", r.step_mad));
     if (st.pending) bits.push(A.s.pts_pend.replace("{n}", st.pending));
     if (st.expires) bits.push(A.s.pts_exp.replace("{d}", dateOf(st.expires + "T12:00:00Z")));
     $("[data-pts-sub]").textContent = bits.join(" · ");
@@ -1293,6 +1327,8 @@
     if (n) out += " " + A.s.pts_later.replace("{n}", n);
     ptsAt = 0; // the balance changed: ask again next time
     if (d.points_used && ptsState) ptsState.balance -= d.points_used;
+    try { sessionStorage.removeItem(PSKEY); } catch (e) {}
+    renderBanner();
     return out;
   }
   var ptsBox = $("[data-pts-box]");
@@ -1300,7 +1336,30 @@
   $$("[data-open-cart]").forEach(function (b) { b.addEventListener("click", function () { loadPoints(false); }); });
   $$("[data-open-orders], [data-open-orders-foot]").forEach(function (b) { b.addEventListener("click", function () { showFind(); loadPoints(true).then(showFind); }); });
   if (/[?&]orders=1/.test(location.search)) loadPoints(true).then(showFind);
+  /* the banner under the header (home and product pages): only for a customer with points, never 0 */
+  function renderBanner() {
+    var bar = $("[data-pts-banner]");
+    if (!bar) return;
+    var st = ptsState, r = ptsRules(), show = !!(ptsOn() && st && st.balance > 0);
+    bar.hidden = !show;
+    if (!show) return;
+    $("[data-pts-banner-t]").textContent = "🎁 " + (st.mad > 0 ? A.s.pts_banner.replace("{b}", st.balance).replace("{m}", money(st.mad))
+      : A.s.pts_bal.replace("{b}", st.balance) + " · " + A.s.pts_short.replace("{n}", Math.max(0, r.min - st.balance)).replace("{mad}", r.step_mad));
+  }
+  renderAllPoints();
+  loadRules();
+  if ($("[data-pts-banner]")) loadPoints(false);
   renderPoints();
+  /* the business page: the businesses' own programme, from the live rules (hidden when switched off) */
+  var proLine = $("[data-pts-pro]");
+  function renderProLine(pro) {
+    if (!proLine || !pro || pro.enabled === false || !pro.mad_per_point) return;
+    proLine.textContent = "🎁 " + A.s.pts_pro.replace("{per}", pro.mad_per_point).replace("{step}", pro.step).replace("{mad}", pro.step_mad)
+      .replace("{share}", Math.round(pro.max_share * 100));
+    proLine.hidden = false;
+  }
+  if (proLine && A.cloud) fetch(A.cloud + "/public/points-rules").then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { if (d) renderProLine(d.pro); }).catch(function () {});
 
   /* the app: installable from any page (footer link, after an order); the sheet offers itself once to a returning
      customer, never to a first-time visitor who came from an ad. "Not now" is remembered for 30 days. */

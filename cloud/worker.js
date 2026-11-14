@@ -300,26 +300,75 @@ async function ingestReview(env, b) {
 }
 
 // ---------- loyalty points ----------
-// Earned when the owner marks an order delivered (a card order also has to be paid): 1 point per 10 MAD actually
-// paid, so the part paid with points earns nothing. Spent in steps of 100 points = 10 MAD, from a balance of 100,
-// on at most 10% of an order (a saffron-only basket, the thinnest margin at the till, still sells above cost).
-// The balance lapses 12 months after the last order that earned points. Points have no cash value and are not
-// sold or transferred. The same numbers are in site/config.json "points"; a test keeps the two equal.
+// Two programmes, chosen by the customer file's kind: "home" (home cooks) and "pro" (restaurants, hotels, events).
+// Earned when the owner marks an order delivered (a card order also has to be paid), on what was actually paid, so
+// the part paid with points earns nothing. Spent in whole steps, from a minimum balance, on at most a share of one
+// order. A balance lapses life_days after the last order that earned points. Points have no cash value and are not
+// sold or transferred. POINTS (home) is also in site/config.json "points"; a test keeps the two equal.
+//   home: 1 point per 10 MAD, 100 points = 10 MAD (1% back), from 100, at most 10% of an order (a saffron-only
+//         basket, 14% margin at the till, still sells above cost), 12 months.
+//   pro:  1 point per 20 MAD, 100 points = 10 MAD (0.5% back: business prices are lower and baskets bigger), from
+//         200, at most 5% of an order, 12 months.
+// The owner changes both in the back office (Points tab, D1 settings "points_rules"); enabled = false stops earning
+// and spending in that programme (balances stay).
 const POINTS = { mad_per_point: 10, step: 100, step_mad: 10, min: 100, max_share: 0.1, life_days: 365 };
+const POINTS_PRO = { mad_per_point: 20, step: 100, step_mad: 10, min: 200, max_share: 0.05, life_days: 365 };
+const PROGRAMMES = { home: POINTS, pro: POINTS_PRO };
+const RULE_LIMITS = { mad_per_point: [1, 1000], step: [1, 100000], step_mad: [1, 100000], min: [1, 1000000], max_share: [0.01, 0.5], life_days: [30, 3650] };
 
-const earnedFor = (total) => Math.max(0, Math.floor(Number(total || 0) / POINTS.mad_per_point + 1e-9));
-// how many points an order of `total` MAD may spend, out of `balance`: whole steps only
-function spendable(balance, total) {
-  if (balance < POINTS.min) return 0;
-  const byBalance = Math.floor(balance / POINTS.step);
-  const byOrder = Math.floor((Number(total || 0) * POINTS.max_share) / POINTS.step_mad + 1e-9);
-  return Math.max(0, Math.min(byBalance, byOrder)) * POINTS.step;
+let RULES = { home: { enabled: true, ...POINTS }, pro: { enabled: true, ...POINTS_PRO } }, rulesAt = 0;
+function cleanRules(b, dflt) {
+  const out = { enabled: b.enabled === undefined ? true : !!b.enabled };
+  for (const [k, [lo, hi]] of Object.entries(RULE_LIMITS)) {
+    const n = Number(b[k] === undefined || b[k] === "" ? dflt[k] : b[k]);
+    if (!Number.isFinite(n) || n < lo || n > hi) throw new Http(400, `${k}: between ${lo} and ${hi}`);
+    out[k] = k === "max_share" ? Math.round(n * 1000) / 1000 : Math.round(n);
+  }
+  if (out.min < out.step) throw new Http(400, "min: at least one step (" + out.step + " points)");
+  return out;
 }
-const pointsMad = (pts) => Math.round((pts / POINTS.step) * POINTS.step_mad * 100) / 100;
+async function loadRules(env, force) {
+  if (!force && Date.now() - rulesAt < 30000) return RULES;
+  let saved = {};
+  try { saved = JSON.parse((await setting(env, "points_rules")) || "{}") || {}; } catch { saved = {}; }
+  const next = {};
+  for (const [k, dflt] of Object.entries(PROGRAMMES)) {
+    try { next[k] = cleanRules({ ...dflt, ...(saved[k] || {}) }, dflt); } catch { next[k] = { enabled: true, ...dflt }; }
+  }
+  RULES = next;
+  rulesAt = Date.now();
+  return RULES;
+}
+async function saveRules(env, b) {
+  const next = {};
+  for (const [k, dflt] of Object.entries(PROGRAMMES)) next[k] = cleanRules(b[k] || RULES[k], dflt);
+  await setSetting(env, "points_rules", JSON.stringify(next));
+  await loadRules(env, true);
+  return { ok: true, rules: RULES, defaults: PROGRAMMES };
+}
+const rulesFor = (kind) => RULES[kind === "pro" ? "pro" : "home"];
+async function kindOf(env, pn) {
+  const c = await first(env, "select kind from customers where phone_norm = ?", pn);
+  return c && c.kind === "pro" ? "pro" : "home";
+}
+
+const earnedFor = (total, r) => Math.max(0, Math.floor(Number(total || 0) / r.mad_per_point + 1e-9));
+// how many points an order of `total` MAD may spend, out of `balance`: whole steps only
+function spendable(balance, total, r) {
+  if (balance < r.min) return 0;
+  const byBalance = Math.floor(balance / r.step);
+  const byOrder = Math.floor((Number(total || 0) * r.max_share) / r.step_mad + 1e-9);
+  return Math.max(0, Math.min(byBalance, byOrder)) * r.step;
+}
+const pointsMad = (pts, r) => Math.round((pts / r.step) * r.step_mad * 100) / 100;
+// what a balance can take off now: nothing under the minimum, then whole steps
+const usableMad = (balance, r) => (balance < r.min ? 0 : pointsMad(Math.floor(balance / r.step) * r.step, r));
 
 // The balance of one phone, after writing off points that lapsed. pending = points of orders on their way.
 async function pointsState(env, pn, history = 0) {
-  const lifeMs = POINTS.life_days * 86400000;
+  const kind = await kindOf(env, pn);
+  const r = rulesFor(kind);
+  const lifeMs = r.life_days * 86400000;
   // a hold whose order never arrived (the back office was unreachable when the order was filed) goes back after a day
   await env.DB.prepare("delete from points where phone_norm = ? and kind = 'redeem' and at < ? and order_id not in (select id from orders)")
     .bind(pn, new Date(Date.now() - 86400000).toISOString()).run();
@@ -330,7 +379,7 @@ async function pointsState(env, pn, history = 0) {
   if (balance > 0 && last && Date.parse(last) + lifeMs < Date.now()) {
     await env.DB.prepare(
       "insert into points (phone_norm, kind, points, order_id, mad, note, at) " +
-      "select ?, 'expire', -s, '', 0, 'lapsed: no order earned points for 12 months', ? from (select coalesce(sum(points), 0) s from points where phone_norm = ?) where s > 0"
+      "select ?, 'expire', -s, '', 0, 'lapsed: no order earned points in time', ? from (select coalesce(sum(points), 0) s from points where phone_norm = ?) where s > 0"
     ).bind(pn, nowIso(), pn).run();
     balance = 0;
   }
@@ -338,10 +387,10 @@ async function pointsState(env, pn, history = 0) {
     "select o.total from orders o where o.phone_norm = ? and o.status not in ('delivered', 'cancelled') and o.at >= ? " +
     "and not exists (select 1 from points p where p.order_id = o.id and p.kind = 'earn')", pn, dayStart(90));
   const state = {
-    balance, mad: pointsMad(Math.floor(balance / POINTS.step) * POINTS.step),
-    pending: open.reduce((s, o) => s + earnedFor(o.total), 0),
+    balance, mad: r.enabled ? usableMad(balance, r) : 0, kind, enabled: r.enabled,
+    pending: r.enabled ? open.reduce((s, o) => s + earnedFor(o.total, r), 0) : 0,
     expires: balance > 0 && last ? new Date(Date.parse(last) + lifeMs).toISOString().slice(0, 10) : "",
-    rules: POINTS,
+    rules: r,
   };
   if (history) {
     state.history = await all(env, "select kind, points, order_id, mad, note, at from points where phone_norm = ? order by at desc, id desc limit ?", pn, history);
@@ -367,17 +416,19 @@ async function ingestRedeem(env, b) {
   const held = await first(env, "select points, mad from points where order_id = ? and kind = 'redeem'", id);
   if (held) return { ok: true, points: -held.points, discount: held.mad };
   if (!(await phoneProof(env, pn, b.known))) return { ok: true, points: 0, discount: 0, reason: "proof" };
-  const want = Math.max(0, Math.floor(Number(b.points) || 0));
   const st = await pointsState(env, pn);
-  const pts = Math.min(spendable(st.balance, total), Math.floor(want / POINTS.step) * POINTS.step);
-  if (pts <= 0) return { ok: true, points: 0, discount: 0, reason: st.balance < POINTS.min ? "balance" : "basket" };
-  const discount = pointsMad(pts);
+  const r = st.rules;
+  if (!r.enabled) return { ok: true, points: 0, discount: 0, reason: "off" };
+  const want = Math.max(0, Math.floor(Number(b.points) || 0));
+  const pts = Math.min(spendable(st.balance, total, r), Math.floor(want / r.step) * r.step);
+  if (pts <= 0) return { ok: true, points: 0, discount: 0, reason: st.balance < r.min ? "balance" : "basket" };
+  const discount = pointsMad(pts, r);
   // one statement: two orders placed at the same moment cannot both spend the same points
-  const r = await env.DB.prepare(
+  const ins = await env.DB.prepare(
     "insert into points (phone_norm, kind, points, order_id, mad, note, at) select ?, 'redeem', ?, ?, ?, '', ? " +
     "where (select coalesce(sum(points), 0) from points where phone_norm = ?) >= ?"
   ).bind(pn, -pts, id, discount, nowIso(), pn, pts).run();
-  if (!r.meta || !r.meta.changes) return { ok: true, points: 0, discount: 0, reason: "balance" };
+  if (!ins.meta || !ins.meta.changes) return { ok: true, points: 0, discount: 0, reason: "balance" };
   return { ok: true, points: pts, discount, balance: st.balance - pts };
 }
 
@@ -398,15 +449,17 @@ async function syncOrderPoints(env, id) {
     await env.DB.prepare("delete from points where order_id = ? and kind in ('earn', 'redeem')").bind(id).run();
     return;
   }
-  const earns = o.status === "delivered" && (o.pay !== "card" || o.paid) && earnedFor(o.total) > 0;
+  const r = rulesFor(await kindOf(env, o.phone_norm));
+  const earns = o.status === "delivered" && (o.pay !== "card" || o.paid) && earnedFor(o.total, r) > 0;
   if (!earns) {
     await env.DB.prepare("delete from points where order_id = ? and kind = 'earn'").bind(id).run();
     return;
   }
   if (await first(env, "select 1 x from points where order_id = ? and kind = 'earn'", id)) return;
+  if (!r.enabled) return; // the programme is switched off: points already earned stay, no new ones
   await pointsState(env, o.phone_norm); // a balance that had lapsed is written off before the new points arrive
   await env.DB.prepare("insert or ignore into points (phone_norm, kind, points, order_id, mad, note, at) values (?, 'earn', ?, ?, ?, '', ?)")
-    .bind(o.phone_norm, earnedFor(o.total), id, o.total, nowIso()).run();
+    .bind(o.phone_norm, earnedFor(o.total, r), id, o.total, nowIso()).run();
 }
 
 async function adjustPoints(env, b) {
@@ -421,6 +474,61 @@ async function adjustPoints(env, b) {
   await env.DB.prepare("insert into points (phone_norm, kind, points, order_id, mad, note, at) values (?, 'adjust', ?, '', 0, ?, ?)")
     .bind(pn, pts, note, nowIso()).run();
   return { ok: true, points: await pointsState(env, pn, 100) };
+}
+
+// Balances of many phones at once, read only (a lapsed balance counts as 0; it is written off on the next visit).
+async function balances(env, pns) {
+  if (!pns.length) return {};
+  const rows = await all(env,
+    `select p.phone_norm, coalesce(sum(p.points), 0) bal, max(case when p.points > 0 and p.kind in ('earn', 'adjust') then p.at end) last, ` +
+    `max(c.kind) ckind from points p left join customers c on c.phone_norm = p.phone_norm where p.phone_norm in (${pns.map(() => "?").join(",")}) group by p.phone_norm`, ...pns);
+  const out = {};
+  for (const x of rows) {
+    const kind = x.ckind === "pro" ? "pro" : "home", r = rulesFor(kind);
+    const lapsed = !x.last || Date.parse(x.last) + r.life_days * 86400000 < Date.now();
+    out[x.phone_norm] = { kind, balance: Number(x.bal), last: x.last, lapsed, mad: lapsed || !r.enabled ? 0 : usableMad(Number(x.bal), r),
+      lapses: x.last ? new Date(Date.parse(x.last) + r.life_days * 86400000).toISOString().slice(0, 10) : "" };
+  }
+  return out;
+}
+
+// Points tab: every customer with points, largest first, and what is outstanding in each programme.
+async function pointsList(env, p) {
+  const q = text(p.get("q"), 60);
+  const kindF = p.get("kind") === "pro" || p.get("kind") === "home" ? p.get("kind") : "";
+  const where = ["x.bal <> 0"], args = [];
+  if (kindF) { where.push(kindF === "pro" ? "c.kind = 'pro'" : "coalesce(c.kind, 'home') <> 'pro'"); }
+  if (q) {
+    const ors = ["c.name like ? escape '!'", "c.business like ? escape '!'"];
+    args.push(likeTerm(q), likeTerm(q));
+    const digits = q.replace(/[^0-9]/g, "").replace(/^0+/, "");
+    if (digits.length >= 4) { ors.push("x.phone_norm like ? escape '!'"); args.push(likeTerm(digits)); }
+    where.push("(" + ors.join(" or ") + ")");
+  }
+  const offset = Math.max(0, Math.min(100000, parseInt(p.get("offset") || "0", 10) || 0));
+  const rows = await all(env,
+    "select x.phone_norm, x.bal, x.earned, x.spent, c.name, c.business from " +
+    "(select phone_norm, sum(points) bal, sum(case when kind = 'earn' then points else 0 end) earned, " +
+    "-sum(case when kind = 'redeem' then points else 0 end) spent from points group by phone_norm) x " +
+    "left join customers c on c.phone_norm = x.phone_norm where " + where.join(" and ") + " order by x.bal desc limit 101 offset ?", ...args, offset);
+  const b = await balances(env, rows.slice(0, 100).map((r) => r.phone_norm));
+  const customers = rows.slice(0, 100).map((r) => ({ phone_norm: r.phone_norm, name: r.name || "", business: r.business || "",
+    earned: r.earned || 0, spent: r.spent || 0, ...b[r.phone_norm] }));
+  return { ok: true, customers, more: rows.length > 100, rules: RULES, defaults: PROGRAMMES, total: await pointsOutstanding(env) };
+}
+// what customers could still take off future orders, per programme (lapsed balances excluded)
+async function pointsOutstanding(env) {
+  const rows = await all(env,
+    "select x.phone_norm, x.bal, x.last, coalesce(c.kind, 'home') kind from (select phone_norm, sum(points) bal, " +
+    "max(case when points > 0 and kind in ('earn', 'adjust') then at end) last from points group by phone_norm) x " +
+    "left join customers c on c.phone_norm = x.phone_norm where x.bal > 0");
+  const out = { home: { customers: 0, points: 0, mad: 0 }, pro: { customers: 0, points: 0, mad: 0 } };
+  for (const x of rows) {
+    const k = x.kind === "pro" ? "pro" : "home", r = RULES[k];
+    if (!x.last || Date.parse(x.last) + r.life_days * 86400000 < Date.now()) continue;
+    out[k].customers++; out[k].points += Number(x.bal); out[k].mad = Math.round((out[k].mad + usableMad(Number(x.bal), r)) * 100) / 100;
+  }
+  return out;
 }
 
 // ---------- public (read by the website, CORS) ----------
@@ -473,6 +581,7 @@ async function publicApi(req, env, url) {
     return json({ ok: true, ...st }, 200, { ...c, "Cache-Control": "no-store" });
   }
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
+  if (url.pathname === "/public/points-rules") return json({ ok: true, ...RULES }, 200, { ...c, "Cache-Control": "public, max-age=60" });
   if (url.pathname === "/public/reviews") {
     const product = url.searchParams.get("product") || "";
     if (!PRODUCT_RE.test(product)) return json({ ok: false, error: "product" }, 400, c);
@@ -561,10 +670,14 @@ async function reorderDue(env, limit = 30) {
   const last = await env.DB.batch(rows.map((r) => env.DB.prepare(
     "select i.name_till, i.name, i.qty, i.unit from order_items i where i.order_id = " +
     "(select id from orders where phone_norm = ? and status <> 'cancelled' order by at desc limit 1) order by i.idx").bind(r.phone_norm)));
+  // each customer's points, read only (a lapsed balance counts as 0 here; it is written off on their next visit)
+  const bal = await balances(env, rows.map((r) => r.phone_norm));
   return rows.map((r, i) => ({
     phone_norm: r.phone_norm, name: r.name || "", kind: r.kind || "home", business: r.business || "", orders: r.n,
     last_at: r.last_at, days: Math.floor(r.days), gap: r.gap == null ? null : Math.round(r.gap),
     items: (last[i].results || []).map((x) => ({ name: x.name_till || x.name, qty: x.qty, unit: x.unit })),
+    points: bal[r.phone_norm] && !bal[r.phone_norm].lapsed ? Math.max(0, bal[r.phone_norm].balance) : 0,
+    points_mad: bal[r.phone_norm] ? bal[r.phone_norm].mad : 0,
   }));
 }
 
@@ -737,11 +850,7 @@ async function overview(env) {
       addDays(ymd(new Date()), 1))).map(standingRow),
     standing_pending: ((await first(env, "select count(*) n from standing where status = 'pending'")) || {}).n || 0,
     // what customers could still take off future orders (an upper bound: lapsed balances are written off lazily)
-    points_out: await (async () => {
-      const r = await first(env, "select coalesce(sum(points), 0) p, count(distinct phone_norm) n from points");
-      const p = r ? Number(r.p) : 0;
-      return { points: p, customers: r ? r.n : 0, mad: pointsMad(p), rules: POINTS };
-    })(),
+    points_out: await pointsOutstanding(env),
   };
 }
 
@@ -778,7 +887,8 @@ async function getOrder(env, id) {
     env.DB.prepare("select kind, points, mad, at from points where order_id = ? order by id").bind(id),
   ]);
   return { ok: true, order: o, items: items.results || [], customer: (cust.results || [])[0] || null, reviews: revs.results || [],
-    points: pts.results || [], points_rules: POINTS };
+    points: pts.results || [], points_rules: rulesFor(((cust.results || [])[0] || {}).kind),
+    customer_points: o.phone_norm ? await pointsState(env, o.phone_norm) : null };
 }
 
 async function updateOrder(env, b) {
@@ -1065,6 +1175,8 @@ async function admin(req, env, url) {
       case "/admin/api/products": return json(await products(env));
       case "/admin/api/standing": return json(await listStanding(env, p));
       case "/admin/api/sheet": return json(await sheetInfo(env));
+      case "/admin/api/points/list": return json(await pointsList(env, p));
+      case "/admin/api/points/rules": return json({ ok: true, rules: RULES, defaults: PROGRAMMES });
       case "/admin/export/orders.csv": return exportOrders(env);
       case "/admin/export/customers.csv": return exportCustomers(env);
     }
@@ -1083,6 +1195,7 @@ async function admin(req, env, url) {
       case "/admin/api/standing/run": return json(await runStanding(env, b));
       case "/admin/api/standing/delete": return json(await deleteStanding(env, b));
       case "/admin/api/points": return json(await adjustPoints(env, b));
+      case "/admin/api/points/rules": return json(await saveRules(env, b));
       case "/admin/api/sheet": return json(await sheetConnect(env, b));
       case "/admin/api/sheet/test": { const r = await sheetSend(env, "test", [[nowIso(), "Test from the Almas back office."]]); if (!r.ok) throw new Http(400, r.error); return json(r); }
       case "/admin/api/sheet/backfill": return json(await sheetBackfill(env));
@@ -1261,6 +1374,7 @@ async function route(req, env) {
     return json({ ok: true, db: !!(r && r.x === 1) });
   }
   if (path === "/") return new Response(null, { status: 302, headers: { Location: "/admin" } });
+  await loadRules(env);
   if (path.startsWith("/public/")) return publicApi(req, env, url);
   if (path.startsWith("/ingest/")) {
     if (req.method !== "POST") throw new Http(405, "POST only");

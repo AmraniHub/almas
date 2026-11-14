@@ -93,6 +93,31 @@ caught), and in the browser, the whole chain with nothing sent anywhere: `python
 `node site/tests/e2e-server.mjs 8792` and `python site/tests/points_e2e.py` (39 checks, Arabic 360 px, French 412 px,
 Arabic with text at 130%).
 
+### Two programmes, and the owner's control (2026-11-14)
+
+A customer file marked **Pro** (a business quote request does this, or the owner sets it on the file) uses the
+**business programme**: 1 point per 20 MAD, 100 points = 10 MAD (0.5% back, because business prices are lower and
+baskets bigger), from 200 points, at most 5% of an order, 12 months. Everyone else uses the home programme above.
+Standing orders are mostly businesses, and each run is a normal order, so it earns when delivered.
+
+The **Points** tab of the back office holds both rule sets (with an on/off switch each, the defaults, and a live
+reading of what they cost against the till's 46% margin; a rate that gives back more than 6% of the profit, or a cap
+above half the margin, is flagged) and lists every customer with points, largest first, with search and a filter per
+programme. The rules are stored in D1 (`settings` key `points_rules`) and served at `/public/points-rules`; the
+website reads them live (kept 10 minutes per tab), so a change shows on the site and in the app within minutes,
+with no rebuild. Off = nothing new earned or spent in that programme; balances stay. `site/config.json` `points`
+is only the fallback the pages are built with.
+
+The owner's one-tap WhatsApp messages carry the points: the order confirmation names the points the order will
+earn, a **"delivered + points"** button appears once the order is delivered (points earned, new balance, what it is
+worth), and the reorder reminder names the customer's points and their value. Nothing is sent on its own. A
+returning customer sees a banner under the header of the home and product pages ("You have N loyalty points =
+X MAD off", hidden at 0), and the business page names the business programme.
+
+Tests added: `node --test cloud/tests/points.test.mjs` (now 15), 3 more sabotages (31 in all),
+`python site/tests/admin_points_e2e.py` (the WhatsApp texts, 9 checks) and `python site/tests/rules_e2e.py` (the
+Points tab drives the site; a restaurant on the business rate; 11 checks), with the same e2e server.
+
 ## Phones with a large font (fixed 2026-11-13)
 
 A 360 px phone with a large system font or display size lays pages out at 260-300 CSS px. The header needed ~300 px,

@@ -39,7 +39,10 @@ const CASES = [
   ["points balance check removed", "where (select coalesce(sum(points), 0) from points where phone_norm = ?) >= ?\"", "where ? <> '' or ? > 0\""],
   ["points earned before delivery", 'o.status === "delivered" && (o.pay', 'o.status !== "cancelled" && (o.pay'],
   ["points spent without the phone's order number", "if (!(await phoneProof(env, pn, b.known))) return", "if (false) return"],
-  ["points 10% cap removed", "Number(total || 0) * POINTS.max_share", "Number(total || 0) * 100"],
+  ["points 10% cap removed", "Number(total || 0) * r.max_share", "Number(total || 0) * 100"],
+  ["points still earned when switched off", "if (!r.enabled) return; // the programme is switched off", "if (false) return; //"],
+  ["owner's rules not validated", 'if (out.min < out.step) throw new Http(400, "min: at least one step (" + out.step + " points)");', ""],
+  ["businesses on the home-cook rules", 'const rulesFor = (kind) => RULES[kind === "pro" ? "pro" : "home"];', "const rulesFor = (kind) => RULES.home;"],
   ["lapsed points kept", "if (balance > 0 && last && Date.parse(last) + lifeMs < Date.now()) {", "if (false) {"],
 ];
 

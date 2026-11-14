@@ -761,7 +761,8 @@ def pro_page(lang, products, cats):
 </div></section>
 <section class="wrap standing-info" id="standing"><h2>{esc(t['st_title'])}</h2>
 <ol class="how">{"".join(f"<li>{esc(x)}</li>" for x in t["st_body"])}</ol>
-<div class="cta"><a class="btn" href="{url(lang)}#products">{esc(t['st_cta'])}</a></div></section>
+<div class="cta"><a class="btn" href="{url(lang)}#products">{esc(t['st_cta'])}</a></div>
+<p class="pts-pro" data-pts-pro hidden></p></section>
 <section class="wrap related"><h2>{esc(t['pro_top'])}</h2><ul class="grid">{grid}</ul></section>
 <section class="band" id="quote"><div class="wrap quote">
 <h2>{esc(t['q_title'])}</h2><p>{esc(t['q_intro'])}</p>
@@ -806,12 +807,21 @@ def pts_how(lang):
     fill = {"{per}": PTS["mad_per_point"], "{step}": PTS["step"], "{mad}": PTS["step_mad"], "{min}": PTS["min"],
             "{share}": round(PTS["max_share"] * 100), "{months}": round(PTS["life_days"] / 30.4)}
     rules = []
-    for k in ("pts_r1", "pts_r2", "pts_r3", "pts_r4"):
+    for i, k in enumerate(("pts_r1", "pts_r2", "pts_r3", "pts_r4"), 1):
         line = t[k]
         for a, b in fill.items():
             line = line.replace(a, str(b))
-        rules.append(f"<li>{esc(line)}</li>")
-    return f'<details class="pts-how"><summary>{esc(t["pts_how"])}</summary><ul>{"".join(rules)}</ul></details>'
+        rules.append(f'<li data-pts-rule="{i}">{esc(line)}</li>')
+    return f'<details class="pts-how" data-pts-how><summary>{esc(t["pts_how"])}</summary><ul>{"".join(rules)}</ul></details>'
+
+
+def pts_banner(lang):
+    """A returning customer's balance, under the header of the home and product pages (filled by site.js)."""
+    if not PTS:
+        return ""
+    t = T[lang]
+    return (f'<div class="wrap pts-bar-w" data-pts-banner hidden><button type="button" class="pts-bar" data-open-orders-foot>'
+            f'<span data-pts-banner-t></span><span class="pts-bar-go">{esc(t["my_orders"])} ›</span></button></div>')
 
 
 def pts_find(lang):
@@ -966,7 +976,8 @@ def page_data(lang, products, cats):
                                 "sh_btn", "sh_title", "sh_more", "sh_text", "sh_saved", "name", "kicker",
                                 "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen", "in_cart", "order_now",
                                 "pts_earn", "pts_use", "pts_bal", "pts_worth", "pts_pend", "pts_exp", "pts_short", "pts_used",
-                                "pts_none", "pts_later", "pts_due", "pts_find_no")},
+                                "pts_none", "pts_later", "pts_due", "pts_find_no", "pts_banner", "pts_r1", "pts_r2", "pts_r3",
+                                "pts_r4", "pts_pro")},
         "maps": CFG["maps_url"], "pro": url(lang, "pro/"),
         "waze": (f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={CFG['geo'][0]}%2C{CFG['geo'][1]}&navigate=yes" if CFG.get("google_place_id")
                  else f"https://waze.com/ul?ll={CFG['geo'][0]},{CFG['geo'][1]}&navigate=yes"),
@@ -1062,6 +1073,7 @@ def home(lang, products, cats, stamp_day):
 <body>
 {header(lang, '')}
 <main>
+{pts_banner(lang)}
 <section class="hero">
 <div class="wrap hero-grid">
 <div class="hero-in">
@@ -1187,6 +1199,7 @@ def product_page(lang, p, products, cats):
 <body data-product="{p['id']}">
 {header(lang, path)}
 <main>
+{pts_banner(lang)}
 <div class="wrap crumbs"><a class="back-btn" href="{url(lang)}#products" data-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>{esc(t['back'])}</span></a>
 <span class="crumb-cat" style="--c:{cat['color']}">{esc(cat[lang])}</span></div>
 <section class="wrap product" style="--c:{cat['color']}">

@@ -27,7 +27,8 @@ with sync_playwright() as p:
             ctx.add_init_script("try{localStorage.setItem('almas-cart-v1', JSON.stringify({p73: 1, p13: 0.5}))}catch(e){}")
             page = ctx.new_page()
             for path in PAGES:
-                page.goto(BASE + path, wait_until="networkidle", timeout=60000)
+                page.goto(BASE + path, wait_until="load", timeout=90000)
+                page.wait_for_timeout(600)
                 if zoom != 1:
                     page.evaluate("z => { document.documentElement.style.zoom = z; }", str(zoom))
                 # every element that pushes out of its box without being a scroller of its own

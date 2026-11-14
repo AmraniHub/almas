@@ -94,16 +94,37 @@ function waButton(phone, msg, label) {
   if (!phone) return null;
   return h("a", { class: "btn wa", href: waLink(phone, msg), target: "_blank", rel: "noopener noreferrer" }, label || "WhatsApp");
 }
-function orderMessage(o) {
-  const total = Math.round(Number(o.total || 0) * 100) / 100;
+// Loyalty points in the owner's one-tap WhatsApp messages (he still presses Send). rules = POINTS from the worker.
+const PTS_DEFAULT = { mad_per_point: 10, step: 100, step_mad: 10, min: 100 };
+const madNum = (n) => Math.round(Number(n || 0) * 100) / 100;
+function orderMessage(o, points, rules) {
+  const r = rules || PTS_DEFAULT;
+  const total = madNum(o.total);
+  const spent = (points || []).find((x) => x.kind === "redeem");
+  const due = r.enabled === false ? 0 : Math.floor(Number(o.total || 0) / r.mad_per_point + 1e-9);
   return `السلام عليكم ${o.name || ""}، شكرا لطلبكم من ${SHOP_AR}. نؤكد استلام طلبكم رقم ${o.id} بمبلغ إجمالي قدره ${total} درهم. ` +
+    (spent ? `وقد خصمنا منه ${madNum(spent.mad)} درهم بـ${-spent.points} نقطة من نقاط الوفاء. ` : "") +
+    (due > 0 && o.status !== "cancelled" && o.status !== "delivered" ? `وعند التسليم نضيف إلى رصيدكم ${due} نقطة وفاء. ` : "") +
     "نرجو تأكيد العنوان والوقت المناسب للتوصيل. مع خالص التحية.";
+}
+// after delivery: the points this order just earned, the new balance and what it is worth
+function deliveredMessage(o, earned, st, rules) {
+  const r = rules || PTS_DEFAULT;
+  const bal = st ? st.balance : earned;
+  const worth = Math.floor(bal / r.step) * r.step_mad;
+  return `السلام عليكم ${o.name || ""}، تم تسليم طلبكم رقم ${o.id} من ${SHOP_AR}، شكرا لثقتكم. ` +
+    `أضفنا إلى رصيدكم ${earned} نقطة وفاء، فأصبح رصيدكم ${bal} نقطة` +
+    (worth > 0 ? `، أي خصم ${worth} درهم على طلبكم القادم من الموقع أو التطبيق.`
+      : `. عند ${r.min} نقطة تحصلون على خصم ${r.step_mad} دراهم على طلبكم القادم.`) + " بالهناء والشفاء.";
 }
 function reorderMessage(r) {
   const list = r.items.slice(0, 6).map((x) => qty(x.qty, x.unit) + " " + x.name).join("، ");
   return `السلام عليكم ${r.business || r.name || ""}، نرجو أن تكونوا بخير. مضى ${r.days} يومًا على طلبكم الأخير من ${SHOP_AR}` +
-    (list ? ` (${list})` : "") + ". هل تودّون أن نجهّز لكم الطلب نفسه؟ يكفي أن تردّوا بـ«نعم» أو ترسلوا التعديلات.";
+    (list ? ` (${list})` : "") + ". هل تودّون أن نجهّز لكم الطلب نفسه؟ يكفي أن تردّوا بـ«نعم» أو ترسلوا التعديلات." +
+    (r.points_mad > 0 ? ` ولديكم ${r.points} نقطة وفاء تساوي خصم ${madNum(r.points_mad)} درهم على طلبكم القادم من الموقع أو التطبيق.` : "");
 }
+// for the browser tests: the message builders, called with sample data
+window.almasMessages = { orderMessage, deliveredMessage, reorderMessage };
 // one basket line per product, each in its own direction: Arabic names and Latin quantities do not scramble
 function itemsLine(items) {
   return h("span", { class: "items-line" }, items.map((x) => h("span", { class: "it", dir: "auto" }, qty(x.qty, x.unit) + " " + (x.name_till || x.name || x.product))));
@@ -269,7 +290,8 @@ async function overviewView() {
       kpi("Unpaid bank transfers", d.unpaid_bank.orders, money(d.unpaid_bank.amount), "#orders?pay=bank&paid=0", d.unpaid_bank.orders > 0),
       kpi("Pending reviews", d.pending_reviews, "to publish or hide", "#reviews", d.pending_reviews > 0),
       kpi("New quote requests", d.new_quotes, "restaurants, hotels, events", "#quotes?status=new", d.new_quotes > 0),
-      d.points_out ? kpi("Loyalty points out", d.points_out.points, "worth up to " + money(d.points_out.mad) + " · " + d.points_out.customers + " customers") : null),
+      d.points_out ? kpi("Loyalty points", d.points_out.home.points + d.points_out.pro.points,
+        "worth " + money(d.points_out.home.mad + d.points_out.pro.mad) + " · " + (d.points_out.home.customers + d.points_out.pro.customers) + " customers", "#points") : null),
     (d.standing_due || []).length || d.standing_pending ? h("div", { class: "card" }, h("h2", {}, "Standing orders"),
       d.standing_pending ? h("p", {}, h("a", { href: "#standing?status=pending" }, d.standing_pending + (d.standing_pending === 1 ? " new request" : " new requests")), " waiting for your OK.") : null,
       (d.standing_due || []).length ? h("div", { class: "rows" }, d.standing_due.map(standingRowView)) : null) : null,
@@ -278,7 +300,8 @@ async function overviewView() {
       h("div", { class: "rows" }, d.reorder.map((r) => h("div", { class: "row" },
         h("div", { class: "main" },
           h("div", {}, h("a", { href: "#customer/" + encodeURIComponent(r.phone_norm) }, h("b", { dir: "auto" }, r.business || r.name || "+" + r.phone_norm)), " ", chip(r.kind)),
-          h("div", { class: "small muted" }, r.days + " days since the last order" + (r.gap ? " · usually every " + r.gap + " days" : "") + " · " + r.orders + (r.orders === 1 ? " order" : " orders")),
+          h("div", { class: "small muted" }, r.days + " days since the last order" + (r.gap ? " · usually every " + r.gap + " days" : "") + " · " + r.orders + (r.orders === 1 ? " order" : " orders") +
+            (r.points ? " · " + r.points + " points" + (r.points_mad ? " (" + money(r.points_mad) + ")" : "") : "")),
           h("div", { class: "small" }, itemsLine(r.items))),
         h("div", { class: "side" }, waButton(r.phone_norm, reorderMessage(r), "WhatsApp reminder")))))) : null,
     h("div", { class: "grid2" },
@@ -393,7 +416,8 @@ async function orderView(id) {
       h("div", {},
         h("div", { class: "card" }, h("h2", {}, "Items"), itemsTable(d.items, o.total, d.points),
           h("div", { class: "actions" },
-            waButton(o.phone_norm, orderMessage(o), "WhatsApp confirmation"),
+            waButton(o.phone_norm, orderMessage(o, d.points, d.points_rules), "WhatsApp confirmation"),
+            earnedRow(d) ? waButton(o.phone_norm, deliveredMessage(o, earnedRow(d).points, d.customer_points, d.points_rules), "WhatsApp: delivered + points") : null,
             h("a", { class: "btn ghost", href: "#slip/" + encodeURIComponent(o.id) }, "Packing slip"))),
         h("div", { class: "card" }, h("h2", {}, "Status"),
           h("div", { class: "actions" }, status, h("button", { type: "button", onclick: () => save({ status: status.value }, "Status saved") }, "Save status")),
@@ -428,6 +452,7 @@ async function orderView(id) {
           })))));
 }
 
+const earnedRow = (d) => (d.points || []).find((r) => r.kind === "earn");
 const POINT_KIND = { earn: "earned", redeem: "spent", adjust: "set by you", expire: "lapsed" };
 function orderPoints(o, rows, rules) {
   const spent = rows.find((r) => r.kind === "redeem"), earned = rows.find((r) => r.kind === "earn");
@@ -460,6 +485,96 @@ function pointsCard(c, st) {
           toast(e.message, true);
         }
       } }, "Save"))));
+}
+
+// ---------- Points tab: the two programmes' rules, and every customer's points ----------
+const MARGIN = 0.46; // gross margin measured at the till (Aug-Nov 2026, products with a buy price); a guide, not a rule
+const PROG = { home: "Home cooks", pro: "Businesses (restaurants, hotels, events)" };
+const RULE_FIELDS = [
+  ["mad_per_point", "MAD paid for 1 point", 1],
+  ["step", "Points per discount step", 1],
+  ["step_mad", "Discount per step (MAD)", 1],
+  ["min", "Fewest points that can be spent", 1],
+  ["max_share", "At most this % of one order", 100],
+  ["life_days", "Points last (days after the last earning order)", 1],
+];
+function rulesSummary(r) {
+  const back = r.step_mad / (r.step * r.mad_per_point); // MAD back per MAD paid
+  const first = r.min * r.mad_per_point; // MAD of orders before the first discount
+  const firstOff = Math.floor(r.min / r.step) * r.step_mad;
+  const lines = [
+    `${madNum(back * 100)}% back: a used point costs about ${madNum((back / MARGIN) * 100)}% of the profit of the sale that earned it (at a ${MARGIN * 100}% margin).`,
+    `A customer needs ${madNum(first)} MAD of delivered orders for the first ${firstOff} MAD off, used on an order of at least ${madNum(firstOff / r.max_share)} MAD.`,
+  ];
+  const warn = back / MARGIN > 0.06 ? "High for the shop's margins: more than 6% of the profit goes back." :
+    r.max_share > MARGIN / 2 ? "The cap is high: on a low-margin product (saffron 14%) one order could sell below cost." : "";
+  return { lines, warn };
+}
+function rulesCard(kind, r, dflt) {
+  const inputs = {};
+  const on = h("input", { type: "checkbox", id: "pts-on-" + kind, checked: r.enabled });
+  const sum = h("div", { class: "small" });
+  const update = () => {
+    const v = readRules();
+    const s = rulesSummary(v);
+    clear(sum, ...s.lines.map((l) => h("p", { class: "muted" }, l)), s.warn ? h("p", { class: "err" }, s.warn) : null,
+      v.enabled ? null : h("p", { class: "err" }, "Switched off: nothing is earned or spent in this programme; balances stay."));
+  };
+  function readRules() {
+    const v = { enabled: on.checked };
+    for (const [k, , mult] of RULE_FIELDS) v[k] = Number(inputs[k].value) / mult;
+    return v;
+  }
+  const fields = RULE_FIELDS.map(([k, label, mult]) => {
+    inputs[k] = h("input", { type: "number", id: "pts-" + kind + "-" + k, min: "0", step: k === "max_share" ? "0.5" : "1", value: madNum(r[k] * mult) });
+    inputs[k].addEventListener("input", update);
+    return h("div", { class: "field" }, h("label", { for: "pts-" + kind + "-" + k }, label,
+      h("span", { class: "small muted" }, " (default " + madNum(dflt[k] * mult) + ")")), inputs[k]);
+  });
+  on.addEventListener("change", update);
+  update();
+  const card = h("div", { class: "card" }, h("h2", {}, PROG[kind]),
+    h("div", { class: "actions" }, on, h("label", { for: "pts-on-" + kind }, "Programme on")), ...fields, sum,
+    h("div", { class: "actions" }, h("button", { type: "button", class: "ghost small", onclick: () => {
+      for (const [k, , mult] of RULE_FIELDS) inputs[k].value = madNum(dflt[k] * mult);
+      on.checked = true; update();
+    } }, "Back to the defaults")));
+  card.readRules = readRules;
+  return card;
+}
+async function pointsView(params) {
+  markNav("points");
+  const [d] = await Promise.all([api("points/list?" + params)]);
+  const cards = { home: rulesCard("home", d.rules.home, d.defaults.home), pro: rulesCard("pro", d.rules.pro, d.defaults.pro) };
+  const save = h("button", { type: "button", onclick: async () => {
+    try {
+      await api("points/rules", { home: cards.home.readRules(), pro: cards.pro.readRules() });
+      toast("Rules saved: the website and the app use them within a few minutes");
+      render();
+    } catch (e) {
+      toast(e.message, true);
+    }
+  } }, "Save both programmes");
+  const t = d.total;
+  const row = (c) => h("a", { class: "row", href: "#customer/" + encodeURIComponent(c.phone_norm) },
+    h("div", { class: "main" }, h("div", {}, h("b", { dir: "auto" }, c.business || c.name || "+" + c.phone_norm), " ", chip(c.kind)),
+      h("div", { class: "small muted" }, "+" + c.phone_norm + " · earned " + c.earned + " · spent " + c.spent +
+        (c.lapsed ? " · lapsed on " + c.lapses : c.lapses ? " · lapses on " + c.lapses : ""))),
+    h("div", { class: "side" }, h("div", {}, h("b", {}, c.balance + " pts")), h("div", { class: "small muted" }, c.lapsed ? "lapsed" : money(c.mad))));
+  clear(view(),
+    h("h1", {}, "Loyalty points"),
+    h("p", { class: "small muted" }, "A customer file marked Pro (a restaurant, hotel or event business) uses the business programme; everyone else the home one. " +
+      "Points are added when you set an order to delivered. Changing the discount per step changes what points already earned are worth."),
+    h("div", { class: "kpis" },
+      h("div", { class: "kpi" }, h("b", {}, t.home.points), h("span", {}, "Home cooks' points"), h("div", { class: "small muted" }, "worth " + money(t.home.mad) + " · " + t.home.customers + " customers")),
+      h("div", { class: "kpi" }, h("b", {}, t.pro.points), h("span", {}, "Businesses' points"), h("div", { class: "small muted" }, "worth " + money(t.pro.mad) + " · " + t.pro.customers + " customers"))),
+    h("div", { class: "grid2 even" }, cards.home, cards.pro),
+    h("div", { class: "actions" }, save),
+    h("h2", {}, "Customers with points"),
+    filterBar(params, [{ name: "q", label: "Name, business or phone" }, { name: "kind", label: "Both programmes", options: [["home", "Home cooks"], ["pro", "Businesses"]] }],
+      (p) => { location.hash = "points" + (p.toString() ? "?" + p : ""); }),
+    d.customers.length ? h("div", { class: "rows" }, d.customers.map(row)) : h("p", { class: "empty" }, "No customer has points yet."),
+    d.more ? h("p", { class: "small muted" }, "Showing the 100 largest balances; search to find others.") : null);
 }
 
 async function slipView(id) {
@@ -712,6 +827,7 @@ async function render() {
     else if (tab === "products") await productsView(params);
     else if (tab === "standing") await standingView(params);
     else if (tab === "sheet") await sheetView();
+    else if (tab === "points") await pointsView(params);
     else await overviewView();
     window.scrollTo(0, 0);
   } catch (e) {

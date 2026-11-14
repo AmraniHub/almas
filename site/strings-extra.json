@@ -129,7 +129,9 @@
     "pts_find_sub": "طلبت من هاتف آخر أو من التطبيق؟ أدخل رقم هاتفك ورقم أحد طلباتك لتظهر نقاطك هنا.",
     "pts_find_order": "رقم الطلب",
     "pts_find_go": "أظهر نقاطي",
-    "pts_find_no": "لم نجد طلبًا بهذا الرقم وهذا الهاتف."
+    "pts_find_no": "لم نجد طلبًا بهذا الرقم وهذا الهاتف.",
+    "pts_banner": "لديك {b} نقطة وفاء = خصم {m}",
+    "pts_pro": "للمهنيين نقاط وفاء خاصة بهم: نقطة عن كل {per} دراهم، وكل {step} نقطة = خصم {mad} دراهم، في حدود {share}% من الطلب."
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -261,7 +263,9 @@
     "pts_find_sub": "Commandé depuis un autre téléphone ou dans l'application ? Entrez votre téléphone et un numéro de commande pour voir vos points ici.",
     "pts_find_order": "Numéro de commande",
     "pts_find_go": "Voir mes points",
-    "pts_find_no": "Aucune commande trouvée avec ce numéro et ce téléphone."
+    "pts_find_no": "Aucune commande trouvée avec ce numéro et ce téléphone.",
+    "pts_banner": "Vous avez {b} points fidélité = {m} de remise",
+    "pts_pro": "Les professionnels ont leurs propres points fidélité : 1 point par tranche de {per} MAD, {step} points = {mad} MAD de remise, jusqu'à {share} % de la commande."
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -393,7 +397,9 @@
     "pts_find_sub": "Ordered on another phone or in the app? Enter your phone and one order number to see your points here.",
     "pts_find_order": "Order number",
     "pts_find_go": "Show my points",
-    "pts_find_no": "No order found with this phone and number."
+    "pts_find_no": "No order found with this phone and number.",
+    "pts_banner": "You have {b} loyalty points = {m} off",
+    "pts_pro": "Businesses have their own loyalty points: 1 point for every {per} MAD, {step} points = {mad} MAD off, up to {share}% of an order."
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -525,6 +531,8 @@
     "pts_find_sub": "¿Pediste desde otro teléfono o en la app? Escribe tu teléfono y un número de pedido para ver tus puntos aquí.",
     "pts_find_order": "Número de pedido",
     "pts_find_go": "Ver mis puntos",
-    "pts_find_no": "No encontramos ningún pedido con este teléfono y número."
+    "pts_find_no": "No encontramos ningún pedido con este teléfono y número.",
+    "pts_banner": "Tienes {b} puntos de fidelidad = {m} de descuento",
+    "pts_pro": "Los profesionales tienen sus propios puntos de fidelidad: 1 punto por cada {per} MAD, {step} puntos = {mad} MAD de descuento, hasta el {share} % del pedido."
   }
 }
