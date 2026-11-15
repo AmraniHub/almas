@@ -177,3 +177,16 @@ test("a card order rewards only once the card payment is in", async () => {
   assert.equal(ref(id).status, "rewarded");
   assert.equal(balance(pnOf("0612000052")), 140);
 });
+
+test("the website can ask whether an invite code is real, and learns nothing else", async () => {
+  const code = await inviter("0612000061");
+  const ask = async (c) => (await (await call("/public/ref-check?code=" + c, { headers: { Origin: SITE } })).json());
+  assert.deepEqual(await ask(code), { ok: true, valid: true });
+  assert.deepEqual(await ask(code.toLowerCase()), { ok: true, valid: true });
+  assert.deepEqual(await ask("ZZZZZZ"), { ok: true, valid: false });
+  assert.deepEqual(await ask("abc"), { ok: true, valid: false });
+  const rules = (await admin("points/rules")).rules;
+  await admin("points/rules", { ...rules, referral: { ...rules.referral, enabled: false } });
+  assert.deepEqual(await ask(code), { ok: true, valid: false }, "invites switched off: no code is promised");
+  await admin("points/rules", { ...rules, referral: { ...rules.referral, enabled: true } });
+});

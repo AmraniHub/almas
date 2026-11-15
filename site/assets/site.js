@@ -1361,19 +1361,32 @@
   var RKEY = "almas-ref-v1", REF_LIFE = 30 * 864e5;
   (function catchRef() {
     var m = /[?&]ref=([A-Za-z0-9]{6})(?:&|$)/.exec(location.search);
-    if (m) store(RKEY, { code: m[1].toUpperCase(), at: new Date().toISOString() });
+    if (m) store(RKEY, { code: m[1].toUpperCase(), at: new Date().toISOString(), ok: null });
   })();
+  // ask the back office once whether the kept code is real; a code it does not know is dropped
+  function checkRef() {
+    var r = load(RKEY, null);
+    if (!r || !r.code || r.ok !== null && r.ok !== undefined || !A.cloud) return;
+    fetch(A.cloud + "/public/ref-check?code=" + encodeURIComponent(r.code)).then(function (x) { return x.ok ? x.json() : null; }).then(function (d) {
+      if (!d) return; // no answer: ask again on the next page
+      if (d.valid) { r.ok = true; store(RKEY, r); } else { try { localStorage.removeItem(RKEY); } catch (e) {} }
+      renderRef();
+    }).catch(function () {});
+  }
+  // the code an order carries: any kept code the back office has not refused (it decides again anyway)
   function refCode() {
     if (!RKEY) return "";
     var r = load(RKEY, null);
-    return r && r.code && Date.now() - Date.parse(r.at) < REF_LIFE && !pastOrders().length ? r.code : "";
+    return r && r.code && r.ok !== false && Date.now() - Date.parse(r.at) < REF_LIFE && !pastOrders().length ? r.code : "";
   }
+  // the welcome line promises points only for a code the back office confirmed
+  function refConfirmed() { var r = RKEY && load(RKEY, null); return !!(refCode() && r && r.ok === true); }
   function refLink(code) { return A.site + (A.site.indexOf("?") < 0 ? "?" : "&") + "ref=" + code; }
   function renderRef() {
     if (!RKEY) return; // render() can run before this part of the file
     var R = REFR, w = $("[data-ref-welcome]"), code = refCode();
     if (w) {
-      var on = !!(code && R && R.enabled && R.newcomer_points > 0);
+      var on = !!(code && refConfirmed() && R && R.enabled && R.newcomer_points > 0);
       w.hidden = !on;
       if (on) w.textContent = A.s.ref_welcome.replace("{n}", R.newcomer_points).replace("{min}", R.min_order);
     }
@@ -1405,6 +1418,7 @@
     if (navigator.clipboard) navigator.clipboard.writeText(refLink(inv.code)).then(done, function () {});
   };
   renderRef();
+  checkRef();
   /* the business page: the businesses' own programme, from the live rules (hidden when switched off) */
   var proLine = $("[data-pts-pro]");
   function renderProLine(pro) {

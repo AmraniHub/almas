@@ -143,8 +143,9 @@ Cost: at most 20 MAD in points per real new customer (at the home value), only w
 profit on a 200 MAD first order. All four numbers and an on/off switch are in the Points tab, which also lists the
 invitations with Approve / Reject. The order page names the inviter and offers a WhatsApp thank-you to them; the
 newcomer's "delivered + points" message names the welcome gift. Tables: `ref_codes`, `referrals` (schema.sql).
-Tests: `node --test cloud/tests/referral.test.mjs` (6), 5 more sabotages (36 in all), `python site/tests/referral_e2e.py`
-(12 checks, the whole flow in the browser).
+A link with a code the back office does not know shows no welcome line and is dropped (`/public/ref-check`).
+Tests: `node --test cloud/tests/referral.test.mjs` (7), 5 more sabotages (36 in all), `python site/tests/referral_e2e.py`
+(14 checks, the whole flow in the browser).
 
 ## Phones with a large font (fixed 2026-11-13)
 

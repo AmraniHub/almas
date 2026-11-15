@@ -717,6 +717,12 @@ async function publicApi(req, env, url) {
   }
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
   if (url.pathname === "/public/points-rules") return json({ ok: true, ...RULES }, 200, { ...c, "Cache-Control": "public, max-age=60" });
+  // is this invite code real? (yes or no, nothing about whose it is) so a mistyped link promises nothing
+  if (url.pathname === "/public/ref-check") {
+    const code = String(url.searchParams.get("code") || "").toUpperCase();
+    const valid = REF_RE.test(code) && RULES.referral.enabled && !!(await first(env, "select 1 x from ref_codes where code = ?", code));
+    return json({ ok: true, valid }, 200, { ...c, "Cache-Control": "public, max-age=300" });
+  }
   if (url.pathname === "/public/reviews") {
     const product = url.searchParams.get("product") || "";
     if (!PRODUCT_RE.test(product)) return json({ ok: false, error: "product" }, 400, c);

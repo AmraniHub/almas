@@ -85,6 +85,14 @@ with sync_playwright() as p:
     a.eval_on_selector("[data-ref-box]", "e => e.scrollIntoView({block: 'center'})")
     shot(a, "ref-1-invite-box")
 
+    # 1b. a mistyped link promises nothing, and the made-up code is dropped
+    x_ctx, x = device()
+    buy(x, "/?ref=ZZZZZZ", 3, "Nadia", phone())
+    x.wait_for_timeout(1500)
+    check(x.is_hidden("[data-ref-welcome]"), "a mistyped invite code shows no welcome line")
+    check(x.evaluate("localStorage.getItem('almas-ref-v1')") is None, "and is dropped from the phone")
+    x_ctx.close()
+
     # 2. the friend, on another phone, from the link
     f_ctx, f = device()
     buy(f, "/?ref=" + code, 3, "Karim", f_tel)
