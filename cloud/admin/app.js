@@ -108,12 +108,12 @@ function orderMessage(o, points, rules) {
     "نرجو تأكيد العنوان والوقت المناسب للتوصيل. مع خالص التحية.";
 }
 // after delivery: the points this order just earned, the new balance and what it is worth
-function deliveredMessage(o, earned, st, rules) {
+function deliveredMessage(o, earned, st, rules, welcome) {
   const r = rules || PTS_DEFAULT;
   const bal = st ? st.balance : earned;
   const worth = Math.floor(bal / r.step) * r.step_mad;
   return `السلام عليكم ${o.name || ""}، تم تسليم طلبكم رقم ${o.id} من ${SHOP_AR}، شكرا لثقتكم. ` +
-    `أضفنا إلى رصيدكم ${earned} نقطة وفاء، فأصبح رصيدكم ${bal} نقطة` +
+    `أضفنا إلى رصيدكم ${earned} نقطة وفاء` + (welcome ? ` و${welcome} نقطة هدية لأنكم جئتم بدعوة من صديق` : "") + `، فأصبح رصيدكم ${bal} نقطة` +
     (worth > 0 ? `، أي خصم ${worth} درهم على طلبكم القادم من الموقع أو التطبيق.`
       : `. عند ${r.min} نقطة تحصلون على خصم ${r.step_mad} دراهم على طلبكم القادم.`) + " بالهناء والشفاء.";
 }
@@ -124,7 +124,7 @@ function reorderMessage(r) {
     (r.points_mad > 0 ? ` ولديكم ${r.points} نقطة وفاء تساوي خصم ${madNum(r.points_mad)} درهم على طلبكم القادم من الموقع أو التطبيق.` : "");
 }
 // for the browser tests: the message builders, called with sample data
-window.almasMessages = { orderMessage, deliveredMessage, reorderMessage };
+window.almasMessages = { orderMessage, deliveredMessage, reorderMessage, thankReferrerMessage: (r, p) => thankReferrerMessage(r, p) };
 // one basket line per product, each in its own direction: Arabic names and Latin quantities do not scramble
 function itemsLine(items) {
   return h("span", { class: "items-line" }, items.map((x) => h("span", { class: "it", dir: "auto" }, qty(x.qty, x.unit) + " " + (x.name_till || x.name || x.product))));
@@ -417,7 +417,8 @@ async function orderView(id) {
         h("div", { class: "card" }, h("h2", {}, "Items"), itemsTable(d.items, o.total, d.points),
           h("div", { class: "actions" },
             waButton(o.phone_norm, orderMessage(o, d.points, d.points_rules), "WhatsApp confirmation"),
-            earnedRow(d) ? waButton(o.phone_norm, deliveredMessage(o, earnedRow(d).points, d.customer_points, d.points_rules), "WhatsApp: delivered + points") : null,
+            earnedRow(d) ? waButton(o.phone_norm, deliveredMessage(o, earnedRow(d).points, d.customer_points, d.points_rules,
+              ((d.points || []).find((x) => x.kind === "welcome") || {}).points || 0), "WhatsApp: delivered + points") : null,
             h("a", { class: "btn ghost", href: "#slip/" + encodeURIComponent(o.id) }, "Packing slip"))),
         h("div", { class: "card" }, h("h2", {}, "Status"),
           h("div", { class: "actions" }, status, h("button", { type: "button", onclick: () => save({ status: status.value }, "Status saved") }, "Save status")),
@@ -441,6 +442,7 @@ async function orderView(id) {
           d.customer ? h("div", { class: "actions" }, h("a", { class: "btn ghost small", href: "#customer/" + encodeURIComponent(d.customer.phone_norm) },
             "Customer file (" + d.customer.orders + " order" + (d.customer.orders === 1 ? "" : "s") + ")")) : null),
         h("div", { class: "card" }, h("h2", {}, "Loyalty points"), orderPoints(o, d.points || [], d.points_rules)),
+        orderReferral(d),
         d.reviews.length ? h("div", { class: "card" }, h("h2", {}, "Reviews from this order"),
           d.reviews.map((r) => h("div", {}, h("span", { class: "stars" }, stars(r.rating)), " ", r.product, " ", chip(r.status), r.verified ? [" ", chip("verified")] : null))) : null,
         h("div", { class: "card noprint" }, h("h2", {}, "Delete"),
@@ -453,7 +455,7 @@ async function orderView(id) {
 }
 
 const earnedRow = (d) => (d.points || []).find((r) => r.kind === "earn");
-const POINT_KIND = { earn: "earned", redeem: "spent", adjust: "set by you", expire: "lapsed" };
+const POINT_KIND = { earn: "earned", redeem: "spent", adjust: "set by you", expire: "lapsed", refer: "invited a friend", welcome: "welcome gift (invited)" };
 function orderPoints(o, rows, rules) {
   const spent = rows.find((r) => r.kind === "redeem"), earned = rows.find((r) => r.kind === "earn");
   const due = rules ? Math.floor(Number(o.total || 0) / rules.mad_per_point + 1e-9) : 0;
@@ -544,17 +546,18 @@ function rulesCard(kind, r, dflt) {
 }
 async function pointsView(params) {
   markNav("points");
-  const [d] = await Promise.all([api("points/list?" + params)]);
-  const cards = { home: rulesCard("home", d.rules.home, d.defaults.home), pro: rulesCard("pro", d.rules.pro, d.defaults.pro) };
+  const [d, refs] = await Promise.all([api("points/list?" + params), api("referrals?" + new URLSearchParams({ status: params.get("ref") || "" }))]);
+  const cards = { home: rulesCard("home", d.rules.home, d.defaults.home), pro: rulesCard("pro", d.rules.pro, d.defaults.pro),
+    referral: referralCard(d.rules.referral, d.defaults.referral, d.rules.home) };
   const save = h("button", { type: "button", onclick: async () => {
     try {
-      await api("points/rules", { home: cards.home.readRules(), pro: cards.pro.readRules() });
+      await api("points/rules", { home: cards.home.readRules(), pro: cards.pro.readRules(), referral: cards.referral.readRules() });
       toast("Rules saved: the website and the app use them within a few minutes");
       render();
     } catch (e) {
       toast(e.message, true);
     }
-  } }, "Save both programmes");
+  } }, "Save the rules");
   const t = d.total;
   const row = (c) => h("a", { class: "row", href: "#customer/" + encodeURIComponent(c.phone_norm) },
     h("div", { class: "main" }, h("div", {}, h("b", { dir: "auto" }, c.business || c.name || "+" + c.phone_norm), " ", chip(c.kind)),
@@ -569,12 +572,94 @@ async function pointsView(params) {
       h("div", { class: "kpi" }, h("b", {}, t.home.points), h("span", {}, "Home cooks' points"), h("div", { class: "small muted" }, "worth " + money(t.home.mad) + " · " + t.home.customers + " customers")),
       h("div", { class: "kpi" }, h("b", {}, t.pro.points), h("span", {}, "Businesses' points"), h("div", { class: "small muted" }, "worth " + money(t.pro.mad) + " · " + t.pro.customers + " customers"))),
     h("div", { class: "grid2 even" }, cards.home, cards.pro),
+    cards.referral,
     h("div", { class: "actions" }, save),
+    h("h2", {}, "Invitations"),
+    h("div", { class: "actions" }, ...[["", "All"], ["review", "Your call"], ["capped", "Over the cap"], ["small", "Too small"], ["pending", "Waiting"], ["rewarded", "Rewarded"], ["rejected", "Rejected"]]
+      .map(([k, l]) => h("a", { class: "btn ghost small" + ((params.get("ref") || "") === k ? " on" : ""), href: "#points" + (k ? "?ref=" + k : "") },
+        l + (k && refs.counts[k] ? " (" + refs.counts[k] + ")" : "")))),
+    refs.referrals.length ? h("div", { class: "rows" }, refs.referrals.map(referralRow)) : h("p", { class: "empty" }, "No invitations yet."),
     h("h2", {}, "Customers with points"),
     filterBar(params, [{ name: "q", label: "Name, business or phone" }, { name: "kind", label: "Both programmes", options: [["home", "Home cooks"], ["pro", "Businesses"]] }],
       (p) => { location.hash = "points" + (p.toString() ? "?" + p : ""); }),
     d.customers.length ? h("div", { class: "rows" }, d.customers.map(row)) : h("p", { class: "empty" }, "No customer has points yet."),
     d.more ? h("p", { class: "small muted" }, "Showing the 100 largest balances; search to find others.") : null);
+}
+
+// ---------- referrals in the Points tab ----------
+const REF_FIELDS = [
+  ["referrer_points", "Points for the customer who invites"],
+  ["newcomer_points", "Welcome points for the new customer"],
+  ["min_order", "Smallest first order that counts (MAD)"],
+  ["month_cap", "Most rewards per inviter in 30 days (more wait for you)"],
+];
+const REF_LABEL = { pending: "waiting for delivery", rewarded: "rewarded", review: "same address: your call", capped: "over the monthly cap: your call",
+  small: "first order too small", approved: "approved by you", rejected: "rejected" };
+function referralCard(r, dflt, home) {
+  const inputs = {};
+  const on = h("input", { type: "checkbox", id: "ref-on", checked: r.enabled });
+  const sum = h("div", { class: "small" });
+  const read = () => { const v = { enabled: on.checked }; for (const [k] of REF_FIELDS) v[k] = Number(inputs[k].value); return v; };
+  const update = () => {
+    const v = read();
+    const cost = ((v.referrer_points + v.newcomer_points) / home.step) * home.step_mad;
+    clear(sum,
+      h("p", { class: "muted" }, `Each real new customer costs at most ${madNum(cost)} MAD in points (at the home-cook value), and only if they are spent. ` +
+        `A first order of ${madNum(v.min_order)} MAD brings about ${madNum(v.min_order * MARGIN)} MAD of profit.`),
+      cost > v.min_order * MARGIN * 0.5 ? h("p", { class: "err" }, "High: the rewards are worth more than half the profit of the smallest first order that counts.") : null,
+      v.enabled ? null : h("p", { class: "err" }, "Switched off: no invite links, nothing rewarded."));
+  };
+  const fields = REF_FIELDS.map(([k, label]) => {
+    inputs[k] = h("input", { type: "number", id: "ref-" + k, min: "0", step: "1", value: r[k] });
+    inputs[k].addEventListener("input", update);
+    return h("div", { class: "field" }, h("label", { for: "ref-" + k }, label, h("span", { class: "small muted" }, " (default " + dflt[k] + ")")), inputs[k]);
+  });
+  on.addEventListener("change", update);
+  update();
+  const card = h("div", { class: "card" }, h("h2", {}, "Invite a friend"),
+    h("p", { class: "small muted" }, "A customer with a delivered order gets an invite link. A new customer (a phone that never ordered) who orders with it: when that first order is delivered, both get points. " +
+      "Never on their own number, once per new customer, and only after you deliver."),
+    h("div", { class: "actions" }, on, h("label", { for: "ref-on" }, "Invites on")), ...fields, sum);
+  card.readRules = read;
+  return card;
+}
+async function referralDecide(order_id, action) {
+  try {
+    await api("referral", { order_id, action });
+    toast(action === "approve" ? "Approved: the points are added when the order is delivered" : "Rejected");
+    render();
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+function referralRow(r) {
+  const who = (n, b, pn) => h("a", { href: "#customer/" + encodeURIComponent(pn) }, h("b", { dir: "auto" }, b || n || "+" + pn));
+  const waits = ["review", "capped", "small"].includes(r.status);
+  return h("div", { class: "row" },
+    h("div", { class: "main" },
+      h("div", {}, who(r.referrer_name, r.referrer_business, r.referrer), " invited ", who(r.referee_name, "", r.referee), " ", chip(r.status === "rewarded" ? "paid" : r.status === "rejected" ? "cancelled" : "pending")),
+      h("div", { class: "small muted" }, REF_LABEL[r.status] || r.status, r.note ? " · " + r.note : "", " · first order ",
+        h("a", { href: "#order/" + encodeURIComponent(r.order_id) }, r.order_id), r.order_status ? " (" + r.order_status + ", " + money(r.order_total) + ")" : "")),
+    h("div", { class: "side actions" },
+      waits ? h("button", { type: "button", class: "small", onclick: () => referralDecide(r.order_id, "approve") }, "Approve") : null,
+      r.status !== "rejected" ? h("button", { type: "button", class: "ghost small", onclick: () => referralDecide(r.order_id, "reject") }, "Reject") : null));
+}
+function thankReferrerMessage(r, pts) {
+  return `السلام عليكم ${r.referrer_name || ""}، شكرا لأنكم دعوتم صديقا إلى ${SHOP_AR}. تم تسليم طلبه الأول، فأضفنا إلى رصيدكم ${pts} نقطة وفاء. بارك الله فيكم.`;
+}
+function orderReferral(d) {
+  const r = d.referral;
+  if (!r) return null;
+  const refer = (d.points || []).find((x) => x.kind === "refer");
+  const waits = ["review", "capped", "small"].includes(r.status);
+  return h("div", { class: "card" }, h("h2", {}, "Invited by a customer"),
+    h("p", {}, h("a", { href: "#customer/" + encodeURIComponent(r.referrer) }, h("b", { dir: "auto" }, r.referrer_business || r.referrer_name || "+" + r.referrer)),
+      " (code " + r.code + ")"),
+    h("p", { class: "small muted" }, REF_LABEL[r.status] || r.status, r.note ? " · " + r.note : ""),
+    h("div", { class: "actions" },
+      waits ? h("button", { type: "button", class: "small", onclick: () => referralDecide(r.order_id, "approve") }, "Approve") : null,
+      r.status !== "rejected" ? h("button", { type: "button", class: "ghost small", onclick: () => referralDecide(r.order_id, "reject") }, "Reject") : null,
+      refer ? waButton(r.referrer, thankReferrerMessage(r, refer.points), "WhatsApp: thank the inviter") : null));
 }
 
 async function slipView(id) {

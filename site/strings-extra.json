@@ -131,7 +131,15 @@
     "pts_find_go": "أظهر نقاطي",
     "pts_find_no": "لم نجد طلبًا بهذا الرقم وهذا الهاتف.",
     "pts_banner": "لديك {b} نقطة وفاء = خصم {m}",
-    "pts_pro": "للمهنيين نقاط وفاء خاصة بهم: نقطة عن كل {per} دراهم، وكل {step} نقطة = خصم {mad} دراهم، في حدود {share}% من الطلب."
+    "pts_pro": "للمهنيين نقاط وفاء خاصة بهم: نقطة عن كل {per} دراهم، وكل {step} نقطة = خصم {mad} دراهم، في حدود {share}% من الطلب.",
+    "ref_title": "ادعُ صديقًا",
+    "ref_sub": "عندما يطلب صديق لأول مرة برابطك (من {min} درهم) ويُسلَّم طلبه، تحصل على {p} نقطة ويحصل صديقك على {n} نقطة هدية.",
+    "ref_share": "شارك رابطي",
+    "ref_copy": "انسخ الرابط",
+    "ref_msg": "أشتري توابلي وأعشابي من معشبة ألماس. اطلب برابطي واحصل على {n} نقطة وفاء هدية مع أول طلب: {link}",
+    "ref_welcome": "🎁 جئت بدعوة من صديق: عند تسليم أول طلب لك (من {min} درهم) تحصل على {n} نقطة هدية.",
+    "ref_friends": "{f} من أصدقائك طلبوا برابطك",
+    "ref_wait": "سيظهر رابط الدعوة الخاص بك بعد تسليم أول طلب لك."
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -265,7 +273,15 @@
     "pts_find_go": "Voir mes points",
     "pts_find_no": "Aucune commande trouvée avec ce numéro et ce téléphone.",
     "pts_banner": "Vous avez {b} points fidélité = {m} de remise",
-    "pts_pro": "Les professionnels ont leurs propres points fidélité : 1 point par tranche de {per} MAD, {step} points = {mad} MAD de remise, jusqu'à {share} % de la commande."
+    "pts_pro": "Les professionnels ont leurs propres points fidélité : 1 point par tranche de {per} MAD, {step} points = {mad} MAD de remise, jusqu'à {share} % de la commande.",
+    "ref_title": "Invitez un ami",
+    "ref_sub": "Quand un ami passe sa première commande avec votre lien (dès {min} MAD) et qu'elle est livrée, vous recevez {p} points et votre ami {n} points de bienvenue.",
+    "ref_share": "Partager mon lien",
+    "ref_copy": "Copier le lien",
+    "ref_msg": "J'achète mes épices et herbes chez Almas. Commandez avec mon lien et recevez {n} points fidélité offerts sur votre première commande : {link}",
+    "ref_welcome": "🎁 Invité par un ami : à la livraison de votre première commande (dès {min} MAD), vous recevez {n} points de bienvenue.",
+    "ref_friends": "{f} amis ont commandé avec votre lien",
+    "ref_wait": "Votre lien d'invitation apparaît après votre première commande livrée."
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -399,7 +415,15 @@
     "pts_find_go": "Show my points",
     "pts_find_no": "No order found with this phone and number.",
     "pts_banner": "You have {b} loyalty points = {m} off",
-    "pts_pro": "Businesses have their own loyalty points: 1 point for every {per} MAD, {step} points = {mad} MAD off, up to {share}% of an order."
+    "pts_pro": "Businesses have their own loyalty points: 1 point for every {per} MAD, {step} points = {mad} MAD off, up to {share}% of an order.",
+    "ref_title": "Invite a friend",
+    "ref_sub": "When a friend places a first order with your link (from {min} MAD) and it is delivered, you get {p} points and your friend gets {n} welcome points.",
+    "ref_share": "Share my link",
+    "ref_copy": "Copy link",
+    "ref_msg": "I buy my spices and herbs from Almas. Order with my link and get {n} free loyalty points on your first order: {link}",
+    "ref_welcome": "🎁 Invited by a friend: when your first order (from {min} MAD) is delivered, you get {n} welcome points.",
+    "ref_friends": "{f} friends ordered with your link",
+    "ref_wait": "Your invite link appears after your first delivered order."
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -533,6 +557,14 @@
     "pts_find_go": "Ver mis puntos",
     "pts_find_no": "No encontramos ningún pedido con este teléfono y número.",
     "pts_banner": "Tienes {b} puntos de fidelidad = {m} de descuento",
-    "pts_pro": "Los profesionales tienen sus propios puntos de fidelidad: 1 punto por cada {per} MAD, {step} puntos = {mad} MAD de descuento, hasta el {share} % del pedido."
+    "pts_pro": "Los profesionales tienen sus propios puntos de fidelidad: 1 punto por cada {per} MAD, {step} puntos = {mad} MAD de descuento, hasta el {share} % del pedido.",
+    "ref_title": "Invita a un amigo",
+    "ref_sub": "Cuando un amigo hace su primer pedido con tu enlace (desde {min} MAD) y se entrega, recibes {p} puntos y tu amigo {n} puntos de bienvenida.",
+    "ref_share": "Compartir mi enlace",
+    "ref_copy": "Copiar enlace",
+    "ref_msg": "Compro mis especias y hierbas en Almas. Pide con mi enlace y recibe {n} puntos de fidelidad de regalo en tu primer pedido: {link}",
+    "ref_welcome": "🎁 Invitado por un amigo: cuando se entregue tu primer pedido (desde {min} MAD), recibes {n} puntos de bienvenida.",
+    "ref_friends": "{f} amigos pidieron con tu enlace",
+    "ref_wait": "Tu enlace de invitación aparece tras tu primer pedido entregado."
   }
 }

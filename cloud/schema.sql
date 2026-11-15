@@ -138,3 +138,21 @@ create table if not exists points (
 );
 create index if not exists points_phone on points (phone_norm, at);
 create unique index if not exists points_order on points (order_id, kind) where order_id <> '';
+
+-- referrals: an invite code per customer with a delivered order, and one row per newcomer's first order that came
+-- with a code. status: pending, rewarded, review (same address as the inviter), capped (too many this month),
+-- small (first order under the minimum), approved (by the owner), rejected. A newcomer can be invited once.
+create table if not exists ref_codes (phone_norm text primary key, code text not null, created_at text not null);
+create unique index if not exists ref_codes_code on ref_codes (code);
+create table if not exists referrals (
+  order_id text primary key,
+  code text not null,
+  referrer text not null,
+  referee text not null,
+  status text not null default 'pending',
+  note text not null default '',
+  at text not null,
+  decided_at text
+);
+create unique index if not exists referrals_referee on referrals (referee);
+create index if not exists referrals_referrer on referrals (referrer, status, decided_at);

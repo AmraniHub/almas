@@ -127,6 +127,7 @@
     if (te) te.textContent = eur(total());
     renderUpsell();
     renderPoints();
+    renderRef();
   }
 
   /* upsell: what goes with the cart, from the shelves that complete it, best sellers first */
@@ -542,6 +543,8 @@
                    items: ids.map(function (id) { return { id: id, q: cart[id] }; }) };
       var spend = pointsToSpend();
       if (spend) { body.redeem = spend; body.known = pastOrders().map(function (o) { return o.n; }); }
+      var invited = refCode();
+      if (invited) body.ref = invited;
       var fallback = function () {
         alert(A.s.fail);
         window.location.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, ""));
@@ -1210,9 +1213,9 @@
      balance comes from the back office for the phone remembered on this device, proved by one of its order numbers
      (the same rule as My orders), and carries that customer's own programme. The back office decides again what may
      really be spent when the order is sent. A switched-off programme shows nothing. */
-  var PTS = A.pts && A.pts.mad_per_point ? A.pts : null, ptsState = null, ptsAt = 0, PSKEY = "almas-pts-v1", PRKEY = "almas-ptsr-v1";
+  var PTS = A.pts && A.pts.mad_per_point ? A.pts : null, ptsState = null, ptsAt = 0, PSKEY = "almas-pts-v1", PRKEY = "almas-ptsr-v1", REFR = null;
   try { var cached = JSON.parse(sessionStorage.getItem(PSKEY) || "null"); if (cached && Date.now() - cached.at < 600000) { ptsState = cached.st; ptsAt = cached.at; } } catch (e) {}
-  try { var cr = JSON.parse(sessionStorage.getItem(PRKEY) || "null"); if (cr && Date.now() - cr.at < 600000 && cr.home) PTS = cr.home; } catch (e) {}
+  try { var cr = JSON.parse(sessionStorage.getItem(PRKEY) || "null"); if (cr && Date.now() - cr.at < 600000 && cr.home) { PTS = cr.home; REFR = cr.referral || null; } } catch (e) {}
   function keepPoints() { try { sessionStorage.setItem(PSKEY, JSON.stringify({ at: ptsAt, st: ptsState })); } catch (e) {} }
   function ptsRules() { return ptsState && ptsState.rules ? ptsState.rules : PTS; } // this customer's programme
   function ptsOn() { var r = ptsRules(); return !!(r && r.mad_per_point && r.enabled !== false); }
@@ -1256,15 +1259,16 @@
     short.textContent = ptsState && !spend && bal < r.min && bal > 0
       ? A.s.pts_short.replace("{n}", r.min - bal).replace("{mad}", r.step_mad) : "";
   }
-  function renderAllPoints() { renderRules(); renderPoints(); renderPointsCard(); renderBanner(); showFind(); }
+  function renderAllPoints() { renderRules(); renderPoints(); renderPointsCard(); renderBanner(); showFind(); renderRef(); }
   function loadRules() {
     if (!PTS || !A.cloud) return;
     try { var c = JSON.parse(sessionStorage.getItem(PRKEY) || "null"); if (c && Date.now() - c.at < 600000) return; } catch (e) {}
     fetch(A.cloud + "/public/points-rules").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d || !d.home || !d.home.mad_per_point) return;
       PTS = d.home;
+      REFR = d.referral || null;
       if (ptsState && d[ptsState.kind]) ptsState.rules = d[ptsState.kind];
-      try { sessionStorage.setItem(PRKEY, JSON.stringify({ at: Date.now(), home: d.home, pro: d.pro })); } catch (e) {}
+      try { sessionStorage.setItem(PRKEY, JSON.stringify({ at: Date.now(), home: d.home, pro: d.pro, referral: d.referral })); } catch (e) {}
       renderAllPoints();
     }).catch(function () {});
   }
@@ -1327,8 +1331,8 @@
     if (n) out += " " + A.s.pts_later.replace("{n}", n);
     ptsAt = 0; // the balance changed: ask again next time
     if (d.points_used && ptsState) ptsState.balance -= d.points_used;
-    try { sessionStorage.removeItem(PSKEY); } catch (e) {}
-    renderBanner();
+    try { sessionStorage.removeItem(PSKEY); localStorage.removeItem("almas-ref-v1"); } catch (e) {}
+    renderBanner(); renderRef();
     return out;
   }
   var ptsBox = $("[data-pts-box]");
@@ -1350,6 +1354,57 @@
   loadRules();
   if ($("[data-pts-banner]")) loadPoints(false);
   renderPoints();
+
+  /* Invite a friend. A link ?ref=CODE is kept on this device for 30 days; the first order sent from a device with no
+     earlier order carries it, and the back office decides whether it counts (a new phone, delivered, the minimum).
+     A customer with a delivered order sees their own link under My orders, with Share and Copy. */
+  var RKEY = "almas-ref-v1", REF_LIFE = 30 * 864e5;
+  (function catchRef() {
+    var m = /[?&]ref=([A-Za-z0-9]{6})(?:&|$)/.exec(location.search);
+    if (m) store(RKEY, { code: m[1].toUpperCase(), at: new Date().toISOString() });
+  })();
+  function refCode() {
+    if (!RKEY) return "";
+    var r = load(RKEY, null);
+    return r && r.code && Date.now() - Date.parse(r.at) < REF_LIFE && !pastOrders().length ? r.code : "";
+  }
+  function refLink(code) { return A.site + (A.site.indexOf("?") < 0 ? "?" : "&") + "ref=" + code; }
+  function renderRef() {
+    if (!RKEY) return; // render() can run before this part of the file
+    var R = REFR, w = $("[data-ref-welcome]"), code = refCode();
+    if (w) {
+      var on = !!(code && R && R.enabled && R.newcomer_points > 0);
+      w.hidden = !on;
+      if (on) w.textContent = A.s.ref_welcome.replace("{n}", R.newcomer_points).replace("{min}", R.min_order);
+    }
+    var box = $("[data-ref-box]");
+    if (!box) return;
+    var inv = ptsState && ptsState.invite;
+    box.hidden = !(inv && R && R.enabled);
+    if (box.hidden) return;
+    $("[data-ref-sub]").textContent = inv.code ? A.s.ref_sub.replace("{min}", R.min_order).replace("{p}", R.referrer_points).replace("{n}", R.newcomer_points) : A.s.ref_wait;
+    $("[data-ref-link]").textContent = inv.code ? refLink(inv.code) : "";
+    $("[data-ref-acts]").hidden = !inv.code;
+    $("[data-ref-friends]").textContent = inv.friends ? A.s.ref_friends.replace("{f}", inv.friends) : "";
+  }
+  function refMessage() {
+    var inv = ptsState && ptsState.invite, R = REFR;
+    return inv && inv.code && R ? A.s.ref_msg.replace("{n}", R.newcomer_points).replace("{link}", refLink(inv.code)) : "";
+  }
+  var rs = $("[data-ref-share]"), rcp = $("[data-ref-copy]");
+  if (rs) rs.onclick = function () {
+    var msg = refMessage();
+    if (!msg) return;
+    if (navigator.share) navigator.share({ text: msg }).catch(function () {});
+    else window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
+  };
+  if (rcp) rcp.onclick = function () {
+    var inv = ptsState && ptsState.invite;
+    if (!inv || !inv.code) return;
+    var old = rcp.textContent, done = function () { rcp.textContent = A.s.copied; setTimeout(function () { rcp.textContent = old; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(refLink(inv.code)).then(done, function () {});
+  };
+  renderRef();
   /* the business page: the businesses' own programme, from the live rules (hidden when switched off) */
   var proLine = $("[data-pts-pro]");
   function renderProLine(pro) {

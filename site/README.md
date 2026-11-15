@@ -118,6 +118,34 @@ Tests added: `node --test cloud/tests/points.test.mjs` (now 15), 3 more sabotage
 `python site/tests/admin_points_e2e.py` (the WhatsApp texts, 9 checks) and `python site/tests/rules_e2e.py` (the
 Points tab drives the site; a restaurant on the business rate; 11 checks), with the same e2e server.
 
+### Invite a friend (2026-11-15)
+
+A customer with a delivered order gets an invite code (6 letters, no 0/O/1/I/L), shown under My orders as a link
+`https://almas-epices.vercel.app/?ref=CODE` with Share (the phone's share sheet, or WhatsApp) and Copy. A visitor who
+arrives with `?ref=` keeps it on that device for 30 days; the first order sent from a device with no earlier order
+carries it (`/api/order` passes `ref`, the shop's Telegram message says so). The back office decides, in
+`registerReferral` and `syncReferral` (`cloud/worker.js`):
+
+| Check | What happens |
+|---|---|
+| the inviter's own phone | rejected ("own invite code") |
+| the newcomer's phone has ordered before | rejected ("not a new customer") |
+| the newcomer was already invited | ignored: one invitation per newcomer, ever (unique `referee`) |
+| the inviter has no delivered order | no code exists to share |
+| the newcomer's address is the inviter's last delivered address | waits for the owner ("review", same household) |
+| the first order is not delivered (or a card order not paid) | nothing yet |
+| the first order is under `min_order` (200 MAD) | "small": nothing, the owner may approve |
+| the inviter already has `month_cap` (5) rewards in 30 days | "capped": the owner may approve |
+| otherwise, on delivery | the inviter gets 100 points (`refer`), the newcomer 100 (`welcome`) |
+| the order is cancelled or deleted | both rewards go back |
+
+Cost: at most 20 MAD in points per real new customer (at the home value), only when spent, against about 92 MAD of
+profit on a 200 MAD first order. All four numbers and an on/off switch are in the Points tab, which also lists the
+invitations with Approve / Reject. The order page names the inviter and offers a WhatsApp thank-you to them; the
+newcomer's "delivered + points" message names the welcome gift. Tables: `ref_codes`, `referrals` (schema.sql).
+Tests: `node --test cloud/tests/referral.test.mjs` (6), 5 more sabotages (36 in all), `python site/tests/referral_e2e.py`
+(12 checks, the whole flow in the browser).
+
 ## Phones with a large font (fixed 2026-11-13)
 
 A 360 px phone with a large system font or display size lays pages out at 260-300 CSS px. The header needed ~300 px,

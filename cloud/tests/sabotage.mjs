@@ -42,6 +42,11 @@ const CASES = [
   ["points 10% cap removed", "Number(total || 0) * r.max_share", "Number(total || 0) * 100"],
   ["points still earned when switched off", "if (!r.enabled) return; // the programme is switched off", "if (false) return; //"],
   ["owner's rules not validated", 'if (out.min < out.step) throw new Http(400, "min: at least one step (" + out.step + " points)");', ""],
+  ["referral: own invite code accepted", "if (referrer === pn) {", "if (false) {"],
+  ["referral: an existing customer counts as new", 'else if (await first(env, "select 1 x from orders where phone_norm = ? and id <> ? limit 1", pn, id)) {', "else if (false) {"],
+  ["referral: paid before delivery", 'const qualifies = o.status === "delivered" && (o.pay !== "card" || o.paid);', 'const qualifies = o.status !== "cancelled";'],
+  ["referral: no minimum first order", "if (Number(o.total) < R.min_order) {", "if (false) {"],
+  ["referral: no monthly cap", "if (n && n.n >= R.month_cap) {", "if (false) {"],
   ["businesses on the home-cook rules", 'const rulesFor = (kind) => RULES[kind === "pro" ? "pro" : "home"];', "const rulesFor = (kind) => RULES.home;"],
   ["lapsed points kept", "if (balance > 0 && last && Date.parse(last) + lifeMs < Date.now()) {", "if (false) {"],
 ];
@@ -62,7 +67,7 @@ for (const [label, ...pairs] of CASES) {
   }
   const file = join(dir, "worker.js");
   writeFileSync(file, broken, "utf8");
-  const run = spawnSync(process.execPath, ["--test", join(HERE, "worker.test.mjs"), join(HERE, "points.test.mjs")], {
+  const run = spawnSync(process.execPath, ["--test", join(HERE, "worker.test.mjs"), join(HERE, "points.test.mjs"), join(HERE, "referral.test.mjs")], {
     env: { ...process.env, ALMAS_WORKER_SRC: file }, encoding: "utf8",
   });
   const failed = (run.stdout.match(/^# fail (\d+)/m) || [])[1];

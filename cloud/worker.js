@@ -227,6 +227,7 @@ async function ingestOrder(env, b) {
     if (/UNIQUE|constraint/i.test(String(e && e.message))) return { ok: true, duplicate: true };
     throw e;
   }
+  if (b.ref) await registerReferral(env, id, pn, b.ref, b.address);
   return { ok: true };
 }
 
@@ -316,7 +317,8 @@ const POINTS_PRO = { mad_per_point: 20, step: 100, step_mad: 10, min: 200, max_s
 const PROGRAMMES = { home: POINTS, pro: POINTS_PRO };
 const RULE_LIMITS = { mad_per_point: [1, 1000], step: [1, 100000], step_mad: [1, 100000], min: [1, 1000000], max_share: [0.01, 0.5], life_days: [30, 3650] };
 
-let RULES = { home: { enabled: true, ...POINTS }, pro: { enabled: true, ...POINTS_PRO } }, rulesAt = 0;
+let RULES = { home: { enabled: true, ...POINTS }, pro: { enabled: true, ...POINTS_PRO }, referral: null }, rulesAt = 0; // referral is filled by loadRules (REFERRAL is defined further down)
+const DEFAULTS = () => ({ ...PROGRAMMES, referral: REFERRAL });
 function cleanRules(b, dflt) {
   const out = { enabled: b.enabled === undefined ? true : !!b.enabled };
   for (const [k, [lo, hi]] of Object.entries(RULE_LIMITS)) {
@@ -335,6 +337,7 @@ async function loadRules(env, force) {
   for (const [k, dflt] of Object.entries(PROGRAMMES)) {
     try { next[k] = cleanRules({ ...dflt, ...(saved[k] || {}) }, dflt); } catch { next[k] = { enabled: true, ...dflt }; }
   }
+  try { next.referral = cleanReferral({ ...REFERRAL, ...(saved.referral || {}) }); } catch { next.referral = { ...REFERRAL }; }
   RULES = next;
   rulesAt = Date.now();
   return RULES;
@@ -342,9 +345,10 @@ async function loadRules(env, force) {
 async function saveRules(env, b) {
   const next = {};
   for (const [k, dflt] of Object.entries(PROGRAMMES)) next[k] = cleanRules(b[k] || RULES[k], dflt);
+  next.referral = cleanReferral(b.referral || RULES.referral);
   await setSetting(env, "points_rules", JSON.stringify(next));
   await loadRules(env, true);
-  return { ok: true, rules: RULES, defaults: PROGRAMMES };
+  return { ok: true, rules: RULES, defaults: DEFAULTS() };
 }
 const rulesFor = (kind) => RULES[kind === "pro" ? "pro" : "home"];
 async function kindOf(env, pn) {
@@ -373,7 +377,7 @@ async function pointsState(env, pn, history = 0) {
   await env.DB.prepare("delete from points where phone_norm = ? and kind = 'redeem' and at < ? and order_id not in (select id from orders)")
     .bind(pn, new Date(Date.now() - 86400000).toISOString()).run();
   const row = await first(env,
-    "select coalesce(sum(points), 0) bal, max(case when points > 0 and kind in ('earn', 'adjust') then at end) last from points where phone_norm = ?", pn);
+    "select coalesce(sum(points), 0) bal, max(case when points > 0 and kind in ('earn', 'adjust', 'refer', 'welcome') then at end) last from points where phone_norm = ?", pn);
   let balance = row ? Number(row.bal) : 0;
   const last = row && row.last ? row.last : null;
   if (balance > 0 && last && Date.parse(last) + lifeMs < Date.now()) {
@@ -444,6 +448,10 @@ async function ingestRelease(env, b) {
 // After any change to an order: delivered (and paid, for a card) = its points are earned; cancelled = nothing
 // earned and the points it spent come back; any other status = not earned yet. Idempotent.
 async function syncOrderPoints(env, id) {
+  await syncEarn(env, id);
+  await syncReferral(env, id);
+}
+async function syncEarn(env, id) {
   const o = await first(env, "select id, phone_norm, status, pay, paid, total from orders where id = ?", id);
   if (!o || o.status === "cancelled") {
     await env.DB.prepare("delete from points where order_id = ? and kind in ('earn', 'redeem')").bind(id).run();
@@ -480,7 +488,7 @@ async function adjustPoints(env, b) {
 async function balances(env, pns) {
   if (!pns.length) return {};
   const rows = await all(env,
-    `select p.phone_norm, coalesce(sum(p.points), 0) bal, max(case when p.points > 0 and p.kind in ('earn', 'adjust') then p.at end) last, ` +
+    `select p.phone_norm, coalesce(sum(p.points), 0) bal, max(case when p.points > 0 and p.kind in ('earn', 'adjust', 'refer', 'welcome') then p.at end) last, ` +
     `max(c.kind) ckind from points p left join customers c on c.phone_norm = p.phone_norm where p.phone_norm in (${pns.map(() => "?").join(",")}) group by p.phone_norm`, ...pns);
   const out = {};
   for (const x of rows) {
@@ -514,13 +522,13 @@ async function pointsList(env, p) {
   const b = await balances(env, rows.slice(0, 100).map((r) => r.phone_norm));
   const customers = rows.slice(0, 100).map((r) => ({ phone_norm: r.phone_norm, name: r.name || "", business: r.business || "",
     earned: r.earned || 0, spent: r.spent || 0, ...b[r.phone_norm] }));
-  return { ok: true, customers, more: rows.length > 100, rules: RULES, defaults: PROGRAMMES, total: await pointsOutstanding(env) };
+  return { ok: true, customers, more: rows.length > 100, rules: RULES, defaults: DEFAULTS(), total: await pointsOutstanding(env) };
 }
 // what customers could still take off future orders, per programme (lapsed balances excluded)
 async function pointsOutstanding(env) {
   const rows = await all(env,
     "select x.phone_norm, x.bal, x.last, coalesce(c.kind, 'home') kind from (select phone_norm, sum(points) bal, " +
-    "max(case when points > 0 and kind in ('earn', 'adjust') then at end) last from points group by phone_norm) x " +
+    "max(case when points > 0 and kind in ('earn', 'adjust', 'refer', 'welcome') then at end) last from points group by phone_norm) x " +
     "left join customers c on c.phone_norm = x.phone_norm where x.bal > 0");
   const out = { home: { customers: 0, points: 0, mad: 0 }, pro: { customers: 0, points: 0, mad: 0 } };
   for (const x of rows) {
@@ -529,6 +537,131 @@ async function pointsOutstanding(env) {
     out[k].customers++; out[k].points += Number(x.bal); out[k].mad = Math.round((out[k].mad + usableMad(Number(x.bal), r)) * 100) / 100;
   }
   return out;
+}
+
+// ---------- referrals: a customer invites a friend ----------
+// A customer with a delivered order gets an invite code (6 letters; the website shares it as a link). A NEW customer
+// (no order ever from that phone) who orders with it is recorded on that first order. When that order is delivered
+// (a card order also paid) and is at least min_order MAD, the inviter gets referrer_points and the newcomer
+// newcomer_points. Real people only:
+//   - never the inviter's own phone; one invite per newcomer, ever; the newcomer must have no earlier order;
+//   - the inviter must have a delivered order of their own (only real customers get a code);
+//   - the reward waits for delivery, which the owner confirms on WhatsApp; under min_order nothing ("small");
+//   - at most month_cap rewards per inviter in 30 days, more wait for the owner ("capped");
+//   - a newcomer at the inviter's own delivery address waits for the owner ("review": same household);
+//   - cancelling or deleting the order takes both rewards back. The owner approves or rejects in the Points tab.
+const REFERRAL = { enabled: true, referrer_points: 100, newcomer_points: 100, min_order: 200, month_cap: 5 };
+const REF_LIMITS = { referrer_points: [0, 100000], newcomer_points: [0, 100000], min_order: [0, 1000000], month_cap: [1, 1000] };
+const REF_RE = /^[A-Z2-9]{6}$/;
+const REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O, 1/I/L: easy to read aloud and type
+const REF_STATUS = ["pending", "rewarded", "review", "capped", "small", "approved", "rejected"];
+
+function cleanReferral(b) {
+  const out = { enabled: b.enabled === undefined ? true : !!b.enabled };
+  for (const [k, [lo, hi]] of Object.entries(REF_LIMITS)) {
+    const n = Number(b[k] === undefined || b[k] === "" ? REFERRAL[k] : b[k]);
+    if (!Number.isFinite(n) || n < lo || n > hi) throw new Http(400, `${k}: between ${lo} and ${hi}`);
+    out[k] = Math.round(n);
+  }
+  return out;
+}
+function newRefCode() {
+  const bytes = crypto.getRandomValues(new Uint8Array(6));
+  return [...bytes].map((x) => REF_ALPHABET[x % REF_ALPHABET.length]).join("");
+}
+// the invite code of a phone, made on first ask, and only for a customer with a delivered order
+async function refCode(env, pn) {
+  const have = await first(env, "select code from ref_codes where phone_norm = ?", pn);
+  if (have) return have.code;
+  if (!(await first(env, "select 1 x from orders where phone_norm = ? and status = 'delivered' limit 1", pn))) return "";
+  for (let i = 0; i < 6; i++) {
+    try {
+      await env.DB.prepare("insert into ref_codes (phone_norm, code, created_at) values (?, ?, ?)").bind(pn, newRefCode(), nowIso()).run();
+    } catch (e) {
+      if (!/UNIQUE|constraint/i.test(String(e && e.message))) throw e;
+    }
+    const again = await first(env, "select code from ref_codes where phone_norm = ?", pn);
+    if (again) return again.code;
+  }
+  throw new Http(500, "no invite code");
+}
+const addrKey = (a) => text(a, 300, true).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+// on a new order that came with an invite code: file it (or file why it does not count)
+async function registerReferral(env, id, pn, codeIn, address) {
+  const code = String(codeIn || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+  if (!REF_RE.test(code)) return;
+  const owner = await first(env, "select phone_norm from ref_codes where code = ?", code);
+  if (!owner) return; // an unknown code: nothing to record
+  const referrer = owner.phone_norm;
+  let status = "pending", note = "";
+  if (referrer === pn) { status = "rejected"; note = "own invite code"; }
+  else if (await first(env, "select 1 x from orders where phone_norm = ? and id <> ? limit 1", pn, id)) { status = "rejected"; note = "not a new customer"; }
+  else {
+    const last = await first(env, "select address from orders where phone_norm = ? and status = 'delivered' order by at desc limit 1", referrer);
+    const a = addrKey(address), b = last ? addrKey(last.address) : "";
+    if (a.length >= 6 && a === b) { status = "review"; note = "same delivery address as the inviter"; }
+  }
+  // one invite per newcomer, ever: the referee column is unique
+  await env.DB.prepare("insert or ignore into referrals (order_id, code, referrer, referee, status, note, at) values (?, ?, ?, ?, ?, ?, ?)")
+    .bind(id, code, referrer, pn, status, note, nowIso()).run();
+}
+
+async function setReferral(env, id, status, note) {
+  await env.DB.prepare("update referrals set status = ?, note = ?, decided_at = ? where order_id = ?").bind(status, note, nowIso(), id).run();
+}
+// After any change to an order: pay or take back the two referral rewards. Idempotent.
+async function syncReferral(env, id) {
+  const r = await first(env, "select * from referrals where order_id = ?", id);
+  if (!r) return;
+  const take = () => env.DB.prepare("delete from points where order_id = ? and kind in ('refer', 'welcome')").bind(id).run();
+  const o = await first(env, "select status, pay, paid, total from orders where id = ?", id);
+  if (!o) { await take(); await env.DB.prepare("delete from referrals where order_id = ?").bind(id).run(); return; }
+  const qualifies = o.status === "delivered" && (o.pay !== "card" || o.paid);
+  if (!qualifies || r.status === "rejected") {
+    await take();
+    if (r.status === "rewarded") await setReferral(env, id, "pending", "order no longer delivered");
+    return;
+  }
+  if (r.status === "rewarded" || r.status === "review" || r.status === "capped" || r.status === "small") return; // done, or waits for the owner
+  const R = RULES.referral;
+  if (!R.enabled) return;
+  if (r.status !== "approved") { // the owner's approval skips the two automatic checks
+    if (Number(o.total) < R.min_order) { await setReferral(env, id, "small", `first order under ${R.min_order} MAD`); return; }
+    const n = await first(env, "select count(*) n from referrals where referrer = ? and status = 'rewarded' and decided_at >= ?",
+      r.referrer, new Date(Date.now() - 30 * 86400000).toISOString());
+    if (n && n.n >= R.month_cap) { await setReferral(env, id, "capped", `more than ${R.month_cap} rewards in 30 days`); return; }
+  }
+  await pointsState(env, r.referrer); // lapsed balances are written off before new points arrive
+  await pointsState(env, r.referee);
+  const at = nowIso(), stmts = [];
+  if (R.referrer_points > 0) stmts.push(env.DB.prepare("insert or ignore into points (phone_norm, kind, points, order_id, mad, note, at) values (?, 'refer', ?, ?, 0, ?, ?)")
+    .bind(r.referrer, R.referrer_points, id, "invited a new customer", at));
+  if (R.newcomer_points > 0) stmts.push(env.DB.prepare("insert or ignore into points (phone_norm, kind, points, order_id, mad, note, at) values (?, 'welcome', ?, ?, 0, ?, ?)")
+    .bind(r.referee, R.newcomer_points, id, "welcome: invited by a customer", at));
+  stmts.push(env.DB.prepare("update referrals set status = 'rewarded', decided_at = ? where order_id = ?").bind(at, id));
+  await env.DB.batch(stmts);
+}
+// the owner's decision on a referral that waits (review, capped, small) or one he wants to stop
+async function decideReferral(env, b) {
+  const id = text(b.order_id, 40);
+  const r = await first(env, "select status from referrals where order_id = ?", id);
+  if (!r) throw new Http(404, "no such referral");
+  if (b.action === "approve") await setReferral(env, id, "approved", "approved by the owner");
+  else if (b.action === "reject") await setReferral(env, id, "rejected", text(b.note, 200) || "rejected by the owner");
+  else throw new Http(400, "action: approve or reject");
+  await syncReferral(env, id);
+  return { ok: true, referral: await first(env, "select * from referrals where order_id = ?", id) };
+}
+async function listReferrals(env, p) {
+  const st = p.get("status");
+  const where = REF_STATUS.includes(st) ? "where r.status = ?" : "";
+  const rows = await all(env,
+    "select r.*, a.name referrer_name, a.business referrer_business, n.name referee_name, o.status order_status, o.total order_total " +
+    "from referrals r left join customers a on a.phone_norm = r.referrer left join customers n on n.phone_norm = r.referee " +
+    "left join orders o on o.id = r.order_id " + where + " order by r.at desc limit 100", ...(where ? [st] : []));
+  const counts = await all(env, "select status, count(*) n from referrals group by status");
+  return { ok: true, referrals: rows, counts: Object.fromEntries(counts.map((x) => [x.status, x.n])) };
 }
 
 // ---------- public (read by the website, CORS) ----------
@@ -578,6 +711,8 @@ async function publicApi(req, env, url) {
     if (!(await phoneProof(env, pn, b.ids))) return json({ ok: false, error: "unknown" }, 404, { ...c, "Cache-Control": "no-store" });
     const st = await pointsState(env, pn, 10);
     st.history = st.history.map((r) => ({ kind: r.kind, points: r.points, order: r.order_id, date: String(r.at).slice(0, 10) }));
+    const friends = await first(env, "select count(*) n from referrals where referrer = ? and status = 'rewarded'", pn);
+    st.invite = RULES.referral.enabled ? { code: await refCode(env, pn), friends: friends ? friends.n : 0 } : null;
     return json({ ok: true, ...st }, 200, { ...c, "Cache-Control": "no-store" });
   }
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
@@ -880,15 +1015,16 @@ async function listOrders(env, p) {
 async function getOrder(env, id) {
   const o = await first(env, "select * from orders where id = ?", id);
   if (!o) throw new Http(404, "no such order");
-  const [items, cust, revs, pts] = await env.DB.batch([
+  const [items, cust, revs, pts, refs] = await env.DB.batch([
     env.DB.prepare("select * from order_items where order_id = ? order by idx").bind(id),
     env.DB.prepare("select c.*, (select count(*) from orders where phone_norm = c.phone_norm) orders from customers c where phone_norm = ?").bind(o.phone_norm),
     env.DB.prepare("select id, product, rating, status, verified from reviews where order_id = ? order by id").bind(id),
     env.DB.prepare("select kind, points, mad, at from points where order_id = ? order by id").bind(id),
+    env.DB.prepare("select r.*, c.name referrer_name, c.business referrer_business from referrals r left join customers c on c.phone_norm = r.referrer where r.order_id = ?").bind(id),
   ]);
   return { ok: true, order: o, items: items.results || [], customer: (cust.results || [])[0] || null, reviews: revs.results || [],
     points: pts.results || [], points_rules: rulesFor(((cust.results || [])[0] || {}).kind),
-    customer_points: o.phone_norm ? await pointsState(env, o.phone_norm) : null };
+    customer_points: o.phone_norm ? await pointsState(env, o.phone_norm) : null, referral: (refs.results || [])[0] || null };
 }
 
 async function updateOrder(env, b) {
@@ -1176,7 +1312,8 @@ async function admin(req, env, url) {
       case "/admin/api/standing": return json(await listStanding(env, p));
       case "/admin/api/sheet": return json(await sheetInfo(env));
       case "/admin/api/points/list": return json(await pointsList(env, p));
-      case "/admin/api/points/rules": return json({ ok: true, rules: RULES, defaults: PROGRAMMES });
+      case "/admin/api/points/rules": return json({ ok: true, rules: RULES, defaults: DEFAULTS() });
+      case "/admin/api/referrals": return json(await listReferrals(env, p));
       case "/admin/export/orders.csv": return exportOrders(env);
       case "/admin/export/customers.csv": return exportCustomers(env);
     }
@@ -1196,6 +1333,7 @@ async function admin(req, env, url) {
       case "/admin/api/standing/delete": return json(await deleteStanding(env, b));
       case "/admin/api/points": return json(await adjustPoints(env, b));
       case "/admin/api/points/rules": return json(await saveRules(env, b));
+      case "/admin/api/referral": return json(await decideReferral(env, b));
       case "/admin/api/sheet": return json(await sheetConnect(env, b));
       case "/admin/api/sheet/test": { const r = await sheetSend(env, "test", [[nowIso(), "Test from the Almas back office."]]); if (!r.ok) throw new Http(400, r.error); return json(r); }
       case "/admin/api/sheet/backfill": return json(await sheetBackfill(env));

@@ -667,3 +667,12 @@ html, body { overflow-x: clip; }
 .pts-bar-go { color: var(--terracotta); font-size: .84rem; white-space: nowrap; }
 .pts-pro { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; border: 1px solid #ecd29b; background: #fbefd6; font-weight: 700; font-size: .92rem; }
 .pts-pro[hidden], .pts-how[hidden] { display: none; }
+
+/* invite a friend: the customer's own link under My orders, and the welcome line in a newcomer's cart */
+.ref-box { display: grid; gap: 6px; margin: 0 0 12px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--card); }
+.ref-box[hidden], .ref-welcome[hidden], .ref-acts[hidden] { display: none; }
+.ref-box .note { margin: 0; }
+.ref-link { margin: 0; padding: 8px 10px; border-radius: 10px; background: var(--surface); font-size: .84rem; overflow-wrap: anywhere; text-align: left; }
+.ref-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.ref-acts .btn { flex: 1 1 140px; min-height: 44px; }
+.ref-welcome { margin: 0; padding: 9px 12px; border-radius: 12px; background: #dff3e7; color: #17603b; font-weight: 700; font-size: .9rem; }

@@ -59,7 +59,7 @@ with sync_playwright() as p:
                 adm.set_checked(f"#pts-on-{kind}", v)
             else:
                 adm.fill(f"#pts-{kind}-{k}", str(v))
-        adm.click("button:has-text('Save both programmes')")
+        adm.click("button:has-text('Save the rules')")
         adm.wait_for_timeout(1500)
 
     def site(phone=None, ids=None, path="/p/p73/", kg=2):

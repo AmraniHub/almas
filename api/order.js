@@ -94,6 +94,8 @@ export default async function handler(req, res) {
     } else pointsNote = (r && r.reason) || "unavailable";
   }
   const release = () => (used ? cloud("/ingest/points-release", { id: number }) : null);
+  // an invite code from a friend's link: the back office decides whether it counts (a new customer, delivered...)
+  const ref = /^[A-Za-z0-9]{6}$/.test(String(b.ref || "")) ? String(b.ref).toUpperCase() : "";
   const due = Math.round((total - discount) * 100) / 100;
   const text = [
     `🛒 طلب جديد من الموقع — ${number}`,
@@ -111,6 +113,7 @@ export default async function handler(req, res) {
     `المجموع: ${money(total)}`,
     used ? `🎁 نقاط الوفاء: ${used} نقطة = خصم ${money(discount)}` : "",
     used ? `💰 المبلغ المطلوب: ${money(due)}` : "",
+    ref ? `🤝 جاء بدعوة من زبون (الرمز ${ref}): تُضاف نقاط الدعوة عند التسليم إن كان زبونًا جديدًا` : "",
     `لغة الزبون: ${LANG[lang]}`,
   ].filter((x, i, a) => x !== "" || (a[i - 1] !== "" && i > 0)).join("\n");
 
@@ -158,6 +161,7 @@ export default async function handler(req, res) {
       used ? `[Points: ${used} = -${Math.round(discount * 100) / 100} MAD off ${Math.round(total * 100) / 100} MAD]` : "", notes]
       .filter(Boolean).join(" "),
     total: due, // what the customer pays: points are earned on this, never on the part paid with points
+    ref,
     items: lines.map((l) => ({ product: l.id, name_till: l.ar, name: l.fr, qty: l.q, unit: l.unit, unit_price: l.price,
                                line: Math.round(l.line * 100) / 100 })),
   });

@@ -853,6 +853,9 @@ def cart_drawer(lang):
 <div class="orders" data-orders hidden>
 <button type="button" class="back" data-back-cart>← {esc(t['back_cart'])}</button>
 <div class="pts-card" data-pts-card hidden><span class="pts-k">{esc(t['pts_title'])}</span><b data-pts-bal></b><span data-pts-sub></span>{pts_how(lang)}</div>
+<div class="ref-box" data-ref-box hidden><b>{esc(t['ref_title'])}</b><p class="note" data-ref-sub></p><p class="ref-link" dir="ltr" data-ref-link></p>
+<div class="ref-acts" data-ref-acts><button type="button" class="btn wa-btn" data-ref-share>{esc(t['ref_share'])}</button><button type="button" class="btn ghost" data-ref-copy>{esc(t['ref_copy'])}</button></div>
+<p class="note" data-ref-friends></p></div>
 <ul class="mo-list" data-mo-list></ul>
 <p class="mo-none" data-mo-none>{esc(t['mo_none'])}</p>
 {pts_find(lang)}
@@ -869,6 +872,7 @@ def cart_drawer(lang):
 <label class="pts-use" data-pts-use hidden><input type="checkbox" data-pts-box checked> <span data-pts-use-text></span></label>
 <p class="total pts-due" data-pts-due hidden><span>{esc(t['pts_due'])}</span><b data-pts-due-v></b></p>
 <p class="pts-earn"><span data-pts-earn></span> <small data-pts-short></small></p>
+<p class="ref-welcome" data-ref-welcome hidden></p>
 {pts_how(lang)}
 </div>
 <form data-order-form>
@@ -977,7 +981,7 @@ def page_data(lang, products, cats):
                                 "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen", "in_cart", "order_now",
                                 "pts_earn", "pts_use", "pts_bal", "pts_worth", "pts_pend", "pts_exp", "pts_short", "pts_used",
                                 "pts_none", "pts_later", "pts_due", "pts_find_no", "pts_banner", "pts_r1", "pts_r2", "pts_r3",
-                                "pts_r4", "pts_pro")},
+                                "pts_r4", "pts_pro", "ref_sub", "ref_msg", "ref_welcome", "ref_friends", "ref_wait")},
         "maps": CFG["maps_url"], "pro": url(lang, "pro/"),
         "waze": (f"https://ul.waze.com/ul?place={CFG['google_place_id']}&ll={CFG['geo'][0]}%2C{CFG['geo'][1]}&navigate=yes" if CFG.get("google_place_id")
                  else f"https://waze.com/ul?ll={CFG['geo'][0]},{CFG['geo'][1]}&navigate=yes"),
