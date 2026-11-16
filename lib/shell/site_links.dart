@@ -27,7 +27,7 @@ const Map<String, String> kLanguageRoots = {
 /// Shop contacts used by the native offline screen.
 const String kShopPhoneDisplay = '06 19 43 40 35';
 const String kShopPhoneUri = 'tel:+212619434035';
-const String kShopWhatsApp = 'https://wa.me/212627716149';
+const String kShopWhatsApp = 'https://wa.me/212754416477';
 
 /// Language of the first launch: the device's language when the site has it,
 /// English otherwise.

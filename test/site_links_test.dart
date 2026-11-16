@@ -42,7 +42,7 @@ void main() {
       expect(languageOfUri(Uri.parse('https://almas-epices.vercel.app/fr/p/cumin/')), 'fr');
       expect(languageOfUri(Uri.parse('https://almas-epices.vercel.app/en/merci/')), 'en');
       expect(languageOfUri(Uri.parse('https://www.almas5.com/es/')), 'es');
-      expect(languageOfUri(Uri.parse('https://wa.me/212627716149')), isNull);
+      expect(languageOfUri(Uri.parse('https://wa.me/212754416477')), isNull);
     });
   });
 
@@ -65,9 +65,9 @@ void main() {
 
     test('everything that leaves the shop opens outside the app', () {
       for (final url in [
-        'https://wa.me/212627716149?text=salam',
-        'https://api.whatsapp.com/send?phone=212627716149',
-        'whatsapp://send?phone=212627716149',
+        'https://wa.me/212754416477?text=salam',
+        'https://api.whatsapp.com/send?phone=212754416477',
+        'whatsapp://send?phone=212754416477',
         'tel:+212619434035',
         'mailto:hello@example.com',
         'https://waze.com/ul?ll=35.7,-5.8',
@@ -90,12 +90,12 @@ void main() {
 
     test('an intent: link becomes its app link, then its web fallback', () {
       final uri = Uri.parse(
-          'intent://send?phone=212627716149#Intent;scheme=whatsapp;package=com.whatsapp;'
-          'S.browser_fallback_url=https%3A%2F%2Fwa.me%2F212627716149;end');
+          'intent://send?phone=212754416477#Intent;scheme=whatsapp;package=com.whatsapp;'
+          'S.browser_fallback_url=https%3A%2F%2Fwa.me%2F212754416477;end');
       final c = launchCandidates(uri);
       expect(c.map((u) => u.toString()), [
-        'whatsapp://send?phone=212627716149',
-        'https://wa.me/212627716149',
+        'whatsapp://send?phone=212754416477',
+        'https://wa.me/212754416477',
       ]);
       expect(launchCandidates(Uri.parse('tel:+212619434035')).single.toString(), 'tel:+212619434035');
       // a fallback that is not a web page is never launched
@@ -214,7 +214,7 @@ void main() {
       await tester.tap(find.text(kShopPhoneDisplay));
       await tester.tap(find.text('واتساب'));
       await tester.tap(find.byKey(const Key('offline-retry')));
-      expect(opened.map((u) => u.toString()), ['tel:+212619434035', 'https://wa.me/212627716149']);
+      expect(opened.map((u) => u.toString()), ['tel:+212619434035', 'https://wa.me/212754416477']);
       expect(retries, 1);
     });
   });
