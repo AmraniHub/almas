@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT / "site"))
 import build  # noqa: E402  (site/build.py: the catalogue, the shelf names, the business facts)
 
 CFG = build.CFG
-SITE = "almas-epices.vercel.app"
+SITE = "almas5.com"
 WA = CFG["whatsapp_display"]
 PER_SHELF = 6
 CREAM, PAPER, INK, BODY, TERRA, OLIVE, GOLD = "#f7f0e7", "#fffaf2", "#211a16", "#65584d", "#a14e33", "#5e6943", "#d39a30"

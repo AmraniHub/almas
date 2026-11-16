@@ -8,7 +8,8 @@
 const ASSETS = /*ASSETS*/{}/*END*/; // admin/index.html, app.js, app.css: inlined by build.mjs
 
 const CATALOG = "https://aronium-shop.amrani4online.workers.dev/app/catalog.json";
-const SITE = "https://almas-epices.vercel.app";
+// almas5.com is the shop's own address; the vercel.app one stays allowed because the Android app opens it.
+const SITES = ["https://almas5.com", "https://www.almas5.com", "https://almas-epices.vercel.app"];
 const SESSION_DAYS = 30;
 const LOGIN_FAILS = 5;
 const LOGIN_WINDOW = 900; // seconds
@@ -668,7 +669,7 @@ async function listReferrals(env, p) {
 
 function cors(req) {
   const o = req.headers.get("Origin") || "";
-  const ok = o === SITE || /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(o);
+  const ok = SITES.includes(o) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(o);
   return ok ? { "Access-Control-Allow-Origin": o, Vary: "Origin" } : { Vary: "Origin" };
 }
 const round1 = (x) => Math.round(Number(x || 0) * 10) / 10;

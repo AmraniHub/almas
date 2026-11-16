@@ -194,6 +194,10 @@ test("public reviews show nothing pending", async () => {
 test("CORS: the site and localhost are allowed, anyone else is not", async () => {
   const get = (o) => call("/public/ratings", { headers: { Origin: o } }).then((r) => r.headers.get("Access-Control-Allow-Origin"));
   assert.equal(await get("https://almas-epices.vercel.app"), "https://almas-epices.vercel.app");
+  assert.equal(await get("https://almas5.com"), "https://almas5.com");
+  assert.equal(await get("https://www.almas5.com"), "https://www.almas5.com");
+  assert.equal(await get("https://almas5.com.evil.example"), null);
+  assert.equal(await get("http://almas5.com"), null);
   assert.equal(await get("http://localhost:5173"), "http://localhost:5173");
   assert.equal(await get("http://127.0.0.1:8000"), "http://127.0.0.1:8000");
   assert.equal(await get("https://evil.example"), null);

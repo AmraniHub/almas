@@ -17,7 +17,7 @@ HERE = Path(__file__).resolve().parent
 CONF = json.loads((HERE / ".cloud.json").read_text(encoding="utf-8"))
 URL = CONF["url"]
 KEYFILE = Path(os.environ.get("USERPROFILE", str(Path.home()))) / "keys" / "almas-admin.txt"
-SITE = "https://almas-epices.vercel.app"
+SITE = "https://almas5.com"
 ORDER_ID = "AL-TEST-0001"
 QUOTE_ID = "QT-TEST-0001"
 PHONE = "06 00 00 00 01"

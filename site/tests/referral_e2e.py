@@ -80,7 +80,7 @@ with sync_playwright() as p:
     a.wait_for_selector("[data-ref-box]:not([hidden])", timeout=20000)
     link = a.inner_text("[data-ref-link]").strip()
     code = urllib.parse.parse_qs(urllib.parse.urlparse(link).query).get("ref", [""])[0]
-    check(len(code) == 6 and link.startswith("https://almas-epices.vercel.app/"), f"My orders shows the invite link ({link})")
+    check(len(code) == 6 and link.startswith("https://almas5.com/"), f"My orders shows the invite link ({link})")
     check("100" in a.inner_text("[data-ref-sub]"), "it says what both get")
     a.eval_on_selector("[data-ref-box]", "e => e.scrollIntoView({block: 'center'})")
     shot(a, "ref-1-invite-box")
