@@ -1465,6 +1465,9 @@ def main():
     feeds(products, cats)
     write(OUT / "sitemap.xml", sitemap(products))
     write(OUT / "robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
+    key = CFG.get("indexnow_key", "").strip()
+    if key:  # IndexNow (Bing, Yandex...): the key file holds exactly the key, no BOM, no newline
+        write(OUT / f"{key}.txt", key)
     missing = [p["id"] for p in products if not image_of(p)[0].startswith(CFG["image_base"])
                and not (STATIC / "img" / "p" / f"{p['id']}.jpg").exists()]
     print(f"built {len(products)} products x {len(LANGS)} languages from the {source} catalogue; "
