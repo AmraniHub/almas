@@ -37,7 +37,8 @@ The feed is ready; three things are the owner's, in Meta Business Suite:
    sent) with `content_ids` equal to the feed ids (`p13`...), which is what matches visitors to catalogue items.
    Connect the pixel to the catalogue (Catalogue > Settings > Event data sources). Every product page also carries
    `og:` and `product:retailer_item_id` tags and schema.org Product data, which Meta reads for matching.
-   Before turning the pixel on, add a website section to `docs/privacy-policy.html` (it covers the app only).
+   Done 2026-11-16: pixel 4765542090366259 (portfolio Almas5), catalogue "Almas5 Products" 1005958959253578 with the
+   three feeds scheduled daily, and `docs/privacy-policy.html` rewritten to cover the website, analytics and the pixel.
 3. **Ads**: Advantage+ catalogue ads (Sales objective, catalogue on), optimise for InitiateCheckout or Lead,
    since the sale itself happens on WhatsApp. A real Purchase event would need the shop to confirm orders
    (Conversions API), not built.
