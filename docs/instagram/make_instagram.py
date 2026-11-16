@@ -7,9 +7,9 @@ highlights/preview.png (the highlight row as on a phone), stories/NN-key/00.png 
 
 Shelves (8): a title card, the shelf's best sellers (live price from the till's catalogue, the same feed as the
 website), then an order card. Info highlights (6): short cards. Arabic first, a French line under it.
-Product pictures: a product's own shop photo when the till's catalogue has one (field "img", uploaded from the
-phone on the cloud's /app/photos page); until then a drawn bowl in the product's colour. The site's other photos
-come from other shops' websites, so they are not reused here. Instagram covers the top ~220 px and the bottom
+Product pictures (the owner's choice, 2026-11-16): the till's own shop photo when it has one (field "img", uploaded
+from the phone on the cloud's /app/photos page), else the website's product photo (site/static/img/photo/<id>.jpg,
+the same picture the site and the Meta catalogue show), else a drawn bowl. Instagram covers the top ~220 px and the bottom
 ~260 px of a story with its own buttons: all text sits between.
 Icons: 48x48 line drawings made for Almas.
 """
@@ -200,11 +200,25 @@ def colour_of(p):
     return SHELF_COLOUR.get(p["cat"], TERRA)
 
 
+PHOTOS = ROOT / "site" / "static" / "img" / "photo"
+
+
+def photo_of(p):
+    """The product's real picture: the till's shop photo, else the website's photo (embedded), else None."""
+    if p.get("img"):
+        return p["img"]
+    f = PHOTOS / f"{p['id']}.jpg"
+    if f.exists():
+        return "data:image/jpeg;base64," + base64.b64encode(f.read_bytes()).decode()
+    return None
+
+
 def product_slide(key, p, cat):
     unit_ar, unit_fr = ("درهم للكيلو", "MAD / kg") if p["unit"] == "kg" else ("درهم للقطعة", "MAD / pièce")
     price = build.num(p["price"]) if hasattr(build, "num") else p["price"]
-    pic = (f'<img src="{e(p["img"])}" style="width:640px;height:640px;object-fit:cover;border-radius:40px;box-shadow:0 40px 70px -30px rgba(70,35,10,.6)">'
-           if p.get("img") else bowl(colour_of(p), 600))
+    src = photo_of(p)
+    pic = (f'<img src="{e(src)}" style="width:640px;height:640px;object-fit:cover;border-radius:40px;box-shadow:0 40px 70px -30px rgba(70,35,10,.6)">'
+           if src else bowl(colour_of(p), 600))
     return page(f"""<div class="brand">{svg(key, 34, TERRA, 2.4)} &nbsp;<b dir="rtl">{e(cat['ar'])}</b> · {e(cat['fr'])}</div>
 <div style="position:absolute;top:360px;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center">
   {pic}
