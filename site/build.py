@@ -555,6 +555,22 @@ def pixel_head():
             f'src="https://www.facebook.com/tr?id={esc(pid)}&ev=PageView&noscript=1"></noscript>')
 
 
+def ga_head():
+    """Google Analytics 4. Loads only on almas5.com / the vercel.app address, so local tests send nothing.
+    Google signals and ad personalisation are off; app visits are marked by the AlmasApp user agent."""
+    gid = CFG.get("ga4_id", "").strip()
+    if not gid:
+        return "<script>window.gtag=window.gtag||function(){};</script>"
+    return ("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+            "if(/^(www\\.)?almas5\\.com$|^almas-epices\\.vercel\\.app$/.test(location.hostname)){"
+            "var g=document.createElement('script');g.async=true;"
+            f"g.src='https://www.googletagmanager.com/gtag/js?id={esc(gid)}';document.head.appendChild(g);"
+            "gtag('js',new Date());"
+            "gtag('set','user_properties',{platform_kind:/AlmasApp/.test(navigator.userAgent)?'android_app':'web'});"
+            f"gtag('config','{esc(gid)}',{{allow_google_signals:false,allow_ad_personalization_signals:false}});"
+            "}</script>")
+
+
 def head(lang, title, desc, path, image, extra=""):
     t = T[lang]
     alts = "".join(f'<link rel="alternate" hreflang="{l}" href="{BASE}{url(l, path)[len(PREFIX):]}">' for l in LANGS)
@@ -592,6 +608,7 @@ def head(lang, title, desc, path, image, extra=""):
 <script type="speculationrules">{{"prefetch":[{{"source":"document","where":{{"and":[{{"href_matches":"/*"}},{{"not":{{"href_matches":"/api/*"}}}}]}},"eagerness":"moderate"}}]}}</script>
 <link rel="stylesheet" href="{PREFIX}/assets/site.css?v={STAMP}">
 {pixel_head()}
+{ga_head()}
 </head>"""
 
 

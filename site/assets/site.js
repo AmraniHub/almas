@@ -41,7 +41,13 @@
     }
     return A.lang === "ar" ? fmt(q) + " كلغ" : fmt(q) + " kg";
   }
+  var GA_EV = { ViewContent: "view_item", AddToCart: "add_to_cart", InitiateCheckout: "begin_checkout" };
+  function ga(ev, params) {
+    try { if (window.gtag) window.gtag("event", ev, params || {}); } catch (e) { /* analytics blocked */ }
+  }
+  function gaItems(ids) { return (ids || []).map(function (id) { return { item_id: String(id) }; }); }
   function track(ev, ids, value) {
+    ga(GA_EV[ev] || ev, { currency: "MAD", value: Math.round(value * 100) / 100, items: gaItems(ids) });
     try {
       window.fbq("track", ev, { content_ids: ids, content_type: "product", value: Math.round(value * 100) / 100, currency: "MAD" });
     } catch (e) { /* pixel blocked or not configured */ }
@@ -559,6 +565,7 @@
           if (!d || !d.ok) { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } return fallback(); }
           if (d.url) { window.location.href = d.url; return; } // card: Stripe's payment page, then /merci/
           try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }); } catch (err) {}
+          ga("purchase", { transaction_id: String(d.number), value: d.total, currency: "MAD", payment_type: "cash_on_delivery", items: gaItems(ids) });
           var wa = $("[data-done-wa]");
           if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number, d));
           $("[data-done-body]").textContent = A.s.done_body.replace("{n}", d.number).replace("{t}", money(d.total)) +
@@ -595,6 +602,7 @@
       .then(function (d) {
         if (!d || !d.ok) return fail();
         try { window.fbq("track", "Lead", { content_name: "pro-quote", content_category: body.type }); } catch (err) {}
+        ga("generate_lead", { lead_source: "pro_quote", quote_type: String(body.type || "") });
         $$("input, select, textarea, button", qf).forEach(function (x) { x.disabled = true; });
         if (btn) btn.hidden = true;
         var done = $("[data-q-done]", qf); if (done) done.hidden = false;
@@ -702,7 +710,7 @@
   /* any WhatsApp link: tell the pixel someone reached out */
   $$("a.wa-link").forEach(function (a) {
     if (a.hasAttribute("data-order-one")) return;
-    a.addEventListener("click", function () { try { window.fbq("track", "Contact"); } catch (e) {} });
+    a.addEventListener("click", function () { try { window.fbq("track", "Contact"); } catch (e) {} ga("contact_whatsapp"); });
   });
 
   /* smooth header: a shadow once the page scrolls; the back-to-top arrow after one screen */
