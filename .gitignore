@@ -48,3 +48,8 @@ public/
 node_modules/
 __pycache__/
 cloud/.cloud.json
+
+# Instagram images are rebuilt by docs/instagram/make_instagram.py (100+ MB): only the previews are kept
+docs/instagram/highlights/[0-9]*.png
+docs/instagram/stories/*/
+docs/instagram/__pycache__/

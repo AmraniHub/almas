@@ -1,0 +1,94 @@
+{
+  "01-spices": [
+    "فلفل أحمر حلو (بابريكا) / Paprika doux: 60",
+    "كركم / Curcuma: 70",
+    "زنجبيل مطحون / Gingembre moulu: 90",
+    "كمون / Cumin: 90",
+    "فلفل أسود / Poivre noir: 130",
+    "جوزة الطيب / Noix de muscade: 1"
+  ],
+  "02-blends": [
+    "توابل الدجاج / Mélange pour poulet: 100",
+    "توابل السمك / Mélange pour poisson: 100",
+    "رأس الحانوت / Ras el hanout: 160",
+    "توابل اللحم / Mélange pour viande: 100",
+    "خلطة البيت / Mélange maison (tkhlita): 95",
+    "توابل الحريرة / Épices pour harira: 100"
+  ],
+  "03-herbs": [
+    "زعتر / Thym (zaatar): 120",
+    "شيح / Armoise blanche (chih): 100",
+    "خزامى / Lavande: 100",
+    "كركديه / Hibiscus: 160",
+    "مورينجا / Moringa: 400",
+    "براعم الورد / Boutons de rose: 250"
+  ],
+  "04-seeds": [
+    "سمسم / Sésame: 30",
+    "زبيب / Raisins secs: 55",
+    "بذور الكتان / Graines de lin: 30",
+    "عدس أحمر / Lentilles corail: 25",
+    "لوز / Amandes: 98",
+    "بذور اليقطين / Graines de courge: 80"
+  ],
+  "05-pastry": [
+    "خميرة الحلويات / Levure chimique: 1",
+    "ماء الزهر / Eau de fleur d'oranger: 4",
+    "ماء الورد / Eau de rose: 10",
+    "خميرة الخبز / Levure: 10",
+    "خميرة الحلويات (كبيرة) / Levure chimique (grand): 5",
+    "سكر ناعم / Sucre glace: 5"
+  ],
+  "06-pantry": [
+    "بيكربونات الصودا / Bicarbonate de soude: 5",
+    "قهوة مطحونة / Café moulu: 120",
+    "خل (قارورة كبيرة) / Vinaigre (grande bouteille): 5",
+    "عسل (صغير) / Miel (petit): 7",
+    "خل التفاح (صغير) / Vinaigre de cidre (petit): 10",
+    "خل التفاح (كبير) / Vinaigre de cidre (grand): 40"
+  ],
+  "07-beauty": [
+    "حناء تمزورين / Henné Tamzourine: 10",
+    "الصابون البلدي / Savon noir beldi: 20",
+    "زيت الأعشاب / Huile aux herbes: 15",
+    "حناء وادي الذهب / Henné Oued Eddahab: 10",
+    "حناء (كيس) / Henné (sachet): 3",
+    "حناء مطحونة / Henné en poudre: 60"
+  ],
+  "08-incense": [
+    "مسك خالص / Musc pur: 7",
+    "فحم البخور / Charbon pour encens: 8",
+    "مبخرة / Brûle-encens (mjmar): 10",
+    "مسك (كبير) / Musc (grand): 20",
+    "بخور الأنوار / Encens Anouar: 35",
+    "مسك (صغير) / Musc (petit): 5"
+  ],
+  "09-order": [
+    "اختر منتجاتك من الموقع",
+    "أرسل الطلب في دقيقة",
+    "نتصل بك للتأكيد"
+  ],
+  "10-delivery": [
+    "نتفق معك على التوصيل",
+    "الدفع عند الاستلام",
+    "من أوروبا؟"
+  ],
+  "11-pro": [
+    "للمطاعم والفنادق وقاعات الأفراح",
+    "طلب دوري",
+    "اطلب عرض سعر"
+  ],
+  "12-points": [
+    "نقاط مع كل طلب",
+    "كل 100 نقطة تساوي خصم 10 دراهم",
+    "ادعُ صديقًا"
+  ],
+  "13-reviews": [
+    "رأيك يهمنا",
+    "شاركنا وصفتك"
+  ],
+  "14-visit": [
+    "معشبة ألماس، القصر الصغير",
+    "مفتوح كل يوم"
+  ]
+}
