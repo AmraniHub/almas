@@ -557,7 +557,8 @@ def pixel_head():
 
 def ga_head():
     """Google Analytics 4. Loads only on almas5.com / the vercel.app address, so local tests send nothing.
-    Google signals and ad personalisation are off; app visits are marked by the AlmasApp user agent."""
+    Google signals and ad personalisation are off; app visits are marked by the AlmasApp user agent.
+    On /merci/ (back from Stripe) the referrer is ignored, so card orders keep their real source."""
     gid = CFG.get("ga4_id", "").strip()
     if not gid:
         return "<script>window.gtag=window.gtag||function(){};</script>"
@@ -567,7 +568,7 @@ def ga_head():
             f"g.src='https://www.googletagmanager.com/gtag/js?id={esc(gid)}';document.head.appendChild(g);"
             "gtag('js',new Date());"
             "gtag('set','user_properties',{platform_kind:/AlmasApp/.test(navigator.userAgent)?'android_app':'web'});"
-            f"gtag('config','{esc(gid)}',{{allow_google_signals:false,allow_ad_personalization_signals:false}});"
+            f"gtag('config','{esc(gid)}',{{allow_google_signals:false,allow_ad_personalization_signals:false,ignore_referrer:/\\/merci\\//.test(location.pathname)}});"
             "}</script>")
 
 
