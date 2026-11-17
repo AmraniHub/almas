@@ -172,7 +172,7 @@ html[dir="rtl"] .back-btn svg { transform: scaleX(-1); }
 .fb-ic { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: rgba(255, 255, 255, .1); }
 .fb-ic svg { width: 18px; height: 18px; }
 .fb-wa .fb-ic { background: #1f7a4d; } .fb-phone .fb-ic { background: #8a5a00; } .fb-pin .fb-ic { background: var(--terracotta); }
-.fb-star .fb-ic { background: #fff; } .fb-insta .fb-ic { background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 75%, #515bd4); }
+.fb-star .fb-ic { background: #fff; } .fb-facebook .fb-ic { background: #1877f2; color: #fff; } .fb-insta .fb-ic { background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 75%, #515bd4); }
 .fb-app .fb-ic { background: var(--saffron); color: var(--ink); }
 .fb-waze .fb-ic { background: #33ccff; color: #05293a; }
 .fb[hidden] { display: none; }
@@ -242,6 +242,7 @@ form .btn { width: 100%; margin-top: 8px; }
 .map { width: 100%; height: 320px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-deep); }
 /* visit: one tile per way to reach the shop, each in its own colour with its icon */
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.tiles > :last-child:nth-child(odd) { grid-column: 1 / -1; } /* an odd number of tiles: the last one fills its row */
 @media (max-width: 340px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
 .tile { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 16px;
   text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
@@ -262,6 +263,8 @@ form .btn { width: 100%; margin-top: 8px; }
 .tile-google { background: #fff; }
 .tile-google .tile-ic { background: #fff; border: 1px solid var(--line); }
 .tile-google .stars { color: #f4b400; letter-spacing: 1px; font-size: .9rem; }
+.tile-facebook { color: #fff; border: 0; background: #1877f2; }
+.tile-facebook .tile-ic { background: rgba(255, 255, 255, .18); color: #fff; }
 .tile-insta { color: #fff; border: 0; background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 75%, #515bd4); }
 .tile-insta .tile-ic { background: rgba(255, 255, 255, .18); color: #fff; }
 .tile:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }

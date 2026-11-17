@@ -698,6 +698,7 @@ ICON = {
     "wa": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 7.6c.3-.6.6-.6.9-.6h.6c.2 0 .5 0 .7.5l.9 2.1c.1.3 0 .5-.1.7l-.6.7c-.2.2-.2.4 0 .7a7 7 0 0 0 3.2 2.8c.3.1.5.1.7-.1l.8-.9c.2-.3.5-.3.8-.2l2 .9c.4.2.4.4.4.6 0 .9-.6 1.8-1.4 2.1-.8.3-1.9.3-4-.6a11 11 0 0 1-4.6-4.2c-.9-1.4-1-2.8-.3-4.5z" fill="currentColor"/></svg>',
     "google": '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
     "waze": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.7 0-8.3 3.4-8.3 7.8 0 1.6.5 3 1.4 4.2-.4 1-1.1 1.6-2 1.9.9.9 2.4 1.2 3.7.7a9.6 9.6 0 0 0 5.2 1.5c4.7 0 8.3-3.4 8.3-7.9S16.7 3.5 12 3.5z" fill="#fff" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9.4" cy="10" r="1.1" fill="currentColor"/><circle cx="14.6" cy="10" r="1.1" fill="currentColor"/><path d="M9.1 13.1c.8 1 1.8 1.5 2.9 1.5s2.1-.5 2.9-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8.2" cy="20.2" r="1.7" fill="currentColor"/><circle cx="15.8" cy="20.2" r="1.7" fill="currentColor"/></svg>',
+    "facebook": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.6 21v-7.3h2.5l.4-2.9h-2.9V9c0-.8.3-1.4 1.4-1.4h1.6V5.1c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2H8v2.9h2.5V21z" fill="currentColor"/></svg>',
     "insta": '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg>',
 }
 
@@ -737,6 +738,9 @@ def visit(lang):
         tile("wa", "https://wa.me/" + CFG["whatsapp"], t["t_wa"], esc(CFG.get("whatsapp_display", "")), True),
         tile("google", CFG.get("review_url") or CFG["maps_url"], t["t_review"], '<span class="stars">★★★★★</span>'),
     ]
+    if CFG.get("facebook"):
+        tiles.append(tile("facebook", "https://www.facebook.com/" + CFG["facebook"] + "/", t["t_fb"],
+                          "@" + esc(CFG["facebook"]), True))
     if CFG.get("instagram"):
         tiles.append(tile("insta", "https://www.instagram.com/" + CFG["instagram"] + "/", t["t_insta"],
                           "@" + esc(CFG["instagram"]), True))
@@ -989,13 +993,15 @@ def footer(lang):
         d = ' dir="ltr"' if ltr else ""
         return f'<a class="fb fb-{kind}" href="{esc(href)}" rel="noopener"><span class="fb-ic">{ic(kind)}</span><span{d}>{label}</span></a>'
     insta = CFG.get("instagram")
+    fbk = CFG.get("facebook")
     play = f'<a class="fb" href="{esc(CFG["play_url"])}" rel="noopener"><span class="fb-ic">{ic("app")}</span><span>{esc(t["app"])}</span></a>' if CFG.get("play_url") else ""
     groups = [
         a("phone", "tel:" + CFG["phone"], esc(CFG["phone_display"]), True)
         + a("wa", "https://wa.me/" + CFG["whatsapp"], "WhatsApp " + f'<bdi dir="ltr">{esc(CFG.get("whatsapp_display", ""))}</bdi>'),
         a("pin", CFG["maps_url"], esc(t["map"])) + a("waze", waze_url(), esc(t["foot_waze"]))
         + a("star", CFG.get("review_url") or CFG["maps_url"], esc(t["review"])),
-        (a("insta", f"https://www.instagram.com/{insta}/", "@" + esc(insta), True) if insta else "") + play
+        (a("facebook", f"https://www.facebook.com/{fbk}/", "Facebook @" + esc(fbk), True) if fbk else "")
+        + (a("insta", f"https://www.instagram.com/{insta}/", "Instagram @" + esc(insta), True) if insta else "") + play
         + f'<button type="button" class="fb" data-open-orders-foot><span class="fb-ic">{ic("orders")}</span><span>{esc(t["my_orders"])}</span></button>'
         + f'<button type="button" class="fb fb-app" data-install><span class="fb-ic">{ic("app")}</span><span>{esc(t["app_link"])}</span></button>',
     ]
@@ -1119,7 +1125,8 @@ def home(lang, products, cats, stamp_day):
         "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
                                        "opens": CFG["hours"]["open"], "closes": CFG["hours"]["close"]}] if CFG.get("hours") else [],
         "geo": {"@type": "GeoCoordinates", "latitude": CFG["geo"][0], "longitude": CFG["geo"][1]},
-        "sameAs": [f"https://www.instagram.com/{CFG['instagram']}/"] if CFG.get("instagram") else [],
+        "sameAs": ([f"https://www.facebook.com/{CFG['facebook']}/"] if CFG.get("facebook") else [])
+                  + ([f"https://www.instagram.com/{CFG['instagram']}/"] if CFG.get("instagram") else []),
     }
     return f"""{head(lang, t['title'], t['desc'], '', f'{BASE}/img/og-{lang}.jpg')}
 <body>

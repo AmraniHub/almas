@@ -24,6 +24,7 @@
   "review_url": "https://search.google.com/local/writereview?placeid=ChIJtWORhyeDDA0RSYINRTKX-lE",
   "_review_note": "review_url opens Google's review form for the shop (Place ID ChIJtWORhyeDDA0RSYINRTKX-lE = cid 5907200103412499017).",
   "instagram": "almas5com",
+  "facebook": "almas5com",
   "quote_api": "/api/quote/",
   "review_api": "/api/review/",
   "assistant_api": "/api/assistant/",
