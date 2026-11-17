@@ -1397,6 +1397,28 @@ def feeds(products, cats):
                             BASE + url(lang, "p/" + p["id"] + "/")[len(PREFIX):]])
 
 
+def google_feed(products, cats):
+    """Google Merchant Center: feed/google.tsv (French). Tab-separated, LF, one row per product. The shop's own goods
+    have no barcode, so identifier_exists is "no"; loose goods sold by the kilo carry unit pricing (1 kg)."""
+    cols = ["id", "title", "description", "link", "image_link", "additional_image_link", "availability", "price",
+            "condition", "brand", "identifier_exists", "google_product_category", "product_type", "unit_pricing_measure",
+            "unit_pricing_base_measure"]
+    clean = lambda s: " ".join(str(s).replace(chr(9), " ").split())  # no tabs or line breaks inside a field
+    rows = [chr(9).join(cols)]
+    for p in products:
+        how, size = UNIT_FEED.get(p["unit"], UNIT_FEED["piece"])
+        img, _ = image_of(p)
+        kg = p["unit"] == "kg"
+        desc = (about(p, "fr") + " ") + (f"{p['fr']} ({p['ar']}), vendu {how} par Almas, herboristerie à Ksar Sghir près de "
+                                         f"Tanger. Commande en ligne ou sur WhatsApp ; paiement à la livraison, à la boutique "
+                                         f"ou par virement.")
+        rows.append(chr(9).join(clean(v) for v in [
+            p["id"], f"{p['fr']} {size}"[:150], desc[:5000], BASE + url("fr", "p/" + p["id"] + "/")[len(PREFIX):],
+            img, ",".join(images_of(p)[1:]), "in_stock", f"{float(p['price']):.2f} MAD", "new", "Almas", "no",
+            GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), cats[p["cat"]]["fr"], "1 kg" if kg else "", "1 kg" if kg else ""]))
+    write(OUT / "feed" / "google.tsv", chr(10).join(rows) + chr(10))
+
+
 def sitemap(products):
     paths = ["", "pro/"] + ["p/" + p["id"] + "/" for p in products]
     rows = []
@@ -1464,6 +1486,7 @@ def main():
     shutil.copyfile(HERE / "assets" / "sw.js", OUT / "sw.js")
     write(OUT / "404.html", not_found())
     feeds(products, cats)
+    google_feed(products, cats)
     write(OUT / "sitemap.xml", sitemap(products))
     write(OUT / "robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
     key = CFG.get("indexnow_key", "").strip()
