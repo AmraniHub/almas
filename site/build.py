@@ -74,6 +74,46 @@ GOOGLE_CAT = {
     "incense": "Home & Garden > Decor > Home Fragrances > Incense",
 }
 
+# Structured data for Google (merchant listings): the same delivery and returns as /delivery/ and Merchant Center.
+EU_SHIP = ["BE", "FR", "DE", "IT", "NL", "PT", "ES", "SE", "CH"]
+
+
+def ship_ld(countries, fee, handling, transit):
+    return {"@type": "OfferShippingDetails",
+            "shippingRate": {"@type": "MonetaryAmount", "value": fee, "currency": "MAD"},
+            "shippingDestination": [{"@type": "DefinedRegion", "addressCountry": c} for c in countries],
+            "deliveryTime": {"@type": "ShippingDeliveryTime",
+                             "handlingTime": {"@type": "QuantitativeValue", "minValue": handling[0], "maxValue": handling[1], "unitCode": "DAY"},
+                             "transitTime": {"@type": "QuantitativeValue", "minValue": transit[0], "maxValue": transit[1], "unitCode": "DAY"}}}
+
+
+SHIPPING_LD = [ship_ld(["MA"], 35, (0, 0), (1, 2)), ship_ld(EU_SHIP, 350, (0, 1), (2, 4))]
+
+
+def return_ld(link):
+    # food: no returns; a damaged or wrong item is replaced free if reported within 48 hours
+    return {"@type": "MerchantReturnPolicy", "applicableCountry": ["MA"] + EU_SHIP,
+            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow", "merchantReturnDays": 2,
+            "itemCondition": "https://schema.org/DamagedCondition", "returnFees": "https://schema.org/FreeReturn",
+            "merchantReturnLink": link}
+
+
+RATINGS = {}  # product id -> {"avg", "count"}: published customer reviews from the back office, read at build time
+
+
+def fetch_ratings():
+    """Real, published reviews only (the back office's /public/ratings). Any failure leaves the pages without stars."""
+    base = CFG.get("cloud_url", "").rstrip("/")
+    if not base:
+        return
+    try:
+        req = urllib.request.Request(base + "/public/ratings", headers={"User-Agent": "almas-site-build"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            d = json.loads(r.read().decode("utf-8"))
+        RATINGS.update({k: v for k, v in d.items() if isinstance(v, dict) and v.get("count")})
+    except Exception as e:  # noqa: BLE001
+        print("ratings not read:", e)
+
 # Every sentence the site says. Delivery and payment are the app's own approved wording, nothing more.
 T = {
     "ar": {
@@ -1255,11 +1295,17 @@ def product_page(lang, p, products, cats):
     ld = {
         "@context": "https://schema.org", "@type": "Product", "productID": p["id"], "sku": p["id"], "name": n,
         "alternateName": [p[l] for l in LANGS if p.get(l) and p[l] != n], "image": images_of(p), "brand": {"@type": "Brand", "name": "Almas"},
-        "category": cat[lang], "description": desc,
+        "category": GOOGLE_CAT.get(p["cat"], GOOGLE_CAT["pantry"]), "description": desc,
         "offers": {"@type": "Offer", "price": num(p["price"]), "priceCurrency": "MAD", "availability": "https://schema.org/InStock",
                    "itemCondition": "https://schema.org/NewCondition", "url": BASE + url(lang, path)[len(PREFIX):],
-                   "seller": {"@type": "Organization", "name": t["name"]}},
+                   "seller": {"@type": "Organization", "name": t["name"]},
+                   "shippingDetails": SHIPPING_LD,
+                   "hasMerchantReturnPolicy": return_ld(BASE + url(lang, "delivery/")[len(PREFIX):])},
     }
+    rt = RATINGS.get(p["id"])
+    if rt:  # stars only from real published reviews
+        ld["aggregateRating"] = {"@type": "AggregateRating", "ratingValue": rt["avg"], "reviewCount": rt["count"],
+                                 "bestRating": 5, "worstRating": 1}
     crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": t["name"], "item": BASE + url(lang)[len(PREFIX):]},
         {"@type": "ListItem", "position": 2, "name": cat[lang], "item": BASE + url(lang)[len(PREFIX):] + "#products"},
@@ -1489,6 +1535,7 @@ def main():
     data, source = fetch_catalog("--offline" in sys.argv)
     if "--offline" not in sys.argv:
         fetch_rate()
+        fetch_ratings()
     cats = {c["id"]: c for c in data["categories"]}
     for c, names in NAMES["_shelves"].items():
         if c in cats:
