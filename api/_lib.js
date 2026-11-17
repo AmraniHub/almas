@@ -1,6 +1,7 @@
 // Shared by the order and payment functions (Vercel does not expose files starting with "_" as routes).
 // Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_IDS (the Almas shop bot and its owners), STRIPE_SECRET_KEY (card payments;
 // absent = no card option).
+import { createHash } from "node:crypto";
 
 export const SITE_TZ = "Africa/Casablanca";
 
@@ -75,3 +76,62 @@ export async function cloud(path, body) {
 }
 
 export const LANGS = { ar: "العربية", fr: "الفرنسية", en: "الإنجليزية", es: "الإسبانية" };
+
+// Meta Conversions API: the same Lead / Purchase the page's pixel sends, sent again from the server so an ad blocker
+// or a closed tab does not lose it. Meta keeps one of the two because both carry the same event_id.
+// Env: META_CAPI_TOKEN (absent = nothing is sent), META_PIXEL_ID, META_GRAPH_VERSION, META_TEST_EVENT_CODE (only
+// while testing in Events Manager). Best effort: never delays an order by more than 4 s, never fails it.
+
+const sha = (s) => createHash("sha256").update(s).digest("hex");
+
+export function phoneE164(phone) {
+  // Moroccan habits: 06..., 07..., +212..., 00212...; anything else keeps its digits
+  let d = String(phone || "").replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.length === 10 && d.startsWith("0")) d = "212" + d.slice(1);
+  return d;
+}
+
+function cookie(req, name) {
+  const m = String((req.headers && req.headers.cookie) || "").match(new RegExp("(?:^|;\\s*)" + name + "=([^;]+)"));
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
+export function metaBody(req, { name, id, value, phone, contents, sourceUrl, now = Date.now() }) {
+  const h = req.headers || {};
+  const ip = String(h["x-forwarded-for"] || "").split(",")[0].trim() || String(h["x-real-ip"] || "");
+  const user = { client_ip_address: ip || undefined, client_user_agent: h["user-agent"] || undefined,
+                 fbp: cookie(req, "_fbp") || undefined, fbc: cookie(req, "_fbc") || undefined };
+  const ph = phoneE164(phone);
+  if (ph.length >= 9) user.ph = [sha(ph)];
+  const custom = { currency: "MAD" };
+  if (value != null) custom.value = Math.round(Number(value) * 100) / 100;
+  if (contents && contents.length) {
+    custom.contents = contents.map((c) => ({ id: String(c.id), quantity: c.quantity }));
+    custom.content_ids = contents.map((c) => String(c.id));
+    custom.content_type = "product";
+  }
+  const ev = { event_name: name, event_time: Math.floor(now / 1000), event_id: id, action_source: "website",
+               event_source_url: sourceUrl || h.referer || undefined, user_data: user, custom_data: custom };
+  const body = { data: [JSON.parse(JSON.stringify(ev))] };
+  if (process.env.META_TEST_EVENT_CODE) body.test_event_code = process.env.META_TEST_EVENT_CODE;
+  return body;
+}
+
+export async function metaEvent(req, event) {
+  const token = process.env.META_CAPI_TOKEN;
+  if (!token) return null;
+  const pixel = process.env.META_PIXEL_ID || "4765542090366259";
+  const ver = process.env.META_GRAPH_VERSION || "v24.0";
+  try {
+    const r = await fetch(`https://graph.facebook.com/${ver}/${pixel}/events`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+      body: JSON.stringify(metaBody(req, event)),
+      signal: AbortSignal.timeout(4000),
+    });
+    return await r.json().catch(() => null);
+  } catch (e) {
+    return null;
+  }
+}

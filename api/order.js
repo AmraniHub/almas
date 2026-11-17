@@ -1,7 +1,7 @@
 // POST /api/order: a website order. Priced again here from the till's live catalogue (the browser's prices are
 // never trusted), numbered, and sent to the shop owners through the Almas shop bot on Telegram.
 // Env: TELEGRAM_BOT_TOKEN (the shop bot), TELEGRAM_CHAT_IDS (comma-separated owner chats).
-import { telegram, stripe, money, cloud, LANGS as LANG } from "./_lib.js";
+import { telegram, stripe, money, cloud, metaEvent, LANGS as LANG } from "./_lib.js";
 
 const CATALOG = "https://aronium-shop.amrani4online.workers.dev/app/catalog.json";
 const PAY = { cod: "💵 عند الاستلام أو في المتجر", bank: "🏦 تحويل بنكي (CIH)", card: "💳 بطاقة بنكية (Stripe)" };
@@ -165,6 +165,12 @@ export default async function handler(req, res) {
     items: lines.map((l) => ({ product: l.id, name_till: l.ar, name: l.fr, qty: l.q, unit: l.unit, unit_price: l.price,
                                line: Math.round(l.line * 100) / 100 })),
   });
+  // Meta: a cash or bank order is a Lead (paid on delivery); a card order becomes a Purchase in /api/paid once Stripe
+  // says it is paid. The page's pixel sends the same event with the same id, so Meta counts it once.
+  if (pay !== "card") {
+    await metaEvent(req, { name: "Lead", id: `lead-${number}`, value: due, phone,
+                           contents: lines.map((l) => ({ id: l.id, quantity: l.q })) });
+  }
   if (repeat) {
     await cloud("/ingest/standing", {
       from_order: number, at: now.toISOString(), lang, name, phone, address, notes, pay: pay === "bank" ? "bank" : "cod", every_days: repeat,

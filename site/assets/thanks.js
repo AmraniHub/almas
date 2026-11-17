@@ -11,7 +11,7 @@
     .then(function (d) {
       if (d && d.paid) {
         el.textContent = window.TY.ty_paid.replace("{n}", d.number).replace("{t}", money(d.total));
-        try { window.fbq("track", "Purchase", { value: d.total, currency: "MAD" }); } catch (e) {}
+        try { window.fbq("track", "Purchase", { value: d.total, currency: "MAD" }, { eventID: "purchase-" + d.number }); } catch (e) {}
         try { if (window.gtag) window.gtag("event", "purchase", { transaction_id: String(d.number), value: d.total, currency: "MAD", payment_type: "card" }); } catch (e) {}
         try { localStorage.removeItem("almas-cart-v1"); } catch (e) {}
         var wa = document.querySelector("[data-ty-wa]");

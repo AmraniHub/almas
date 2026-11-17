@@ -1,6 +1,6 @@
 // POST /api/quote/: a price request from a restaurant, hotel, caterer or wedding organiser (the /pro/ page),
 // sent to the shop owners through the Almas shop bot on Telegram.
-import { telegram, cloud, LANGS as LANG } from "./_lib.js";
+import { telegram, cloud, metaEvent, LANGS as LANG } from "./_lib.js";
 
 function clean(v, max) {
   return String(v == null ? "" : v).replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -39,7 +39,9 @@ export default async function handler(req, res) {
   const sent = await telegram(text);
   if (!sent) return res.status(502).json({ ok: false, error: "telegram unreachable" });
   const now = new Date();
-  await cloud("/ingest/quote", { id: `Q-${now.toISOString().slice(2, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`,
-                                 at: now.toISOString(), lang, ...f });
-  return res.status(200).json({ ok: true });
+  const qid = `Q-${now.toISOString().slice(2, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  await cloud("/ingest/quote", { id: qid, at: now.toISOString(), lang, ...f });
+  // Meta: the same Lead the page's pixel sends, same id (the page reads it from this answer)
+  await metaEvent(req, { name: "Lead", id: `quote-${qid}`, phone: f.phone });
+  return res.status(200).json({ ok: true, id: qid });
 }

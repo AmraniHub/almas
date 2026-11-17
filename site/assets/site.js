@@ -564,7 +564,7 @@
           }
           if (!d || !d.ok) { if (btn) { btn.disabled = false; btn.textContent = A.s.send; } return fallback(); }
           if (d.url) { window.location.href = d.url; return; } // card: Stripe's payment page, then /merci/
-          try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }); } catch (err) {}
+          try { window.fbq("track", "Lead", { content_ids: ids, content_type: "product", value: d.total, currency: "MAD" }, { eventID: "lead-" + d.number }); } catch (err) {}
           ga("purchase", { transaction_id: String(d.number), value: d.total, currency: "MAD", payment_type: "cash_on_delivery", items: gaItems(ids) });
           var wa = $("[data-done-wa]");
           if (wa) wa.href = "https://wa.me/" + A.wa + "?text=" + encodeURIComponent(orderText(f, d.number, d));
@@ -601,7 +601,7 @@
       .then(function (r) { return r.json().catch(function () { return {}; }); })
       .then(function (d) {
         if (!d || !d.ok) return fail();
-        try { window.fbq("track", "Lead", { content_name: "pro-quote", content_category: body.type }); } catch (err) {}
+        try { window.fbq("track", "Lead", { content_name: "pro-quote", content_category: body.type }, d.id ? { eventID: "quote-" + d.id } : undefined); } catch (err) {}
         ga("generate_lead", { lead_source: "pro_quote", quote_type: String(body.type || "") });
         $$("input, select, textarea, button", qf).forEach(function (x) { x.disabled = true; });
         if (btn) btn.hidden = true;
