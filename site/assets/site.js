@@ -1038,12 +1038,27 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && d.open) { d.open = false; d.querySelector("summary").focus(); } });
   });
 
+  /* the way-to-the-shop menu closes as soon as the visitor scrolls on (more than 40 px), so the products are not hidden
+     behind it; scrolling done by the hero button itself (the smooth scroll to the top) is ignored for a moment */
+  (function () {
+    var d = $("[data-route]");
+    if (!d) return;
+    var from = 0;
+    d.addEventListener("toggle", function () { if (d.open) from = window.scrollY; });
+    window.addEventListener("scroll", function () {
+      if (!d.open) return;
+      if (Date.now() < (+d.getAttribute("data-quiet") || 0)) { from = window.scrollY; return; }
+      if (Math.abs(window.scrollY - from) > 40) d.open = false;
+    }, { passive: true });
+  })();
+
   /* "Visit the shop" in the hero opens the header's way-to-the-shop menu (without JS the link jumps to the map) */
   $$("[data-open-route]").forEach(function (a) {
     a.addEventListener("click", function (e) {
       var d = $("[data-route]");
       if (!d) return;
       e.preventDefault(); e.stopPropagation();
+      d.setAttribute("data-quiet", Date.now() + 1200);
       window.scrollTo({ top: 0, behavior: "smooth" });
       d.open = true;
       var first = d.querySelector(".route-menu a");
