@@ -362,9 +362,9 @@ form select { display: block; width: 100%; margin-top: 4px; padding: 12px 14px; 
 .rv-done a { display: block; margin-top: 6px; color: var(--ink); }
 
 /* back to top */
-.to-top { position: fixed; inset-inline-start: 16px; bottom: 18px; z-index: 30; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); box-shadow: 0 10px 22px -12px rgba(33, 26, 22, .6); cursor: pointer; display: grid; place-items: center; animation: rise .25s ease; }
+.to-top { position: fixed; inset-inline-start: 16px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 30; width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fffcf8; background: var(--terracotta); box-shadow: 0 10px 24px -8px rgba(122, 58, 36, .75); cursor: pointer; display: grid; place-items: center; animation: rise .25s ease; }
 .to-top[hidden] { display: none; }
-.to-top svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.to-top svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
 
 /* Tajine, the assistant */
@@ -731,3 +731,7 @@ html, body { overflow-x: clip; }
 /* "Professionnels" / "Profesionales" is the longest thing in a phone header: phones get the short form */
 .nav-pro .short { display: none; }
 @media (max-width: 430px) { .nav-pro .long { display: none; } .nav-pro .short { display: inline; } }
+
+/* back to top: darker on hover and focus, like the map pin */
+.to-top:hover { background: #8a3f28; }
+.to-top:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }

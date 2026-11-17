@@ -723,7 +723,7 @@
     ticking = false;
     var y = window.pageYOffset || document.documentElement.scrollTop;
     if (topBar) topBar.classList.toggle("scrolled", y > 8);
-    if (toTop) toTop.hidden = y < window.innerHeight * 0.9;
+    if (toTop) toTop.hidden = y < window.innerHeight * 0.5;
   }
   window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
   onScroll();
