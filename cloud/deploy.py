@@ -3,6 +3,9 @@
     python cloud/deploy.py            create or update: D1 database almas-shop, tables, Worker almas-shop, workers.dev
     python cloud/deploy.py --rotate   new INGEST_SECRET, ADMIN_KEY and SESSION_SECRET (logs the owner out; the Vercel
                                       env var INGEST_SECRET must then be updated from cloud/.cloud.json)
+    python cloud/deploy.py --fcm crm/firebase_credentials.json
+                                      also store the Firebase service account as the secret FCM_SA (app notifications);
+                                      needed once, and again after --rotate
 
 Writes cloud/.cloud.json ({url, ingest_secret, db}, gitignored) for the Vercel side, and the owner's admin key to
 %USERPROFILE%/keys/almas-admin.txt. Secrets are made on the first deploy or with --rotate; every other deploy keeps
@@ -136,6 +139,19 @@ def build():
     return code
 
 
+def fcm_file():
+    """--fcm PATH: the Firebase service account JSON (crm/firebase_credentials.json on this laptop, gitignored)."""
+    if "--fcm" not in sys.argv:
+        return None
+    i = sys.argv.index("--fcm")
+    if i + 1 >= len(sys.argv):
+        raise SystemExit("--fcm needs the path of the service account JSON")
+    p = Path(sys.argv[i + 1])
+    if not p.exists():
+        raise SystemExit("no such file: %s" % p)
+    return p
+
+
 def admin_key():
     return "almas-" + "-".join("".join(secrets.choice(KEY_ALPHABET) for _ in range(5)) for _ in range(4))
 
@@ -191,6 +207,17 @@ def main():
     if not out.get("success"):
         raise SystemExit("upload refused: %s" % json.dumps(out.get("errors"))[:400])
     say("worker uploaded (%d KB)%s" % (len(code) // 1024, ", new secrets" if fresh else ", secrets kept"))
+    fcm = fcm_file()
+    if fcm:
+        # the Firebase service account that signs the app's notifications: sent once, kept by every later deploy
+        sa = json.loads(fcm.read_text(encoding="utf-8"))
+        if not (sa.get("type") == "service_account" and sa.get("private_key") and sa.get("project_id")):
+            raise SystemExit("%s is not a Firebase service account file" % fcm.name)
+        cf("PUT", "/accounts/%s/workers/scripts/%s/secrets" % (acc, NAME), tok,
+           {"name": "FCM_SA", "text": json.dumps(sa, separators=(",", ":")), "type": "secret_text"}, "FCM_SA secret")
+        say("notifications: Firebase key for project %s stored as the Worker secret FCM_SA" % sa["project_id"])
+    elif fresh and exists:
+        say("note: new secrets replace FCM_SA too; run again with --fcm <service-account.json> to switch notifications back on")
     cf("POST", "/accounts/%s/workers/scripts/%s/subdomain" % (acc, NAME), tok, {"enabled": True, "previews_enabled": False}, "subdomain")
     sub = cf("GET", "/accounts/%s/workers/subdomain" % acc, tok)["subdomain"]
     local["url"] = "https://%s.%s.workers.dev" % (NAME, sub)

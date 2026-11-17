@@ -129,3 +129,7 @@ p.ok { color: #17603b; font-weight: 600; }
 .pts-n { max-width: 140px; }
 @media (min-width: 820px) { .grid2.even { grid-template-columns: 1fr 1fr; } }
 a.btn.on { background: var(--acc); color: var(--acc-ink); border-color: var(--acc); }
+
+/* notifications: what the phone will show, before sending */
+.push-preview { margin-top: .6rem; padding: .6rem .8rem; border-radius: 10px; background: #fff; border: 1px solid var(--line); display: grid; gap: .2rem; }
+.card label select, .card label textarea { display: block; width: 100%; margin-top: .3rem; }

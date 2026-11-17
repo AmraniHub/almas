@@ -156,3 +156,31 @@ create table if not exists referrals (
 );
 create unique index if not exists referrals_referee on referrals (referee);
 create index if not exists referrals_referrer on referrals (referrer, status, decided_at);
+
+-- push notifications: one row per installed Android app (its Firebase token). phone_norm is set only with the same
+-- proof as "My orders" (phone AND one of its order numbers). mine = the owner's own phone, for test sends.
+create table if not exists devices (
+  id integer primary key autoincrement,
+  token text not null,
+  lang text not null default 'ar',
+  phone_norm text not null default '',
+  app text not null default '',
+  mine integer not null default 0,
+  created_at text not null,
+  seen_at text not null
+);
+create unique index if not exists devices_token on devices (token);
+create index if not exists devices_phone on devices (phone_norm);
+-- what the owner sent, and to whom (audience: all, ar, fr, en, es, phone, mine; or order:<status> for the automatic ones)
+create table if not exists pushes (
+  id integer primary key autoincrement,
+  at text not null,
+  title text not null default '',
+  body text not null default '',
+  link text not null default '',
+  audience text not null default '',
+  sent integer not null default 0,
+  failed integer not null default 0,
+  note text not null default ''
+);
+create index if not exists pushes_at on pushes (at);

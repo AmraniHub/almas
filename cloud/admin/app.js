@@ -422,6 +422,7 @@ async function orderView(id) {
             h("a", { class: "btn ghost", href: "#slip/" + encodeURIComponent(o.id) }, "Packing slip"))),
         h("div", { class: "card" }, h("h2", {}, "Status"),
           h("div", { class: "actions" }, status, h("button", { type: "button", onclick: () => save({ status: status.value }, "Status saved") }, "Save status")),
+          d.app_phones ? h("p", { class: "small ok" }, "This customer has the Almas app: a new status (confirmed, preparing, delivered, cancelled) reaches their phone as a notification.") : null,
           h("h2", {}, "Payment"),
           h("p", {}, PAY[o.pay] || o.pay, " · ", o.paid ? "paid " + when(o.paid_at) : "not paid",
             o.stripe_session ? h("div", { class: "small muted" }, "Stripe: " + o.stripe_session) : null),
@@ -892,6 +893,94 @@ async function sheetView() {
       h("div", { class: "actions" }, connectBtn)));
 }
 
+// ---------- Notifications: messages to the phones that have the Almas app ----------
+
+const PUSH_AUD = { all: "Everyone with the app", ar: "Arabic only", fr: "French only", en: "English only", es: "Spanish only",
+  phone: "One customer (by phone)", mine: "Only my phone (a test)" };
+const PUSH_LANG = { ar: "Arabic", fr: "French", en: "English", es: "Spanish" };
+
+async function pushView() {
+  markNav("push");
+  const d = await api("push");
+  const busy = (btn, fn) => async () => {
+    btn.disabled = true;
+    try { await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; }
+  };
+  const aud = h("select", { id: "pushAud" }, Object.entries(PUSH_AUD).map(([k, v]) => h("option", { value: k }, v)));
+  const phone = h("input", { id: "pushPhone", type: "tel", placeholder: "06 12 34 56 78" });
+  const phoneRow = h("label", { class: "hide" }, "Customer's phone", phone);
+  const title = h("input", { id: "pushTitle", maxlength: 65, dir: "auto", placeholder: "عرض هذا الأسبوع" });
+  const msg = h("textarea", { id: "pushBody", maxlength: 240, rows: 3, dir: "auto", placeholder: "الكمون بـ 80 درهم للكيلو حتى الأحد" });
+  const link = h("input", { id: "pushLink", placeholder: "https://almas5.com/p/p6/  (empty = the shop's home page)" });
+  const count = h("span", { class: "small muted" }, "0 / 240");
+  msg.addEventListener("input", () => { count.textContent = msg.value.length + " / 240"; });
+  const reach = () => {
+    const a = aud.value, by = d.devices.by_lang || {};
+    if (a === "all") return d.devices.total + " phones";
+    if (PUSH_LANG[a]) return (by[a] || 0) + " phones";
+    if (a === "mine") return d.mine.length + " of your phones";
+    return "the phones linked to that customer";
+  };
+  const reachNote = h("p", { class: "small muted" });
+  const sync = () => { phoneRow.classList.toggle("hide", aud.value !== "phone"); reachNote.textContent = "Reaches about " + reach() + "."; };
+  aud.addEventListener("change", sync);
+  sync();
+  // two steps: the first press shows what will go out, the second sends it
+  const sendBtn = h("button", { type: "button" }, "Send");
+  const confirmBox = h("div", { class: "card due hide" });
+  let armed = false;
+  const disarm = () => { armed = false; sendBtn.textContent = "Send"; confirmBox.classList.add("hide"); };
+  [aud, phone, title, msg, link].forEach((el) => el.addEventListener("input", disarm));
+  aud.addEventListener("change", disarm);
+  sendBtn.onclick = busy(sendBtn, async () => {
+    if (!title.value.trim() || !msg.value.trim()) { toast("Write a title and a message.", true); return; }
+    if (!armed) {
+      armed = true;
+      sendBtn.textContent = "Yes, send it now";
+      clear(confirmBox, h("b", {}, "Check before sending: "), PUSH_AUD[aud.value] + (aud.value === "phone" ? " " + phone.value : "") + " · " + reach(),
+        h("div", { class: "push-preview", dir: "auto" }, h("b", {}, title.value.trim()), h("div", {}, msg.value.trim()),
+          h("div", { class: "small muted", dir: "ltr" }, link.value.trim() || "opens the shop's home page")));
+      confirmBox.classList.remove("hide");
+      return;
+    }
+    const r = await api("push/send", { audience: aud.value, phone: phone.value, title: title.value, body: msg.value, link: link.value });
+    toast(r.topic ? "Sent. Phones receive it within a few minutes." : "Sent to " + r.sent + " phone" + (r.sent === 1 ? "" : "s") + (r.failed ? ", " + r.failed + " failed" : "") + ".");
+    title.value = ""; msg.value = ""; link.value = ""; disarm();
+    pushView();
+  });
+  const deviceRow = (dev) => {
+    const b = h("button", { type: "button", class: "ghost small" }, dev.mine ? "Not my phone" : "This is my phone");
+    b.onclick = busy(b, async () => { await api("push/device", { id: dev.id, mine: !dev.mine }); toast(dev.mine ? "Unmarked." : "Marked as your phone: test sends go to it."); pushView(); });
+    return h("div", { class: "row" },
+      h("div", { class: "main" }, h("div", {}, dev.name ? h("b", {}, dev.name) : h("span", { class: "muted" }, dev.phone_norm ? "+" + dev.phone_norm : "Not linked to a customer yet"),
+        " ", dev.mine ? h("span", { class: "chip delivered" }, "my phone") : null),
+        h("div", { class: "small muted" }, (PUSH_LANG[dev.lang] || dev.lang) + " · app " + (dev.app || "?") + " · first seen " + when(dev.created_at, false))),
+      h("div", { class: "side" }, h("div", { class: "small muted" }, "last open " + when(dev.seen_at)), b));
+  };
+  clear(view(), h("h1", {}, "Notifications"),
+    d.configured ? null : h("p", { class: "err" }, "Sending is not switched on yet: the Firebase key is missing on the server."),
+    h("p", { class: "muted" }, d.devices.total + " phones have the Almas app · " + d.devices.active30 + " opened it in the last 30 days · " +
+      d.devices.linked + " linked to a customer · " + Object.entries(d.devices.by_lang || {}).map(([k, v]) => (PUSH_LANG[k] || k) + " " + v).join(", ")),
+    h("div", { class: "card" }, h("h2", {}, "New message"),
+      h("label", {}, "Send to", aud), phoneRow, reachNote,
+      h("label", {}, "Title", title),
+      h("label", {}, "Message", msg), count,
+      h("label", {}, "Page to open when tapped (optional)", link),
+      confirmBox,
+      h("div", { class: "actions" }, sendBtn),
+      h("p", { class: "small muted" }, "Customers also get a notification by themselves when you change their order's status to confirmed, preparing, delivered or cancelled, in the language they ordered in.")),
+    h("div", { class: "card" }, h("h2", {}, "Sent"),
+      d.pushes.length ? h("div", { class: "rows" }, d.pushes.map((p) => h("div", { class: "row" },
+        h("div", { class: "main" }, h("div", {}, h("b", {}, p.title), " ", h("span", { class: "chip" }, p.audience.startsWith("order:") ? "order " + p.audience.slice(6) : PUSH_AUD[p.audience] || p.audience)),
+          h("div", { class: "small" }, p.body), p.link ? h("div", { class: "small muted break" }, p.link) : null),
+        h("div", { class: "side" }, h("div", { class: "small muted" }, when(p.at)),
+          h("div", { class: "small" }, p.audience === "all" || PUSH_LANG[p.audience] ? (p.sent ? "sent" : "failed") : p.sent + " sent" + (p.failed ? " · " + p.failed + " failed" : "")))))) :
+        h("p", { class: "empty" }, "Nothing sent yet.")),
+    h("div", { class: "card" }, h("h2", {}, "Phones with the app"),
+      h("p", { class: "small muted" }, "Open the app once on your own phone, then press “This is my phone” on it here: “Only my phone (a test)” then sends to it alone."),
+      d.recent.length ? h("div", { class: "rows" }, d.recent.map(deviceRow)) : h("p", { class: "empty" }, "No phone yet: they appear here when the new app version is opened.")));
+}
+
 // ---------- router ----------
 
 async function render() {
@@ -913,6 +1002,7 @@ async function render() {
     else if (tab === "standing") await standingView(params);
     else if (tab === "sheet") await sheetView();
     else if (tab === "points") await pointsView(params);
+    else if (tab === "push") await pushView();
     else await overviewView();
     window.scrollTo(0, 0);
   } catch (e) {

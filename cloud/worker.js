@@ -665,6 +665,207 @@ async function listReferrals(env, p) {
   return { ok: true, referrals: rows, counts: Object.fromEntries(counts.map((x) => [x.status, x.n])) };
 }
 
+// ---------- push notifications to the Android app (Firebase Cloud Messaging, HTTP v1) ----------
+// The app hands its Firebase token to the website, which registers it at /public/device. A device is tied to a
+// customer's phone only with the same proof as "My orders" (the phone AND one of its order numbers), so nobody can
+// receive someone else's order news. Broadcasts go to topics the app subscribes to itself ("all", "lang_ar" ...):
+// one Firebase call however many phones. FCM_SA (Worker secret) is the Firebase service account JSON.
+
+const PUSH_TOKEN_RE = /^[A-Za-z0-9_:-]{20,4096}$/;
+const PUSH_AUDIENCE = ["all", "ar", "fr", "en", "es", "phone", "mine"];
+const SITE = "https://almas5.com";
+const sitePage = (lang, path) => SITE + (lang === "ar" ? "/" : "/" + lang + "/") + (path || "");
+// what a customer reads when the owner moves an order; {id} is the order number
+const PUSH_ORDER = {
+  confirmed: {
+    ar: ["تم تأكيد طلبك", "طلبك رقم {id} مؤكد. شكرا لثقتك في معشبة ألماس."],
+    fr: ["Commande confirmée", "Votre commande n° {id} est confirmée. Merci de votre confiance."],
+    en: ["Order confirmed", "Your order {id} is confirmed. Thank you for shopping with Almas."],
+    es: ["Pedido confirmado", "Tu pedido n.º {id} está confirmado. Gracias por comprar en Almas."],
+  },
+  preparing: {
+    ar: ["طلبك قيد التحضير", "نحضّر الآن طلبك رقم {id}."],
+    fr: ["Commande en préparation", "Nous préparons votre commande n° {id}."],
+    en: ["Preparing your order", "We are preparing your order {id}."],
+    es: ["Preparando tu pedido", "Estamos preparando tu pedido n.º {id}."],
+  },
+  delivered: {
+    ar: ["تم تسليم طلبك", "تم تسليم طلبك رقم {id}. بالصحة والهنا!"],
+    fr: ["Commande livrée", "Votre commande n° {id} a été livrée. Bon appétit !"],
+    en: ["Order delivered", "Your order {id} has been delivered. Enjoy!"],
+    es: ["Pedido entregado", "Tu pedido n.º {id} ha sido entregado. ¡Buen provecho!"],
+  },
+  cancelled: {
+    ar: ["تم إلغاء طلبك", "تم إلغاء طلبك رقم {id}. للاستفسار راسلنا على واتساب."],
+    fr: ["Commande annulée", "Votre commande n° {id} a été annulée. Une question ? Écrivez-nous sur WhatsApp."],
+    en: ["Order cancelled", "Your order {id} was cancelled. Questions? Message us on WhatsApp."],
+    es: ["Pedido cancelado", "Tu pedido n.º {id} ha sido cancelado. ¿Dudas? Escríbenos por WhatsApp."],
+  },
+};
+
+function fcmAccount(env) {
+  try {
+    const a = JSON.parse(env.FCM_SA || "null");
+    return a && a.client_email && a.private_key && a.project_id ? a : null;
+  } catch (e) {
+    return null;
+  }
+}
+const b64url = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+let fcmTok = { value: "", exp: 0 };
+async function fcmAccess(env) {
+  if (fcmTok.value && Date.now() < fcmTok.exp) return fcmTok.value;
+  const a = fcmAccount(env);
+  if (!a) throw new Http(503, "notifications are not set up (FCM_SA)");
+  const part = (o) => b64url(enc.encode(JSON.stringify(o)));
+  const t = nowSec();
+  const unsigned = part({ alg: "RS256", typ: "JWT" }) + "." + part({ iss: a.client_email, scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token", iat: t, exp: t + 3600 });
+  const pem = a.private_key.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
+  const der = Uint8Array.from(atob(pem), (ch) => ch.charCodeAt(0));
+  const key = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, enc.encode(unsigned));
+  const r = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: unsigned + "." + b64url(sig) }).toString() });
+  const j = await r.json().catch(() => ({}));
+  if (!j.access_token) throw new Http(502, "Firebase login failed (" + r.status + ")");
+  fcmTok = { value: j.access_token, exp: Date.now() + Math.min(3300, Number(j.expires_in) || 3300) * 1000 };
+  return fcmTok.value;
+}
+// One message to a device token or a topic. Data only: the app draws the notification itself (its own icon,
+// channel and the page to open). Returns {ok} or {ok:false, gone} when Firebase says the token is dead.
+async function fcmSend(env, to, msg) {
+  const a = fcmAccount(env);
+  if (!a) throw new Http(503, "notifications are not set up (FCM_SA)");
+  const data = { kind: msg.kind || "news", title: msg.title, body: msg.body, link: msg.link || "", id: String(msg.id || "") };
+  const message = Object.assign({ data, android: { priority: msg.kind === "order" ? "high" : "normal", ttl: msg.kind === "order" ? "604800s" : "172800s" } }, to);
+  const r = await fetch("https://fcm.googleapis.com/v1/projects/" + encodeURIComponent(a.project_id) + "/messages:send", {
+    method: "POST", headers: { Authorization: "Bearer " + (await fcmAccess(env)), "Content-Type": "application/json" },
+    body: JSON.stringify({ message }) });
+  if (r.ok) return { ok: true };
+  const j = await r.json().catch(() => ({}));
+  const st = (j.error && j.error.status) || "";
+  const gone = r.status === 404 || st === "UNREGISTERED" || (st === "INVALID_ARGUMENT" && to.token);
+  return { ok: false, gone, error: st || "http " + r.status };
+}
+async function sendToTokens(env, rows, msg) {
+  let sent = 0, failed = 0;
+  for (const d of rows) {
+    const r = await fcmSend(env, { token: d.token }, msg).catch((e) => ({ ok: false, error: e.message }));
+    if (r.ok) sent++;
+    else {
+      failed++;
+      if (r.gone) await env.DB.prepare("delete from devices where id = ?").bind(d.id).run();
+    }
+  }
+  return { sent, failed };
+}
+function pushLink(v) {
+  const s = text(v, 500);
+  if (!s) return "";
+  let u;
+  try { u = new URL(s, SITE); } catch (e) { throw new Http(400, "link: a page of almas5.com"); }
+  if (u.protocol !== "https:" || !["almas5.com", "www.almas5.com"].includes(u.hostname)) throw new Http(400, "link: a page of almas5.com");
+  return u.href;
+}
+
+// /public/device, from the website inside the app: remember this phone's token, its language and (with proof) its customer
+async function registerDevice(req, env, c) {
+  if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405, c);
+  const b = await body(req);
+  const token = String(b.token || "");
+  if (!PUSH_TOKEN_RE.test(token)) return json({ ok: false, error: "token" }, 400, c);
+  const iph = await ipHash(env, req.headers.get("CF-Connecting-IP") || "");
+  const t = nowSec(), k = "dev:" + iph;
+  const n = await first(env, "select count(*) n from hits where k = ? and at > ?", k, t - 3600);
+  if (n && n.n >= 30) return json({ ok: false, error: "slow down" }, 429, c);
+  await env.DB.prepare("insert into hits (k, at) values (?, ?)").bind(k, t).run();
+  const pn = phoneNorm(text(b.phone, 30));
+  const linked = pn.length >= 9 && (await phoneProof(env, pn, b.ids)) ? pn : "";
+  const at = nowIso();
+  await env.DB.prepare(
+    "insert into devices (token, lang, phone_norm, app, created_at, seen_at) values (?, ?, ?, ?, ?, ?) " +
+    "on conflict(token) do update set lang = excluded.lang, app = excluded.app, seen_at = excluded.seen_at, " +
+    "phone_norm = case when excluded.phone_norm <> '' then excluded.phone_norm else devices.phone_norm end"
+  ).bind(token, oneOf(b.lang, LANGS, "ar"), linked, text(b.app, 20), at, at).run();
+  return json({ ok: true, linked: !!linked }, 200, { ...c, "Cache-Control": "no-store" });
+}
+
+// the order's customer hears about it on every phone of theirs that has the app (after the reply has gone)
+async function pushOrderStatus(env, id, status) {
+  const words = PUSH_ORDER[status];
+  if (!words || !fcmAccount(env)) return;
+  const o = await first(env, "select id, lang, phone_norm from orders where id = ?", id);
+  if (!o || !o.phone_norm) return;
+  const rows = await all(env, "select id, token from devices where phone_norm = ? order by seen_at desc limit 5", o.phone_norm);
+  if (!rows.length) return;
+  const lang = oneOf(o.lang, LANGS, "ar");
+  const [title, line] = words[lang];
+  const msg = { kind: "order", title, body: line.replace("{id}", o.id), link: sitePage(lang, "#my-orders"), id: o.id };
+  const r = await sendToTokens(env, rows, msg);
+  await env.DB.prepare("insert into pushes (at, title, body, link, audience, sent, failed, note) values (?, ?, ?, ?, ?, ?, ?, ?)")
+    .bind(nowIso(), title, msg.body, msg.link, "order:" + status, r.sent, r.failed, o.id).run();
+}
+
+async function pushInfo(env) {
+  const [byLang, totals, mine, recent, sent] = await env.DB.batch([
+    env.DB.prepare("select lang, count(*) n from devices group by lang"),
+    env.DB.prepare("select count(*) n, sum(case when phone_norm <> '' then 1 else 0 end) linked, sum(case when seen_at >= ? then 1 else 0 end) active from devices")
+      .bind(new Date(Date.now() - 30 * 86400000).toISOString()),
+    env.DB.prepare("select id, lang, app, seen_at from devices where mine = 1 order by seen_at desc"),
+    env.DB.prepare("select d.id, d.lang, d.app, d.mine, d.phone_norm, d.created_at, d.seen_at, c.name from devices d " +
+      "left join customers c on c.phone_norm = d.phone_norm order by d.seen_at desc limit 30"),
+    env.DB.prepare("select * from pushes order by id desc limit 40"),
+  ]);
+  const t = (totals.results || [])[0] || {};
+  return { ok: true, configured: !!fcmAccount(env), devices: { total: t.n || 0, linked: t.linked || 0, active30: t.active || 0,
+    by_lang: Object.fromEntries((byLang.results || []).map((r) => [r.lang, r.n])) },
+    mine: mine.results || [], recent: recent.results || [], pushes: sent.results || [] };
+}
+
+// the owner's message: to everyone, one language, one customer (by phone) or only the owner's own phones (a test)
+async function pushSend(env, b) {
+  const audience = oneOf(b.audience, PUSH_AUDIENCE, "");
+  if (!audience) throw new Http(400, "audience");
+  const title = text(b.title, 65);
+  const body2 = text(b.body, 240);
+  if (!title || !body2) throw new Http(400, "a title and a message");
+  const link = pushLink(b.link);
+  const msg = { kind: "news", title, body: body2, link };
+  let r, note = "";
+  if (audience === "phone" || audience === "mine") {
+    let rows;
+    if (audience === "phone") {
+      const pn = phoneNorm(text(b.phone, 30));
+      if (pn.length < 9) throw new Http(400, "phone");
+      note = pn;
+      rows = await all(env, "select id, token from devices where phone_norm = ? order by seen_at desc limit 5", pn);
+      if (!rows.length) throw new Http(404, "this customer has no app linked to that phone yet");
+    } else {
+      rows = await all(env, "select id, token from devices where mine = 1");
+      if (!rows.length) throw new Http(404, "no phone is marked as yours yet: mark it in the device list below");
+    }
+    r = await sendToTokens(env, rows, msg);
+  } else {
+    const topic = audience === "all" ? "all" : "lang_" + audience;
+    const x = await fcmSend(env, { topic }, msg);
+    r = x.ok ? { sent: 1, failed: 0 } : { sent: 0, failed: 1 };
+    if (!x.ok) note = x.error;
+  }
+  await env.DB.prepare("insert into pushes (at, title, body, link, audience, sent, failed, note) values (?, ?, ?, ?, ?, ?, ?, ?)")
+    .bind(nowIso(), title, body2, link, audience, r.sent, r.failed, note).run();
+  if (!r.sent) throw new Http(502, "Firebase refused the message" + (note && audience !== "phone" ? " (" + note + ")" : ""));
+  return { ok: true, ...r, topic: audience !== "phone" && audience !== "mine" };
+}
+
+async function pushDevice(env, b) {
+  const id = Number(b.id);
+  if (!Number.isInteger(id) || id < 1) throw new Http(400, "id");
+  if (b.forget) await env.DB.prepare("delete from devices where id = ?").bind(id).run();
+  else await env.DB.prepare("update devices set mine = ? where id = ?").bind(b.mine ? 1 : 0, id).run();
+  return pushInfo(env);
+}
+
 // ---------- public (read by the website, CORS) ----------
 
 function cors(req) {
@@ -716,6 +917,7 @@ async function publicApi(req, env, url) {
     st.invite = RULES.referral.enabled ? { code: await refCode(env, pn), friends: friends ? friends.n : 0 } : null;
     return json({ ok: true, ...st }, 200, { ...c, "Cache-Control": "no-store" });
   }
+  if (url.pathname === "/public/device") return registerDevice(req, env, c);
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
   if (url.pathname === "/public/points-rules") return json({ ok: true, ...RULES }, 200, { ...c, "Cache-Control": "public, max-age=60" });
   // is this invite code real? (yes or no, nothing about whose it is) so a mistyped link promises nothing
@@ -1031,7 +1233,8 @@ async function getOrder(env, id) {
   ]);
   return { ok: true, order: o, items: items.results || [], customer: (cust.results || [])[0] || null, reviews: revs.results || [],
     points: pts.results || [], points_rules: rulesFor(((cust.results || [])[0] || {}).kind),
-    customer_points: o.phone_norm ? await pointsState(env, o.phone_norm) : null, referral: (refs.results || [])[0] || null };
+    customer_points: o.phone_norm ? await pointsState(env, o.phone_norm) : null, referral: (refs.results || [])[0] || null,
+    app_phones: o.phone_norm ? (((await first(env, "select count(*) n from devices where phone_norm = ?", o.phone_norm)) || {}).n || 0) : 0 };
 }
 
 async function updateOrder(env, b) {
@@ -1049,11 +1252,14 @@ async function updateOrder(env, b) {
   }
   if (b.admin_note !== undefined) { sets.push("admin_note = ?"); args.push(text(b.admin_note, 2000, true)); }
   if (!sets.length) throw new Http(400, "nothing to change");
+  const before = b.status !== undefined ? await first(env, "select status from orders where id = ?", id) : null;
   sets.push("updated_at = ?");
   args.push(nowIso(), id);
   const r = await env.DB.prepare("update orders set " + sets.join(", ") + " where id = ?").bind(...args).run();
   if (!r.meta || !r.meta.changes) throw new Http(404, "no such order");
   await syncOrderPoints(env, id);
+  // the customer's phone hears about a new status (only when it changed, and only phones linked to that customer)
+  if (before && before.status !== b.status) later(env, pushOrderStatus(env, id, b.status));
   return getOrder(env, id);
 }
 
@@ -1321,6 +1527,7 @@ async function admin(req, env, url) {
       case "/admin/api/points/list": return json(await pointsList(env, p));
       case "/admin/api/points/rules": return json({ ok: true, rules: RULES, defaults: DEFAULTS() });
       case "/admin/api/referrals": return json(await listReferrals(env, p));
+      case "/admin/api/push": return json(await pushInfo(env));
       case "/admin/export/orders.csv": return exportOrders(env);
       case "/admin/export/customers.csv": return exportCustomers(env);
     }
@@ -1341,6 +1548,8 @@ async function admin(req, env, url) {
       case "/admin/api/points": return json(await adjustPoints(env, b));
       case "/admin/api/points/rules": return json(await saveRules(env, b));
       case "/admin/api/referral": return json(await decideReferral(env, b));
+      case "/admin/api/push/send": return json(await pushSend(env, b));
+      case "/admin/api/push/device": return json(await pushDevice(env, b));
       case "/admin/api/sheet": return json(await sheetConnect(env, b));
       case "/admin/api/sheet/test": { const r = await sheetSend(env, "test", [[nowIso(), "Test from the Almas back office."]]); if (!r.ok) throw new Http(400, r.error); return json(r); }
       case "/admin/api/sheet/backfill": return json(await sheetBackfill(env));

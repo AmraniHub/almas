@@ -1171,6 +1171,7 @@
     store(OKEY, list.slice(0, 30));
     store(MEKEY, { name: f.get("name"), phone: f.get("phone"), address: f.get("address"), at: new Date().toISOString() });
     showOrdersBtn();
+    pushRegister(); // in the app: this phone now hears about this order
   }
   function me() { var m = load(MEKEY, null); return m && Date.now() - Date.parse(m.at) < YEAR ? m : null; }
   var orderForm = $("[data-order-form]");
@@ -1239,6 +1240,27 @@
   $$("[data-open-orders], [data-open-orders-foot]").forEach(function (b) { b.onclick = showOrders; });
   $$("[data-back-cart]").forEach(function (b) { b.onclick = showCart; });
   $$("[data-open-cart]").forEach(function (b) { b.addEventListener("click", showCart); });
+
+  /* The Android app puts its notification token in window.__almasPush and fires "almas-push". The shop's back office
+     keeps it, so the shop can send news to the app, and (with the phone and an order number of this phone, the same
+     proof as My orders) tell this customer when their order moves. Sent again only when something changed, or weekly. */
+  function pushRegister() {
+    var p = window.__almasPush;
+    if (!A.cloud || !p || !p.token) return;
+    var m = me(), ids = pastOrders().map(function (o) { return o.n; }).slice(0, 10);
+    var b = { token: String(p.token), lang: A.lang, app: String(p.app || ""), phone: m && ids.length ? m.phone : "", ids: m ? ids : [] };
+    var sig = [b.token, b.lang, b.app, b.phone, ids[0] || ""].join("|"), last = load("almas-push-v1", null);
+    if (last && last.sig === sig && Date.now() - last.at < 7 * 864e5) return;
+    fetch(A.cloud + "/public/device", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d && d.ok) store("almas-push-v1", { sig: sig, at: Date.now() }); }).catch(function () {});
+  }
+  window.addEventListener("almas-push", pushRegister);
+  pushRegister();
+  // an order notification opens the site at #my-orders (a fresh page, or the open one when only the #part changes)
+  function ordersFromHash() { if (location.hash === "#my-orders" && pastOrders().length) showOrders(); }
+  window.addEventListener("hashchange", ordersFromHash);
+  ordersFromHash();
   var fg = $("[data-forget]");
   if (fg) fg.onclick = function () {
     try { localStorage.removeItem(OKEY); localStorage.removeItem(MEKEY); } catch (e) {}
