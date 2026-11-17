@@ -1,4 +1,4 @@
-"""Almas Instagram (@almasnow25): story highlight covers and the stories behind each highlight.
+"""Almas Instagram (@almas5com): story highlight covers and the stories behind each highlight.
 
     python docs/instagram/make_instagram.py          (needs the network: live till prices, Google Fonts)
 
@@ -116,7 +116,7 @@ INFO = {
     ],
     "reviews": [
         ("رأيك يهمنا", "Votre avis compte", "اكتب رأيك على صفحة المنتج في الموقع، أو على Google"),
-        ("شاركنا وصفتك", "Partagez votre recette", "انشر صورة طبقك وأشر إلى @almasnow25، ونعيد نشرها هنا"),
+        ("شاركنا وصفتك", "Partagez votre recette", "انشر صورة طبقك وأشر إلى @almas5com، ونعيد نشرها هنا"),
     ],
     "visit": [
         ("معشبة ألماس، القصر الصغير", "Ksar Sghir, près de Tanger", "زورونا في المتجر، قرب طنجة"),
@@ -129,7 +129,7 @@ e = html.escape
 
 def ltr(text):
     """Escape, then keep the phone number, the site and the Instagram name left-to-right inside Arabic lines."""
-    runs = sorted({WA, SITE + "/pro", SITE, "@almasnow25"}, key=len, reverse=True)
+    runs = sorted({WA, SITE + "/pro", SITE, "@almas5com"}, key=len, reverse=True)
     pat = re.compile("|".join(re.escape(r) for r in runs))
     out, last = [], 0
     for m in pat.finditer(text):
@@ -331,7 +331,7 @@ h1{{margin:0 0 6px;font-size:30px}} p{{margin:0 0 26px;color:#aaa;font-size:20px
 .row{{display:grid;grid-template-columns:repeat(7,1fr);gap:26px 18px}}
 .h{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:19px}}
 .h img{{width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;outline:2px solid #333;outline-offset:4px}}
-</style></head><body><h1>@almasnow25</h1><p>Highlights preview</p><div class="row">{row}</div></body></html>""", wait_until="networkidle")
+</style></head><body><h1>@almas5com</h1><p>Highlights preview</p><div class="row">{row}</div></body></html>""", wait_until="networkidle")
         pg.evaluate("document.fonts.ready")
         pg.wait_for_timeout(200)
         pg.screenshot(path=str(hl / "preview.png"), full_page=True)

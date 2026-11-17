@@ -98,7 +98,7 @@ T = {
         "cart_empty": "سلتك فارغة",
         "cart_empty_sub": "أضف منتجات من الكتالوج، ثم أرسل الطلب إلى المتجر.",
         "order_note": "يصل طلبك إلى المتجر مباشرة، ونؤكد معك السعر والتوصيل والموعد عبر واتساب.",
-        "pay_note": "الدفع عند الاستلام أو في المتجر أو بالتحويل البنكي، ويُتفق معك على التوصيل عبر واتساب.",
+        "pay_note": "التوصيل داخل المغرب 35 درهمًا، ويصل خلال يوم إلى يومين عمل. الدفع عند الاستلام أو في المتجر أو بالتحويل البنكي.",
         "f_name": "الاسم أو اسم المؤسسة",
         "f_phone": "رقم الهاتف",
         "f_address": "العنوان",
@@ -209,7 +209,7 @@ T = {
         "cart": "Panier", "cart_empty": "Votre panier est vide",
         "cart_empty_sub": "Ajoutez des produits du catalogue, puis envoyez la commande à la boutique.",
         "order_note": "Votre commande part directement à la boutique. Nous confirmons avec vous le prix, la livraison et l'heure sur WhatsApp.",
-        "pay_note": "Vous payez à la livraison, à la boutique ou par virement bancaire. La livraison se convient avec vous sur WhatsApp.",
+        "pay_note": "Livraison au Maroc : 35 MAD, en 1 à 2 jours ouvrés. Vous payez à la livraison, à la boutique ou par virement bancaire.",
         "f_name": "Nom ou établissement", "f_phone": "Téléphone", "f_address": "Adresse", "f_notes": "Notes (facultatif)",
         "send": "Confirmer la commande", "subtotal": "Total", "remove": "Retirer",
         "pay_title": "Paiement", "pay_cod": "À la livraison ou à la boutique", "pay_bank": "Virement bancaire",
@@ -279,7 +279,7 @@ T = {
         "cart": "Cart", "cart_empty": "Your cart is empty",
         "cart_empty_sub": "Add products from the catalogue, then send the order to the shop.",
         "order_note": "Your order goes straight to the shop. We confirm the price, the delivery and the time with you on WhatsApp.",
-        "pay_note": "You pay on delivery, at the shop or by bank transfer. Delivery is agreed with you on WhatsApp.",
+        "pay_note": "Delivery in Morocco: 35 MAD, in 1 to 2 business days. You pay on delivery, at the shop or by bank transfer.",
         "f_name": "Name or business", "f_phone": "Phone", "f_address": "Address", "f_notes": "Notes (optional)",
         "send": "Confirm the order", "subtotal": "Total", "remove": "Remove",
         "pay_title": "Payment", "pay_cod": "On delivery or at the shop", "pay_bank": "Bank transfer",
@@ -357,7 +357,7 @@ T = {
         "cart_empty": "Tu cesta está vacía",
         "cart_empty_sub": "Añade productos del catálogo y envía el pedido a la tienda.",
         "order_note": "Tu pedido llega directamente a la tienda. Confirmamos contigo el precio, la entrega y la hora por WhatsApp.",
-        "pay_note": "Pagas a la entrega, en la tienda o por transferencia bancaria. La entrega se acuerda contigo por WhatsApp.",
+        "pay_note": "Entrega en Marruecos: 35 MAD, en 1 a 2 días laborables. Pagas a la entrega, en la tienda o por transferencia bancaria.",
         "f_name": "Nombre o establecimiento",
         "f_phone": "Teléfono",
         "f_address": "Dirección",
@@ -813,6 +813,35 @@ def pro_page(lang, products, cats):
 """
 
 
+def delivery_page(lang):
+    """Delivery prices and times, and the returns rule: the page Google Merchant Center checks."""
+    t = T[lang]
+    block = lambda title, items: f'<section class="wrap standing-info"><h2>{esc(title)}</h2><ul class="ticks">' + "".join(
+        f"<li>{esc(x)}</li>" for x in items) + "</ul></section>"
+    wa = "https://wa.me/" + CFG["whatsapp"]
+    return f"""{head(lang, t['ship_title'] + ' | ' + t['name'], t['ship_lead'], 'delivery/', f'{BASE}/img/og-{lang}.jpg')}
+<body>
+{header(lang, 'delivery/')}
+<main>
+<section class="hero"><div class="wrap"><div class="hero-in">
+<h1>{esc(t['ship_title'])}</h1>
+<p class="lead">{esc(t['ship_lead'])}</p>
+</div></div></section>
+{block(t['ship_ma_t'], t['ship_ma'])}
+{block(t['ship_eu_t'], t['ship_eu'])}
+{block(t['ship_ret_t'], t['ship_ret'])}
+<section class="wrap standing-info"><div class="cta"><a class="btn wa-link" href="{esc(wa)}" rel="noopener">{esc(t['ship_q'])}</a></div></section>
+{visit(lang)}
+</main>
+{footer(lang)}
+{cart_drawer(lang)}
+{data_tag(lang)}
+<script src="{PREFIX}/assets/site.js?v={STAMP}" defer></script>
+</body>
+</html>
+"""
+
+
 PTS = {k: v for k, v in (CFG.get("points") or {}).items() if not k.startswith("_")}
 if not PTS.get("mad_per_point"):
     PTS = {}
@@ -975,7 +1004,7 @@ def footer(lang):
 <div class="foot-brand"><img src="{PREFIX}/img/logo-192.png" alt="" width="44" height="44" loading="lazy"><div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p>{hours_html(lang)}</div></div>
 <div class="foot-groups">{"".join(f'<div class="fg">{g}</div>' for g in groups if g)}</div>
 </div>
-<p class="wrap copyright">© {datetime.now().year} {esc(t['name'])} · <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a></p>
+<p class="wrap copyright">© {datetime.now().year} {esc(t['name'])} · <a href="{url(lang, 'delivery/')}">{esc(t['ship_title'])}</a> · <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a></p>
 </footer>"""
 
 
@@ -1420,7 +1449,7 @@ def google_feed(products, cats):
 
 
 def sitemap(products):
-    paths = ["", "pro/"] + ["p/" + p["id"] + "/" for p in products]
+    paths = ["", "pro/", "delivery/"] + ["p/" + p["id"] + "/" for p in products]
     rows = []
     for path in paths:
         for lang in LANGS:
@@ -1479,6 +1508,7 @@ def main():
         write(base / "index.html", home(lang, products, cats, day[lang]))
         write(base / "merci" / "index.html", thanks(lang))
         write(base / "pro" / "index.html", pro_page(lang, products, cats))
+        write(base / "delivery" / "index.html", delivery_page(lang))
         for p in products:
             write(base / "p" / p["id"] / "index.html", product_page(lang, p, products, cats))
     for lang in LANGS:
