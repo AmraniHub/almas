@@ -1,6 +1,7 @@
 package com.almas.app;
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -9,8 +10,11 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
+
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,21 +27,78 @@ import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
 
-/** The shell's native helpers for lib/shell/native_bridge.dart: microphone permission, network state, share sheet. */
+/**
+ * The shell's native helpers for lib/shell/native_bridge.dart: microphone permission, network state, share sheet,
+ * and the shop's notifications (token, permission, topics, the page a tapped notification opens).
+ */
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "almas/native";
     private static final int MIC_REQUEST = 4101;
+    private static final int PUSH_REQUEST = 4102;
 
     private MethodChannel.Result pendingMic;
+    private MethodChannel.Result pendingPush;
+    private MethodChannel channel;
+    /** the page of a tapped notification, until the page side takes it */
+    private String pendingLink;
+
+    @Override
+    protected void onCreate(android.os.Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        pendingLink = linkOf(getIntent());
+        Push.channels(this);
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String link = linkOf(intent);
+        if (link == null) return;
+        if (channel != null) channel.invokeMethod("openLink", link);
+        else pendingLink = link;
+    }
+
+    private static String linkOf(Intent i) {
+        if (i == null || !i.hasExtra(Push.EXTRA_LINK)) return null;
+        String l = i.getStringExtra(Push.EXTRA_LINK);
+        return l == null ? "" : l; // "" = a notification without a page: the shop's home
+    }
 
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
-        new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
-                .setMethodCallHandler((call, result) -> {
+        channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
+        channel.setMethodCallHandler((call, result) -> {
                     switch (call.method) {
                         case "requestMicrophone":
                             requestMicrophone(result);
+                            break;
+                        case "takeLink":
+                            result.success(pendingLink);
+                            pendingLink = null;
+                            break;
+                        case "pushPermission":
+                            pushPermission(Boolean.TRUE.equals(call.argument("ask")), result);
+                            break;
+                        case "pushToken":
+                            try {
+                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(t ->
+                                        result.success(t.isSuccessful() ? t.getResult() : null));
+                            } catch (Exception e) {
+                                result.success(null);
+                            }
+                            break;
+                        case "pushTopics":
+                            try {
+                                // not String.valueOf(call.argument(..)): Java picks valueOf(char[]) and the cast fails
+                                Object lang = call.argument("lang");
+                                Push.topics(this, lang == null ? "" : lang.toString());
+                                result.success(true);
+                            } catch (Exception e) {
+                                android.util.Log.w("AlmasPush", "topics failed", e);
+                                result.success(false);
+                            }
                             break;
                         case "isOnline":
                             result.success(isOnline());
@@ -70,11 +131,32 @@ public class MainActivity extends FlutterActivity {
         requestPermissions(new String[] {Manifest.permission.RECORD_AUDIO}, MIC_REQUEST);
     }
 
+    /** "granted" or "denied"; with ask, Android 13+ shows its question first (Android itself never asks twice after a no). */
+    private void pushPermission(boolean ask, MethodChannel.Result result) {
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        boolean on = nm == null || nm.areNotificationsEnabled();
+        if (Build.VERSION.SDK_INT < 33 || on || !ask) {
+            result.success(on ? "granted" : "denied");
+            return;
+        }
+        if (pendingPush != null) {
+            result.success("denied");
+            return;
+        }
+        pendingPush = result;
+        requestPermissions(new String[] {Manifest.permission.POST_NOTIFICATIONS}, PUSH_REQUEST);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode != MIC_REQUEST || pendingMic == null) return;
         boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        if (requestCode == PUSH_REQUEST && pendingPush != null) {
+            pendingPush.success(granted ? "granted" : "denied");
+            pendingPush = null;
+            return;
+        }
+        if (requestCode != MIC_REQUEST || pendingMic == null) return;
         pendingMic.success(granted);
         pendingMic = null;
     }

@@ -4,7 +4,7 @@
 
 /// The app's version, sent to the site in the user agent (` AlmasApp/<version>`).
 /// test/site_links_test.dart checks it against pubspec.yaml and build.gradle.kts.
-const String kAppVersion = '1.2.1';
+const String kAppVersion = '1.3.0';
 
 /// Where the shop lives today.
 const String kSiteOrigin = 'https://almas-epices.vercel.app';
@@ -48,6 +48,17 @@ String startUrlFor(String lang) => kSiteOrigin + kLanguageRoots[normaliseLanguag
 bool isSiteUri(Uri uri) =>
     (uri.scheme == 'https' || uri.scheme == 'http') &&
     kSiteHosts.contains(uri.host.toLowerCase());
+
+/// Where a tapped notification opens. The shop links to almas5.com, but the app keeps its customers' cart and
+/// saved orders on the address it has always opened ([kSiteOrigin]), so a shop page moves there with its path,
+/// query and #part. '' = the home page in [lang]. Null for anything that is not one of the shop's pages.
+String? notificationUrl(String link, String lang) {
+  if (link.trim().isEmpty) return startUrlFor(lang);
+  final uri = Uri.tryParse(link.trim());
+  if (uri == null || !isSiteUri(uri)) return null;
+  final origin = Uri.parse(kSiteOrigin);
+  return uri.replace(scheme: origin.scheme, host: origin.host, port: origin.hasPort ? origin.port : null).toString();
+}
 
 /// The language a site page is written in: `/fr/...`, `/en/...`, `/es/...`,
 /// everything else is the Arabic site. Null for pages that are not the shop's.

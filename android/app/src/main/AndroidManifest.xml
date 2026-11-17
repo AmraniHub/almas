@@ -7,6 +7,8 @@
     <!-- Voice search and the assistant's microphone, asked only when the page wants it -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- The shop's notifications (order status, offers): Android 13+ asks the customer once -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="Almas"
@@ -33,6 +35,20 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- the shop's notifications, delivered by Firebase even when the app is closed -->
+        <service
+            android:name=".AlmasMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_almas" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="news" />
         <!-- the order picture the page shares, readable only through the share intent's grant -->
         <provider
             android:name=".ShareProvider"

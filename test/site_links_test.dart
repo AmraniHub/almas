@@ -171,6 +171,19 @@ void main() {
     });
   });
 
+  group('notifications', () {
+    test('a shop link opens on the app\'s own address, with its page and #part', () {
+      expect(notificationUrl('https://almas5.com/fr/#my-orders', 'fr'), '$kSiteOrigin/fr/#my-orders');
+      expect(notificationUrl('https://www.almas5.com/p/p6/?x=1', 'ar'), '$kSiteOrigin/p/p6/?x=1');
+      expect(notificationUrl('$kSiteOrigin/en/', 'en'), '$kSiteOrigin/en/');
+    });
+    test('no link opens the home page in the language; foreign links open nothing', () {
+      expect(notificationUrl('', 'es'), '$kSiteOrigin/es/');
+      expect(notificationUrl('https://evil.example/p/', 'ar'), isNull);
+      expect(notificationUrl('javascript:alert(1)', 'ar'), isNull);
+    });
+  });
+
   group('release numbers', () {
     test('pubspec, Gradle and the user agent carry the same version', () {
       final pubspec = File('pubspec.yaml').readAsStringSync();

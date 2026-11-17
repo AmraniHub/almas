@@ -2,6 +2,8 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // reads android/app/google-services.json (gitignored): the Firebase project that delivers the notifications
+    id("com.google.gms.google-services")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -27,8 +29,8 @@ android {
         applicationId = "com.almas.app"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.2.1"
+        versionCode = 15
+        versionName = "1.3.0"
     }
 
     signingConfigs {
@@ -60,6 +62,11 @@ android {
             isMinifyEnabled = false
         }
     }
+}
+
+dependencies {
+    // notifications from the shop (order status, offers); the version already in the offline Gradle cache
+    implementation("com.google.firebase:firebase-messaging:24.1.0")
 }
 
 flutter {

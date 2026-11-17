@@ -30,6 +30,58 @@ class NativeBridge {
     });
   }
 
+  /// The page of the notification the app was opened from ('' = the shop's home), once; null when none.
+  static Future<String?> takeLink() async {
+    try {
+      return await _channel.invokeMethod<String>('takeLink');
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  /// Calls [onLink] when a notification is tapped while the app is already open.
+  static void listenForLinks(void Function(String link) onLink) {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'openLink' && call.arguments is String) onLink(call.arguments as String);
+      return null;
+    });
+  }
+
+  /// 'granted' or 'denied'. With [ask], Android 13+ shows its permission question first.
+  static Future<String> pushPermission({bool ask = false}) async {
+    try {
+      return await _channel.invokeMethod<String>('pushPermission', {'ask': ask}) ?? 'denied';
+    } on PlatformException {
+      return 'denied';
+    } on MissingPluginException {
+      return 'denied';
+    }
+  }
+
+  /// This phone's Firebase token (what the shop sends to), or null when Firebase is not reachable yet.
+  static Future<String?> pushToken() async {
+    try {
+      return await _channel.invokeMethod<String>('pushToken');
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  /// Listen to the shop's messages for everyone and for [lang] (ar, fr, en, es).
+  static Future<void> pushTopics(String lang) async {
+    try {
+      await _channel.invokeMethod<bool>('pushTopics', {'lang': lang});
+    } on PlatformException {
+      // retried on the next page
+    } on MissingPluginException {
+      // not on Android
+    }
+  }
+
   /// False only when Android reports no network with internet capability.
   /// When the answer is unknown the page is simply tried.
   static Future<bool> isOnline() async {

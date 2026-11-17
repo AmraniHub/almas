@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import 'strings.dart';
 import 'web_bridge.dart';
 
 const String _prefLanguage = 'almas.lang';
+/// set once the app has asked for the notification permission (Android shows its question only once anyway)
+const String _prefPushAsked = 'almas.push.asked';
 
 /// Main-frame errors that mean "no network" rather than a broken page.
 const Set<WebResourceErrorType> _networkErrors = {
@@ -45,6 +48,8 @@ class _ShellPageState extends State<ShellPage> {
   DateTime? _lastBack;
   Timer? _splashSafety;
   bool _earlyBridgeDone = false;
+  String? _pushToken;
+  bool _pushBusy = false;
 
   ShellStrings get _strings => ShellStrings.of(_lang);
 
@@ -67,6 +72,10 @@ class _ShellPageState extends State<ShellPage> {
         ? normaliseLanguage(stored)
         : languageForLocale(PlatformDispatcher.instance.locale.languageCode);
     _target = startUrlFor(_lang);
+    // opened from a notification: its page first; tapped while open: that page now
+    NativeBridge.listenForLinks(_openNotification);
+    final launch = await NativeBridge.takeLink();
+    if (launch != null) _target = notificationUrl(launch, _lang) ?? _target;
 
     final controller = WebViewController();
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -178,6 +187,38 @@ class _ShellPageState extends State<ShellPage> {
       await _prefs?.setString(_prefLanguage, lang);
     }
     if (lang != null && lang != _lang && mounted) setState(() => _lang = lang);
+    unawaited(_pushSetup(lang ?? _lang));
+  }
+
+  void _openNotification(String link) {
+    final url = notificationUrl(link, _lang);
+    if (url != null) unawaited(_load(url));
+  }
+
+  /// The shop's notifications: ask once, then hand this phone's token to the page, which registers it with the
+  /// shop's back office (site.js pushRegister) together with the customer's last order, so order news can reach them.
+  Future<void> _pushSetup(String lang) async {
+    final controller = _controller;
+    if (controller == null || _pushBusy) return;
+    _pushBusy = true;
+    try {
+      var state = await NativeBridge.pushPermission();
+      if (state != 'granted' && !(_prefs?.getBool(_prefPushAsked) ?? false)) {
+        await _prefs?.setBool(_prefPushAsked, true);
+        state = await NativeBridge.pushPermission(ask: true);
+      }
+      if (state != 'granted') return; // switched off: nothing to register (checked again on every page)
+      _pushToken ??= await NativeBridge.pushToken();
+      final token = _pushToken;
+      if (token == null) return;
+      await NativeBridge.pushTopics(lang);
+      final data = jsonEncode({'token': token, 'app': kAppVersion});
+      await controller.runJavaScript('window.__almasPush=$data;window.dispatchEvent(new Event("almas-push"));');
+    } on PlatformException {
+      // the page went away: the next page tries again
+    } finally {
+      _pushBusy = false;
+    }
   }
 
   void _onWebResourceError(WebResourceError error) {
