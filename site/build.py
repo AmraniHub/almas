@@ -670,6 +670,24 @@ def flag(l):
     return f'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true">{FLAGS[l]}</svg>'
 
 
+def route(lang):
+    """The way to the shop, always in the header: a pin button that opens Google Maps / Waze / the map on the home page."""
+    t = T[lang]
+    lat, lng = CFG["geo"]
+    item = lambda kind, href, label, ext=True: (
+        f'<a class="route-{kind}" href="{esc(href)}"' + (' rel="noopener" target="_blank"' if ext else "")
+        + f'><span class="tile-ic">{ICON[kind]}</span><span>{esc(label)}</span></a>')
+    hours = CFG.get("hours")
+    hrs = f'<small>{esc(t["hours_line"].format(o=hours["open"], c=hours["close"]))}</small>' if hours else ""
+    return (f'<details class="route" data-route><summary aria-label="{esc(t["route_title"])}">{ICON["pin"]}'
+            f'<span class="route-tx">{esc(t["route_btn"])}</span></summary>'
+            f'<div class="route-menu"><p><b>{esc(t["route_title"])}</b><small>{esc(t["visit_body"])}</small>{hrs}</p>'
+            + item("pin", f"https://www.google.com/maps/dir/?api=1&destination={lat},{lng}", t["route_gmaps"])
+            + item("waze", waze_url(), t["route_waze"])
+            + item("map", url(lang) + "#visit", t["route_map"], False)
+            + "</div></details>")
+
+
 def header(lang, path):
     t = T[lang]
     current = ' aria-current="true"'
@@ -683,7 +701,8 @@ def header(lang, path):
 <div class="wrap top-in">
 <a class="brand" href="{url(lang)}"><img src="{PREFIX}/img/logo-192.png" alt="" width="40" height="40"><span><b>{esc(t['name'])}</b><small>{esc(t['kicker'])}</small></span></a>
 <button class="search-btn" type="button" data-open-search aria-label="{esc(t['search_btn'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
-<a class="nav-pro" href="{url(lang, 'pro/')}">{esc(t['nav_pro'])}</a>
+{route(lang)}
+<a class="nav-pro" href="{url(lang, 'pro/')}" aria-label="{esc(t['nav_pro'])}"><span class="long">{esc(t['nav_pro'])}</span><span class="short">{esc(t['nav_pro_short'])}</span></a>
 <nav class="langs-nav" aria-label="Language">{switch}</nav>
 <button class="cart-btn" type="button" data-open-cart aria-label="{esc(t['cart'])}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span class="count" data-cart-count>0</span></button>
 </div>
@@ -739,6 +758,7 @@ ICON = {
     "google": '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
     "waze": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.7 0-8.3 3.4-8.3 7.8 0 1.6.5 3 1.4 4.2-.4 1-1.1 1.6-2 1.9.9.9 2.4 1.2 3.7.7a9.6 9.6 0 0 0 5.2 1.5c4.7 0 8.3-3.4 8.3-7.9S16.7 3.5 12 3.5z" fill="#fff" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9.4" cy="10" r="1.1" fill="currentColor"/><circle cx="14.6" cy="10" r="1.1" fill="currentColor"/><path d="M9.1 13.1c.8 1 1.8 1.5 2.9 1.5s2.1-.5 2.9-1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8.2" cy="20.2" r="1.7" fill="currentColor"/><circle cx="15.8" cy="20.2" r="1.7" fill="currentColor"/></svg>',
     "facebook": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.6 21v-7.3h2.5l.4-2.9h-2.9V9c0-.8.3-1.4 1.4-1.4h1.6V5.1c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2H8v2.9h2.5V21z" fill="currentColor"/></svg>',
+    "map": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6zM9 4v14M15 6v14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     "insta": '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg>',
 }
 
@@ -1190,7 +1210,8 @@ def home(lang, products, cats, stamp_day):
 <h1>{esc(t['h1'])}</h1>
 <p class="lead">{esc(t['lead'])}</p>
 <div class="cta"><a class="btn" href="#products">{esc(t['browse'])}</a>
-<a class="btn ghost wa-link" href="https://wa.me/{CFG['whatsapp']}" rel="noopener">{esc(t['wa'])}</a></div>
+<a class="btn ghost wa-link" href="https://wa.me/{CFG['whatsapp']}" rel="noopener">{esc(t['wa'])}</a>
+<a class="btn ghost route-cta" href="#visit" data-open-route>{ICON['pin']}{esc(t['route_cta'])}</a></div>
 <p class="facts">{esc(facts)}</p>
 </div>
 <div class="hero-art" aria-hidden="true">{art}</div>

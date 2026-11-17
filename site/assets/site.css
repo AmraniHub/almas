@@ -694,3 +694,39 @@ html, body { overflow-x: clip; }
 .ref-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .ref-acts .btn { flex: 1 1 140px; min-height: 44px; }
 .ref-welcome { margin: 0; padding: 9px 12px; border-radius: 12px; background: #dff3e7; color: #17603b; font-weight: 700; font-size: .9rem; }
+
+/* the way to the shop, in the header on every page: a terracotta pin that opens Google Maps / Waze / the map */
+.route { position: relative; flex: none; }
+.route summary { list-style: none; display: flex; align-items: center; gap: 7px; height: 44px; padding: 0 16px 0 12px; border-radius: var(--pill); background: var(--terracotta); color: #fff; font-weight: 800; font-size: .88rem; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+.route summary::-webkit-details-marker { display: none; }
+.route summary svg { width: 21px; height: 21px; flex: none; }
+.route summary:hover, .route[open] summary { background: #8a3f28; }
+.route summary:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }
+.route-menu { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 30; width: min(300px, calc(100vw - 24px)); padding: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 18px 40px -16px rgba(33, 26, 22, .45); display: grid; gap: 6px; animation: langs-in .16s ease-out; }
+.route-menu p { margin: 2px 6px 4px; display: grid; gap: 2px; line-height: 1.35; }
+.route-menu p small { color: var(--body); font-size: .8rem; }
+.route-menu a { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 10px; border-radius: 14px; text-decoration: none; font-weight: 700; font-size: .95rem; border: 1px solid var(--line); color: var(--ink); background: var(--card); }
+.route-menu .tile-ic { width: 38px; height: 38px; }
+.route-menu .route-pin { background: var(--ink); border-color: var(--ink); color: #fff; }
+.route-menu .route-pin .tile-ic { background: var(--terracotta); color: #fff; }
+.route-menu .route-waze { background: #33ccff; border-color: #33ccff; color: #05293a; }
+.route-menu .route-waze .tile-ic { background: rgba(255, 255, 255, .55); color: #05293a; }
+.route-menu .route-map .tile-ic { background: var(--surface); }
+.route-menu a:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }
+.route-cta svg { width: 20px; height: 20px; flex: none; color: var(--terracotta); }
+/* phones and narrow windows: the pin alone, round like the search and cart buttons */
+@media (max-width: 760px) { .route summary { width: 44px; padding: 0; justify-content: center; } .route .route-tx { display: none; } }
+/* the pin costs a header slot: on phones every round button and the gaps give a little back, and the logo keeps its size */
+@media (max-width: 430px) {
+  .top-in { gap: 6px; }
+  .brand { min-width: 36px; flex-shrink: 0; }
+  .brand img { width: 36px; height: 36px; }
+  .brand span { display: none; }
+  .search-btn, .cart-btn, .route summary { width: 40px; height: 40px; }
+}
+@media (max-width: 340px) { .search-btn, .cart-btn, .route summary { width: 36px; height: 36px; } .brand img { width: 32px; height: 32px; } .brand { min-width: 32px; } }
+@media (max-width: 380px) { .route-menu { position: fixed; top: 70px; inset-inline: 12px; width: auto; } }
+
+/* "Professionnels" / "Profesionales" is the longest thing in a phone header: phones get the short form */
+.nav-pro .short { display: none; }
+@media (max-width: 430px) { .nav-pro .long { display: none; } .nav-pro .short { display: inline; } }

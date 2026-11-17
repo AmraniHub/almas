@@ -150,7 +150,14 @@
     "ref_msg": "أشتري توابلي وأعشابي من معشبة ألماس. اطلب برابطي واحصل على {n} نقطة وفاء هدية مع أول طلب: {link}",
     "ref_welcome": "🎁 جئت بدعوة من صديق: عند تسليم أول طلب لك (من {min} درهم) تحصل على {n} نقطة هدية.",
     "ref_friends": "{f} من أصدقائك طلبوا برابطك",
-    "ref_wait": "سيظهر رابط الدعوة الخاص بك بعد تسليم أول طلب لك."
+    "ref_wait": "سيظهر رابط الدعوة الخاص بك بعد تسليم أول طلب لك.",
+    "route_btn": "الموقع",
+    "route_title": "كيف تصل إلى المتجر",
+    "route_gmaps": "الطريق عبر خرائط Google",
+    "route_waze": "الطريق عبر Waze",
+    "route_map": "رؤية الخريطة والمعلومات",
+    "route_cta": "زوروا المتجر",
+    "nav_pro_short": "للمشاريع"
   },
   "fr": {
     "rv_title": "Avis clients",
@@ -303,7 +310,14 @@
     "ref_msg": "J'achète mes épices et herbes chez Almas. Commandez avec mon lien et recevez {n} points fidélité offerts sur votre première commande : {link}",
     "ref_welcome": "🎁 Invité par un ami : à la livraison de votre première commande (dès {min} MAD), vous recevez {n} points de bienvenue.",
     "ref_friends": "{f} amis ont commandé avec votre lien",
-    "ref_wait": "Votre lien d'invitation apparaît après votre première commande livrée."
+    "ref_wait": "Votre lien d'invitation apparaît après votre première commande livrée.",
+    "route_btn": "Itinéraire",
+    "route_title": "Venir à la boutique",
+    "route_gmaps": "Itinéraire Google Maps",
+    "route_waze": "Itinéraire Waze",
+    "route_map": "Voir la carte et les infos",
+    "route_cta": "Venir à la boutique",
+    "nav_pro_short": "Pros"
   },
   "en": {
     "rv_title": "Customer reviews",
@@ -456,7 +470,14 @@
     "ref_msg": "I buy my spices and herbs from Almas. Order with my link and get {n} free loyalty points on your first order: {link}",
     "ref_welcome": "🎁 Invited by a friend: when your first order (from {min} MAD) is delivered, you get {n} welcome points.",
     "ref_friends": "{f} friends ordered with your link",
-    "ref_wait": "Your invite link appears after your first delivered order."
+    "ref_wait": "Your invite link appears after your first delivered order.",
+    "route_btn": "Directions",
+    "route_title": "Getting to the shop",
+    "route_gmaps": "Directions on Google Maps",
+    "route_waze": "Directions on Waze",
+    "route_map": "See the map and details",
+    "route_cta": "Visit the shop",
+    "nav_pro_short": "Pro"
   },
   "es": {
     "rv_title": "Opiniones de clientes",
@@ -609,6 +630,13 @@
     "ref_msg": "Compro mis especias y hierbas en Almas. Pide con mi enlace y recibe {n} puntos de fidelidad de regalo en tu primer pedido: {link}",
     "ref_welcome": "🎁 Invitado por un amigo: cuando se entregue tu primer pedido (desde {min} MAD), recibes {n} puntos de bienvenida.",
     "ref_friends": "{f} amigos pidieron con tu enlace",
-    "ref_wait": "Tu enlace de invitación aparece tras tu primer pedido entregado."
+    "ref_wait": "Tu enlace de invitación aparece tras tu primer pedido entregado.",
+    "route_btn": "Cómo llegar",
+    "route_title": "Cómo llegar a la tienda",
+    "route_gmaps": "Ruta con Google Maps",
+    "route_waze": "Ruta con Waze",
+    "route_map": "Ver el mapa y la información",
+    "route_cta": "Visitar la tienda",
+    "nav_pro_short": "Pros"
   }
 }

@@ -1033,9 +1033,22 @@
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && as && !as.hidden) asShow(false); });
 
   /* language dropdown: closes on a tap outside it or on Escape */
-  $$("[data-langs]").forEach(function (d) {
+  $$("[data-langs], [data-route]").forEach(function (d) {
     document.addEventListener("click", function (e) { if (d.open && !d.contains(e.target)) d.open = false; });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && d.open) { d.open = false; d.querySelector("summary").focus(); } });
+  });
+
+  /* "Visit the shop" in the hero opens the header's way-to-the-shop menu (without JS the link jumps to the map) */
+  $$("[data-open-route]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var d = $("[data-route]");
+      if (!d) return;
+      e.preventDefault(); e.stopPropagation();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      d.open = true;
+      var first = d.querySelector(".route-menu a");
+      if (first) first.focus({ preventScroll: true });
+    });
   });
 
   /* open now / closed: Morocco keeps UTC+0 all year since September 2026, so the shop's hours are read in UTC */
