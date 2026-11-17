@@ -725,7 +725,8 @@ html, body { overflow-x: clip; }
   .search-btn, .cart-btn, .route summary { width: 40px; height: 40px; }
 }
 @media (max-width: 340px) { .search-btn, .cart-btn, .route summary { width: 36px; height: 36px; } .brand img { width: 32px; height: 32px; } .brand { min-width: 32px; } }
-@media (max-width: 380px) { .route-menu { position: fixed; top: 70px; inset-inline: 12px; width: auto; } }
+/* phones: the menu spans the screen under the header. Hanging from the pin, in Arabic (right to left) it ran off the right edge on a 393 px phone */
+@media (max-width: 640px) { .route-menu { position: fixed; top: 72px; left: 12px; right: 12px; width: auto; } }
 
 /* "Professionnels" / "Profesionales" is the longest thing in a phone header: phones get the short form */
 .nav-pro .short { display: none; }
