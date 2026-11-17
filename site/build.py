@@ -1000,16 +1000,26 @@ def footer(lang):
         + a("wa", "https://wa.me/" + CFG["whatsapp"], "WhatsApp " + f'<bdi dir="ltr">{esc(CFG.get("whatsapp_display", ""))}</bdi>'),
         a("pin", CFG["maps_url"], esc(t["map"])) + a("waze", waze_url(), esc(t["foot_waze"]))
         + a("star", CFG.get("review_url") or CFG["maps_url"], esc(t["review"])),
-        (a("facebook", f"https://www.facebook.com/{fbk}/", "Facebook @" + esc(fbk), True) if fbk else "")
-        + (a("insta", f"https://www.instagram.com/{insta}/", "Instagram @" + esc(insta), True) if insta else "") + play
+        play
         + f'<button type="button" class="fb" data-open-orders-foot><span class="fb-ic">{ic("orders")}</span><span>{esc(t["my_orders"])}</span></button>'
         + f'<button type="button" class="fb fb-app" data-install><span class="fb-ic">{ic("app")}</span><span>{esc(t["app_link"])}</span></button>',
     ]
+    # follow us: round icons, each with its network and handle as the name read out
+    social = []
+    if fbk:
+        social.append(("facebook", f"https://www.facebook.com/{fbk}/", "Facebook @" + fbk))
+    if insta:
+        social.append(("insta", f"https://www.instagram.com/{insta}/", "Instagram @" + insta))
+    social.append(("wa", "https://wa.me/" + CFG["whatsapp"], "WhatsApp " + CFG.get("whatsapp_display", "")))
+    icons = "".join(f'<a class="so so-{k}" href="{esc(h)}" rel="noopener" target="_blank" aria-label="{esc(n)}" title="{esc(n)}">{ic(k)}</a>' for k, h, n in social)
+    follow = (f'<div class="wrap follow"><b>{esc(t["follow"])}</b><div class="so-row">{icons}</div>'
+              f'<span class="so-handle" dir="ltr">@{esc(insta or fbk or "")}</span></div>') if social else ""
     return f"""<footer class="foot">
 <div class="wrap foot-in">
 <div class="foot-brand"><img src="{PREFIX}/img/logo-192.png" alt="" width="44" height="44" loading="lazy"><div><b>{esc(t['name'])}</b><p>{esc(t['visit_body'])}</p>{hours_html(lang)}</div></div>
 <div class="foot-groups">{"".join(f'<div class="fg">{g}</div>' for g in groups if g)}</div>
 </div>
+{follow}
 <p class="wrap copyright">© {datetime.now().year} {esc(t['name'])} · <a href="{url(lang, 'delivery/')}">{esc(t['ship_title'])}</a> · <a href="{PREFIX}/privacy-policy.html">{esc(t['privacy'])}</a></p>
 </footer>"""
 

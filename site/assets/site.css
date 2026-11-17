@@ -89,7 +89,11 @@ html[lang="ar"] .hero h1 { max-width: 18ch; font-size: clamp(1.9rem, 5.4vw, 3.2r
 .tools input { width: 100%; min-height: 46px; padding: 0 18px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--card); font-size: 1rem; }
 /* one slim row of shelves that slides: arrows on a computer when some are hidden, faded edges */
 .chips-wrap { position: relative; }
-.chips { display: flex; gap: 8px; overflow-x: auto; padding-block: 2px; scrollbar-width: none; scroll-behavior: smooth; overscroll-behavior-x: contain; }
+/* every shelf visible: the row wraps; on a phone the pinned bar (inside the products) goes back to one sliding line */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 2px; scrollbar-width: none; scroll-behavior: smooth; overscroll-behavior-x: contain; }
+.tools.compact .chips { flex-wrap: nowrap; overflow-x: auto; }
+@media (min-width: 900px) { .tools.compact .chips { flex-wrap: wrap; overflow-x: visible; } }
+@media (max-width: 599px) { .tools:not(.compact) .chips { gap: 6px; } .tools:not(.compact) .chips button { min-height: 34px; padding: 0 11px; font-size: .84rem; } }
 .chips::-webkit-scrollbar { display: none; }
 .chips-wrap.more-left .chips { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 44px); mask-image: linear-gradient(to right, transparent 0, #000 44px); }
 .chips-wrap.more-right .chips { -webkit-mask-image: linear-gradient(to left, transparent 0, #000 44px); mask-image: linear-gradient(to left, transparent 0, #000 44px); }
@@ -177,6 +181,17 @@ html[dir="rtl"] .back-btn svg { transform: scaleX(-1); }
 .fb-waze .fb-ic { background: #33ccff; color: #05293a; }
 .fb[hidden] { display: none; }
 .foot .copyright a { color: #c9bba9; }
+/* footer: follow us (round network icons) */
+.follow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.follow b { font-size: 1rem; }
+.so-row { display: flex; gap: 12px; }
+.so { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #fff; transition: transform .15s ease, box-shadow .15s ease; }
+.so:hover { transform: translateY(-2px); box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .6); }
+.so:focus-visible { outline: 3px solid var(--saffron); outline-offset: 3px; }
+.so svg { width: 24px; height: 24px; }
+.so-facebook { background: #1877f2; } .so-wa { background: #1f9d55; }
+.so-insta { background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 75%, #515bd4); }
+.so-handle { color: #c9bba9; font-size: .92rem; }
 .nf { padding-block: 60px; }
 
 /* cart drawer */

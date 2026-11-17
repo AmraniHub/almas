@@ -643,7 +643,9 @@
     var toGridTop = function () {
       var wrapEl = $("[data-chips-wrap]"), head = $("header.top");
       // the bar is measured as it will be once inside the products: the shelf row alone, the search box tucked away
-      var barH = wrapEl ? wrapEl.offsetHeight + 16 : 60;
+      var firstChip = wrapEl && wrapEl.querySelector("[data-chips] button");
+      var oneLine = window.innerWidth < 900 && firstChip && !(tools && tools.classList.contains("compact"));
+      var barH = wrapEl ? (oneLine ? firstChip.offsetHeight + 4 : wrapEl.offsetHeight) + 16 : 60;
       var y = grid.getBoundingClientRect().top + window.pageYOffset - (head ? head.offsetHeight : 0) - barH - 10;
       if (Math.abs(window.pageYOffset - y) > 4) window.scrollTo({ top: Math.max(0, y), behavior: reduce ? "auto" : "smooth" });
     };
@@ -693,6 +695,7 @@
       if (Date.now() - compactAt < 400) { setTimeout(compact, 420); return; } // look again once the animation is over
       compactAt = Date.now();
       tools.classList.toggle("compact", want);
+      setTimeout(edges, 350);
     };
     window.addEventListener("scroll", function () { if (!compactTick) { compactTick = true; requestAnimationFrame(compact); } }, { passive: true });
     compact();
