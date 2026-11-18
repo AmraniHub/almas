@@ -91,12 +91,11 @@ SHIPPING_LD = [ship_ld(["MA"], 35, (0, 0), (1, 2)), ship_ld(EU_SHIP, 350, (0, 1)
 
 
 def return_ld(link):
-    # food: no returns; a damaged or wrong item is replaced free if reported within 48 hours
+    # food: no returns (owner's choice, 2026-11-18). A damaged or wrong item is still replaced free when a photo is
+    # sent on WhatsApp within 48 hours, but nothing comes back, so it is not a "return" for Google; a finite window
+    # needs a returnMethod and Google refuses KeepProduct
     return {"@type": "MerchantReturnPolicy", "applicableCountry": ["MA"] + EU_SHIP,
-            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow", "merchantReturnDays": 2,
-            "itemCondition": "https://schema.org/DamagedCondition", "returnFees": "https://schema.org/FreeReturn",
-            # nothing is sent back: the customer sends a photo on WhatsApp and gets a replacement
-            "returnMethod": "https://schema.org/KeepProduct",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
             "merchantReturnLink": link}
 
 
