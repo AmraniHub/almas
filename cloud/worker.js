@@ -794,15 +794,17 @@ async function registerDevice(req, env, c) {
 // the order's customer hears about it on every phone of theirs that has the app (after the reply has gone)
 async function pushOrderStatus(env, id, status) {
   const words = PUSH_ORDER[status];
-  if (!words || !fcmAccount(env)) return;
+  if (!words || (!fcmAccount(env) && !vapidCfg(env))) return;
   const o = await first(env, "select id, lang, phone_norm from orders where id = ?", id);
   if (!o || !o.phone_norm) return;
-  const rows = await all(env, "select id, token from devices where phone_norm = ? order by seen_at desc limit 5", o.phone_norm);
-  if (!rows.length) return;
+  const rows = fcmAccount(env) ? await all(env, "select id, token from devices where phone_norm = ? order by seen_at desc limit 5", o.phone_norm) : [];
+  const web = vapidCfg(env) ? await all(env, "select id, endpoint, p256dh, auth from webpush where phone_norm = ? order by seen_at desc limit 5", o.phone_norm) : [];
+  if (!rows.length && !web.length) return;
   const lang = oneOf(o.lang, LANGS, "ar");
   const [title, line] = words[lang];
   const msg = { kind: "order", title, body: line.replace("{id}", o.id), link: sitePage(lang, "#my-orders"), id: o.id };
-  const r = await sendToTokens(env, rows, msg);
+  const a = await sendToTokens(env, rows, msg), w = await sendToWeb(env, web, msg);
+  const r = { sent: a.sent + w.sent, failed: a.failed + w.failed };
   await env.DB.prepare("insert into pushes (at, title, body, link, audience, sent, failed, note) values (?, ?, ?, ?, ?, ?, ?, ?)")
     .bind(nowIso(), title, msg.body, msg.link, "order:" + status, r.sent, r.failed, o.id).run();
 }
@@ -817,10 +819,26 @@ async function pushInfo(env) {
       "left join customers c on c.phone_norm = d.phone_norm order by d.seen_at desc limit 30"),
     env.DB.prepare("select * from pushes order by id desc limit 40"),
   ]);
-  const t = (totals.results || [])[0] || {};
-  return { ok: true, configured: !!fcmAccount(env), devices: { total: t.n || 0, linked: t.linked || 0, active30: t.active || 0,
-    by_lang: Object.fromEntries((byLang.results || []).map((r) => [r.lang, r.n])) },
-    mine: mine.results || [], recent: recent.results || [], pushes: sent.results || [] };
+  const [wLang, wTot, wMine, wRecent] = await env.DB.batch([
+    env.DB.prepare("select lang, count(*) n from webpush group by lang"),
+    env.DB.prepare("select count(*) n, sum(case when phone_norm <> '' then 1 else 0 end) linked, sum(case when seen_at >= ? then 1 else 0 end) active from webpush")
+      .bind(new Date(Date.now() - 30 * 86400000).toISOString()),
+    env.DB.prepare("select id, lang, seen_at from webpush where mine = 1 order by seen_at desc"),
+    env.DB.prepare("select w.id, w.lang, w.mine, w.phone_norm, w.created_at, w.seen_at, w.endpoint, c.name from webpush w " +
+      "left join customers c on c.phone_norm = w.phone_norm order by w.seen_at desc limit 30"),
+  ]);
+  const t = (totals.results || [])[0] || {}, wt = (wTot.results || [])[0] || {};
+  const langs = {};
+  for (const r of [...(byLang.results || []), ...(wLang.results || [])]) langs[r.lang] = (langs[r.lang] || 0) + r.n;
+  // which browser a web subscription belongs to, from its push service (the endpoint itself is never shown)
+  const browserOf = (e) => /mozilla/.test(e) ? "Firefox" : /apple/.test(e) ? "Safari (iPhone)" : /windows/.test(e) ? "Edge" : "Chrome";
+  const recentAll = [...(recent.results || []).map((d) => ({ ...d, kind: "app" })),
+    ...(wRecent.results || []).map((w) => ({ id: w.id, lang: w.lang, mine: w.mine, phone_norm: w.phone_norm, created_at: w.created_at, seen_at: w.seen_at,
+      name: w.name, kind: "web", app: browserOf(w.endpoint) }))].sort((a, b) => String(b.seen_at).localeCompare(String(a.seen_at))).slice(0, 40);
+  return { ok: true, configured: !!fcmAccount(env), web_configured: !!vapidCfg(env),
+    devices: { total: (t.n || 0) + (wt.n || 0), app: t.n || 0, web: wt.n || 0, linked: (t.linked || 0) + (wt.linked || 0),
+      active30: (t.active || 0) + (wt.active || 0), by_lang: langs },
+    mine: [...(mine.results || []), ...(wMine.results || [])], recent: recentAll, pushes: sent.results || [] };
 }
 
 // the owner's message: to everyone, one language, one customer (by phone) or only the owner's own phones (a test)
@@ -832,38 +850,183 @@ async function pushSend(env, b) {
   if (!title || !body2) throw new Http(400, "a title and a message");
   const link = pushLink(b.link);
   const msg = { kind: "news", title, body: body2, link };
-  let r, note = "";
+  const fcm = !!fcmAccount(env), vap = !!vapidCfg(env);
+  if (!fcm && !vap) throw new Http(503, "notifications are not set up (FCM_SA, VAPID)");
+  let r, note = "", web = { sent: 0, failed: 0, next: 0, left: 0 };
   if (audience === "phone" || audience === "mine") {
-    let rows;
+    let rows, wrows;
     if (audience === "phone") {
       const pn = phoneNorm(text(b.phone, 30));
       if (pn.length < 9) throw new Http(400, "phone");
       note = pn;
-      rows = await all(env, "select id, token from devices where phone_norm = ? order by seen_at desc limit 5", pn);
-      if (!rows.length) throw new Http(404, "this customer has no app linked to that phone yet");
+      rows = fcm ? await all(env, "select id, token from devices where phone_norm = ? order by seen_at desc limit 5", pn) : [];
+      wrows = vap ? await all(env, "select id, endpoint, p256dh, auth from webpush where phone_norm = ? order by seen_at desc limit 5", pn) : [];
+      if (!rows.length && !wrows.length) throw new Http(404, "this customer has no app linked to that phone yet");
     } else {
-      rows = await all(env, "select id, token from devices where mine = 1");
-      if (!rows.length) throw new Http(404, "no phone is marked as yours yet: mark it in the device list below");
+      rows = fcm ? await all(env, "select id, token from devices where mine = 1") : [];
+      wrows = vap ? await all(env, "select id, endpoint, p256dh, auth from webpush where mine = 1") : [];
+      if (!rows.length && !wrows.length) throw new Http(404, "no phone is marked as yours yet: mark it in the device list below");
     }
-    r = await sendToTokens(env, rows, msg);
+    const a = await sendToTokens(env, rows, msg);
+    web = { ...(await sendToWeb(env, wrows, msg)), next: 0, left: 0 };
+    r = { sent: a.sent + web.sent, failed: a.failed + web.failed };
   } else {
-    const topic = audience === "all" ? "all" : "lang_" + audience;
-    const x = await fcmSend(env, { topic }, msg);
-    r = x.ok ? { sent: 1, failed: 0 } : { sent: 0, failed: 1 };
-    if (!x.ok) note = x.error;
+    // the Android app through one Firebase topic, the web app in batches
+    let x = { ok: false, error: "" };
+    if (fcm) x = await fcmSend(env, { topic: audience === "all" ? "all" : "lang_" + audience }, msg);
+    if (fcm && !x.ok) note = x.error;
+    web = await webBatch(env, audience, 0, msg);
+    r = { sent: (x.ok ? 1 : 0) + web.sent, failed: (fcm && !x.ok ? 1 : 0) + web.failed };
   }
-  await env.DB.prepare("insert into pushes (at, title, body, link, audience, sent, failed, note) values (?, ?, ?, ?, ?, ?, ?, ?)")
+  const ins = await env.DB.prepare("insert into pushes (at, title, body, link, audience, sent, failed, note) values (?, ?, ?, ?, ?, ?, ?, ?)")
     .bind(nowIso(), title, body2, link, audience, r.sent, r.failed, note).run();
-  if (!r.sent) throw new Http(502, "Firebase refused the message" + (note && audience !== "phone" ? " (" + note + ")" : ""));
-  return { ok: true, ...r, topic: audience !== "phone" && audience !== "mine" };
+  if (!r.sent) throw new Http(502, "the message could not be sent" + (note && audience !== "phone" ? " (" + note + ")" : ""));
+  return { ok: true, ...r, topic: audience !== "phone" && audience !== "mine", push_id: (ins.meta && ins.meta.last_row_id) || 0,
+    web_sent: web.sent, web_next: web.next, web_left: web.left };
 }
 
 async function pushDevice(env, b) {
   const id = Number(b.id);
   if (!Number.isInteger(id) || id < 1) throw new Http(400, "id");
-  if (b.forget) await env.DB.prepare("delete from devices where id = ?").bind(id).run();
-  else await env.DB.prepare("update devices set mine = ? where id = ?").bind(b.mine ? 1 : 0, id).run();
+  const table = b.kind === "web" ? "webpush" : "devices";
+  if (b.forget) await env.DB.prepare("delete from " + table + " where id = ?").bind(id).run();
+  else await env.DB.prepare("update " + table + " set mine = ? where id = ?").bind(b.mine ? 1 : 0, id).run();
   return pushInfo(env);
+}
+
+// ---------- Web Push for the installed web app (PWA): RFC 8291 (aes128gcm) and VAPID (RFC 8292) ----------
+// The browser subscribes with the shop's public VAPID key and hands its endpoint and keys to /public/webpush. Each
+// message is encrypted for that one browser and posted to its push service. VAPID (Worker secret) is
+// {"subject","public","jwk"}: the private key never leaves the server. A free Worker makes at most 50 outgoing
+// requests per call, so a broadcast goes out in batches the Notifications page asks for one after another.
+
+const WEB_BATCH = 40;
+const PUSH_HOSTS = /^(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|web\.push\.apple\.com|[a-z0-9.-]+\.notify\.windows\.com|[a-z0-9.-]+\.push\.apple\.com)$/;
+const B64URL_RE = /^[A-Za-z0-9_-]+$/;
+function vapidCfg(env) {
+  try {
+    const v = JSON.parse(env.VAPID || "null");
+    return v && v.jwk && v.public && v.subject ? v : null;
+  } catch (e) {
+    return null;
+  }
+}
+function unb64url(s) {
+  s = String(s).replace(/-/g, "+").replace(/_/g, "/");
+  s += "=".repeat((4 - (s.length % 4)) % 4);
+  return Uint8Array.from(atob(s), (ch) => ch.charCodeAt(0));
+}
+function joinBytes(...parts) {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let i = 0;
+  for (const p of parts) { out.set(p, i); i += p.length; }
+  return out;
+}
+async function hkdf(salt, ikm, info, len) {
+  const k = await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: "HKDF", hash: "SHA-256", salt, info }, k, len * 8));
+}
+// one aes128gcm record: salt(16) | rs(4) | idlen(1) | server public key(65) | ciphertext of payload + 0x02
+async function webPushEncrypt(p256dh, auth, payload) {
+  const ua = unb64url(p256dh), secret = unb64url(auth), zero = new Uint8Array([0]);
+  const pair = await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
+  const asPub = new Uint8Array(await crypto.subtle.exportKey("raw", pair.publicKey));
+  const uaKey = await crypto.subtle.importKey("raw", ua, { name: "ECDH", namedCurve: "P-256" }, false, []);
+  const shared = new Uint8Array(await crypto.subtle.deriveBits({ name: "ECDH", public: uaKey }, pair.privateKey, 256));
+  const ikm = await hkdf(secret, shared, joinBytes(enc.encode("WebPush: info"), zero, ua, asPub), 32);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const cek = await hkdf(salt, ikm, joinBytes(enc.encode("Content-Encoding: aes128gcm"), zero), 16);
+  const nonce = await hkdf(salt, ikm, joinBytes(enc.encode("Content-Encoding: nonce"), zero), 12);
+  const key = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, ["encrypt"]);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, key, joinBytes(enc.encode(payload), new Uint8Array([2]))));
+  return joinBytes(salt, new Uint8Array([0, 0, 16, 0]), new Uint8Array([asPub.length]), asPub, ct);
+}
+let vapidKey = null;
+async function vapidAuth(env, endpoint) {
+  const v = vapidCfg(env);
+  if (!v) throw new Http(503, "web notifications are not set up (VAPID)");
+  if (!vapidKey) vapidKey = await crypto.subtle.importKey("jwk", { ...v.jwk, kty: "EC", crv: "P-256", ext: true }, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  const part = (o) => b64url(enc.encode(JSON.stringify(o)));
+  const unsigned = part({ typ: "JWT", alg: "ES256" }) + "." + part({ aud: new URL(endpoint).origin, exp: nowSec() + 12 * 3600, sub: v.subject });
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, vapidKey, enc.encode(unsigned));
+  return "vapid t=" + unsigned + "." + b64url(sig) + ", k=" + v.public;
+}
+async function webSend(env, row, msg) {
+  const payload = JSON.stringify({ kind: msg.kind || "news", title: msg.title, body: msg.body, link: msg.link || "", id: String(msg.id || "") });
+  const r = await fetch(row.endpoint, { method: "POST", body: await webPushEncrypt(row.p256dh, row.auth, payload), headers: {
+    Authorization: await vapidAuth(env, row.endpoint), "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream",
+    TTL: msg.kind === "order" ? "604800" : "172800", Urgency: msg.kind === "order" ? "high" : "normal" } });
+  if (r.status === 404 || r.status === 410) {
+    await env.DB.prepare("delete from webpush where id = ?").bind(row.id).run();
+    return { ok: false, gone: true };
+  }
+  return { ok: r.status >= 200 && r.status < 300, error: "http " + r.status };
+}
+async function sendToWeb(env, rows, msg) {
+  let sent = 0, failed = 0;
+  for (const w of rows) {
+    const r = await webSend(env, w, msg).catch((e) => ({ ok: false, error: e.message }));
+    if (r.ok) sent++;
+    else failed++;
+  }
+  return { sent, failed };
+}
+// a broadcast's web part, one batch: the subscriptions after id `after` in the audience's language
+async function webBatch(env, audience, after, msg) {
+  if (!vapidCfg(env)) return { sent: 0, failed: 0, next: 0, left: 0 };
+  const where = PUSH_LANG_AUD.includes(audience) ? " and lang = ?" : "";
+  const args = PUSH_LANG_AUD.includes(audience) ? [after, audience] : [after];
+  const rows = await all(env, "select id, endpoint, p256dh, auth from webpush where id > ?" + where + " order by id limit " + WEB_BATCH, ...args);
+  const r = await sendToWeb(env, rows, msg);
+  const last = rows.length ? rows[rows.length - 1].id : after;
+  const left = rows.length < WEB_BATCH ? 0 : (((await first(env, "select count(*) n from webpush where id > ?" + where, last, ...args.slice(1))) || {}).n || 0);
+  return { ...r, next: left ? last : 0, left };
+}
+const PUSH_LANG_AUD = ["ar", "fr", "en", "es"];
+
+// /public/webpush, from the installed web app: keep (or with off:true forget) this browser's subscription
+async function registerWebPush(req, env, c) {
+  if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405, c);
+  const b = await body(req);
+  const s = b.subscription || {};
+  const endpoint = String(s.endpoint || "");
+  let host = "";
+  try { const u = new URL(endpoint); host = u.protocol === "https:" ? u.hostname : ""; } catch (e) { host = ""; }
+  if (!host || !PUSH_HOSTS.test(host) || endpoint.length > 1000) return json({ ok: false, error: "endpoint" }, 400, c);
+  if (b.off) {
+    await env.DB.prepare("delete from webpush where endpoint = ?").bind(endpoint).run();
+    return json({ ok: true, off: true }, 200, c);
+  }
+  const k = s.keys || {};
+  const p256dh = String(k.p256dh || ""), auth = String(k.auth || "");
+  if (!B64URL_RE.test(p256dh) || p256dh.length < 80 || p256dh.length > 100 || !B64URL_RE.test(auth) || auth.length < 16 || auth.length > 40) {
+    return json({ ok: false, error: "keys" }, 400, c);
+  }
+  const iph = await ipHash(env, req.headers.get("CF-Connecting-IP") || "");
+  const t = nowSec(), hk = "web:" + iph;
+  const n = await first(env, "select count(*) n from hits where k = ? and at > ?", hk, t - 3600);
+  if (n && n.n >= 30) return json({ ok: false, error: "slow down" }, 429, c);
+  await env.DB.prepare("insert into hits (k, at) values (?, ?)").bind(hk, t).run();
+  const pn = phoneNorm(text(b.phone, 30));
+  const linked = pn.length >= 9 && (await phoneProof(env, pn, b.ids)) ? pn : "";
+  const at = nowIso();
+  await env.DB.prepare(
+    "insert into webpush (endpoint, p256dh, auth, lang, phone_norm, created_at, seen_at) values (?, ?, ?, ?, ?, ?, ?) " +
+    "on conflict(endpoint) do update set p256dh = excluded.p256dh, auth = excluded.auth, lang = excluded.lang, seen_at = excluded.seen_at, " +
+    "phone_norm = case when excluded.phone_norm <> '' then excluded.phone_norm else webpush.phone_norm end"
+  ).bind(endpoint, p256dh, auth, oneOf(b.lang, LANGS, "ar"), linked, at, at).run();
+  return json({ ok: true, linked: !!linked }, 200, { ...c, "Cache-Control": "no-store" });
+}
+
+// the owner's broadcast, its next web batch (the Notifications page calls this until nothing is left)
+async function pushMore(env, b) {
+  const id = Number(b.push_id), after = Number(b.after);
+  if (!Number.isInteger(id) || !Number.isInteger(after) || after < 0) throw new Http(400, "push_id and after");
+  const p = await first(env, "select * from pushes where id = ?", id);
+  if (!p || !(p.audience === "all" || PUSH_LANG_AUD.includes(p.audience))) throw new Http(404, "no such broadcast");
+  const r = await webBatch(env, p.audience, after, { kind: "news", title: p.title, body: p.body, link: p.link });
+  await env.DB.prepare("update pushes set sent = sent + ?, failed = failed + ? where id = ?").bind(r.sent, r.failed, id).run();
+  return { ok: true, ...r };
 }
 
 // ---------- public (read by the website, CORS) ----------
@@ -918,6 +1081,7 @@ async function publicApi(req, env, url) {
     return json({ ok: true, ...st }, 200, { ...c, "Cache-Control": "no-store" });
   }
   if (url.pathname === "/public/device") return registerDevice(req, env, c);
+  if (url.pathname === "/public/webpush") return registerWebPush(req, env, c);
   if (req.method !== "GET") return json({ ok: false, error: "GET only" }, 405, c);
   if (url.pathname === "/public/points-rules") return json({ ok: true, ...RULES }, 200, { ...c, "Cache-Control": "public, max-age=60" });
   // is this invite code real? (yes or no, nothing about whose it is) so a mistyped link promises nothing
@@ -1234,7 +1398,8 @@ async function getOrder(env, id) {
   return { ok: true, order: o, items: items.results || [], customer: (cust.results || [])[0] || null, reviews: revs.results || [],
     points: pts.results || [], points_rules: rulesFor(((cust.results || [])[0] || {}).kind),
     customer_points: o.phone_norm ? await pointsState(env, o.phone_norm) : null, referral: (refs.results || [])[0] || null,
-    app_phones: o.phone_norm ? (((await first(env, "select count(*) n from devices where phone_norm = ?", o.phone_norm)) || {}).n || 0) : 0 };
+    app_phones: o.phone_norm ? (((await first(env, "select (select count(*) from devices where phone_norm = ?) + (select count(*) from webpush where phone_norm = ?) n",
+      o.phone_norm, o.phone_norm)) || {}).n || 0) : 0 };
 }
 
 async function updateOrder(env, b) {
@@ -1550,6 +1715,7 @@ async function admin(req, env, url) {
       case "/admin/api/referral": return json(await decideReferral(env, b));
       case "/admin/api/push/send": return json(await pushSend(env, b));
       case "/admin/api/push/device": return json(await pushDevice(env, b));
+      case "/admin/api/push/more": return json(await pushMore(env, b));
       case "/admin/api/sheet": return json(await sheetConnect(env, b));
       case "/admin/api/sheet/test": { const r = await sheetSend(env, "test", [[nowIso(), "Test from the Almas back office."]]); if (!r.ok) throw new Http(400, r.error); return json(r); }
       case "/admin/api/sheet/backfill": return json(await sheetBackfill(env));

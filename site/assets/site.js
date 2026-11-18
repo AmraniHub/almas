@@ -1172,6 +1172,11 @@
     store(MEKEY, { name: f.get("name"), phone: f.get("phone"), address: f.get("address"), at: new Date().toISOString() });
     showOrdersBtn();
     pushRegister(); // in the app: this phone now hears about this order
+    // in the installed web app: the same, by Web Push (asked once if notifications are not on yet)
+    if (pushReady() && standalone()) {
+      if (Notification.permission === "granted") webPushRegister(false);
+      else if (Notification.permission === "default" && pushEl) setTimeout(function () { show(pushEl); }, 1500);
+    }
   }
   function me() { var m = load(MEKEY, null); return m && Date.now() - Date.parse(m.at) < YEAR ? m : null; }
   var orderForm = $("[data-order-form]");
@@ -1491,53 +1496,113 @@
   if (proLine && A.cloud) fetch(A.cloud + "/public/points-rules").then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) { if (d) renderProLine(d.pro); }).catch(function () {});
 
-  /* the app: installable from any page (footer link, after an order); the sheet offers itself once to a returning
-     customer, never to a first-time visitor who came from an ad. "Not now" is remembered for 30 days. */
-  var deferred = null, AKEY = "almas-app", SNOOZE = 30 * 864e5;
-  function isInstalled() {
-    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true ||
-      load(AKEY, {}).installed === true;
-  }
+  /* "Almas on your phone": a choice between the Android app (Google Play; the testers' link while it is in early
+     access) and the web app (installed from the browser, iPhone too), with why it helps. The footer button and the
+     box after an order open it; it offers itself, 10 s into a page, to a returning visitor on a phone or anyone who
+     has ordered, never on a first visit. "Not now" is remembered for 30 days. Inside the Android app nothing shows:
+     the app has its own notifications. The installed web app instead asks once to turn notifications on. */
+  var deferred = null, AKEY = "almas-app", SNOOZE = 30 * 864e5, VKEY = "almas-visits";
+  var inApp = /AlmasApp\//.test(navigator.userAgent);
+  function standalone() { return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true; }
+  function isInstalled() { return inApp || standalone() || load(AKEY, {}).installed === true; }
   function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
-  var sheetEl = $("[data-app-sheet]");
+  function isPhone() { return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent); }
+  function snoozed(k) { var st = load(k, {}); return st.snoozed && Date.now() - st.snoozed < SNOOZE; }
+  // visits: a new one after 30 minutes away
+  var visits = load(VKEY, { n: 0, last: 0 });
+  if (Date.now() - visits.last > 30 * 6e4) visits.n += 1;
+  visits.last = Date.now(); store(VKEY, visits);
+  var sheetEl = $("[data-app-sheet]"), pushEl = $("[data-push-sheet]");
   function hideInstall() { $$("[data-install]").forEach(function (b) { b.hidden = true; }); if (sheetEl) sheetEl.hidden = true; }
-  function openSheet(howOnly) {
+  function show(el) { if (!el) return; el.hidden = false; requestAnimationFrame(function () { el.classList.add("in"); }); }
+  function hide(el) { if (!el) return; el.classList.remove("in"); setTimeout(function () { el.hidden = true; }, 300); }
+  function openSheet() {
     if (!sheetEl) return;
-    var how = $("[data-app-how]", sheetEl), go = $("[data-app-go]", sheetEl);
-    if (howOnly) {
-      how.textContent = isIOS() ? how.getAttribute("data-ios") : how.getAttribute("data-manual");
-      how.hidden = false; go.hidden = true;
-      $$("[data-app-no]", sheetEl)[1].textContent = A.s.app_got;
-    }
-    sheetEl.hidden = false;
-    requestAnimationFrame(function () { sheetEl.classList.add("in"); });
+    var play = $("[data-app-play]", sheetEl);
+    if (play) play.hidden = isIOS(); // no Android app on an iPhone: the web app is its choice
+    $("[data-app-how]", sheetEl).hidden = true;
+    show(sheetEl);
   }
-  function closeSheet(snooze) {
-    if (!sheetEl) return;
-    sheetEl.classList.remove("in"); setTimeout(function () { sheetEl.hidden = true; }, 300);
-    if (snooze) store(AKEY, { snoozed: Date.now() });
-  }
-  function install() {
+  function closeSheet(snooze) { hide(sheetEl); if (snooze) store(AKEY, { snoozed: Date.now() }); }
+  function installWeb() {
     if (deferred) {
       deferred.prompt();
       deferred.userChoice.then(function (c) { if (c && c.outcome === "accepted") { store(AKEY, { installed: true }); hideInstall(); } closeSheet(false); });
       deferred = null;
-    } else openSheet(true);
+    } else {
+      var how = $("[data-app-how]", sheetEl);
+      how.textContent = isIOS() ? how.getAttribute("data-ios") : how.getAttribute("data-manual");
+      how.hidden = false;
+    }
   }
   if (isInstalled()) hideInstall();
-  $$("[data-install]").forEach(function (b) { b.onclick = install; });
+  $$("[data-install]").forEach(function (b) { b.onclick = openSheet; });
   if (sheetEl) {
-    $("[data-app-go]", sheetEl).onclick = install;
+    $("[data-app-go]", sheetEl).onclick = installWeb;
+    var playLink = $("[data-app-play]", sheetEl);
+    if (playLink) playLink.addEventListener("click", function () { store(AKEY, { snoozed: Date.now() }); ga("app_play_click"); setTimeout(function () { closeSheet(false); }, 300); });
     $$("[data-app-no]", sheetEl).forEach(function (b) { b.onclick = function () { closeSheet(true); }; });
   }
-  window.addEventListener("beforeinstallprompt", function (e) {
-    e.preventDefault(); deferred = e;
-    var st = load(AKEY, {});
-    if (!isInstalled() && pastOrders().length && !(st.snoozed && Date.now() - st.snoozed < SNOOZE)) {
-      setTimeout(function () { if (deferred && (!drawer || drawer.hidden)) openSheet(false); }, 8000);
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; });
+  window.addEventListener("appinstalled", function () { store(AKEY, { installed: true }); hideInstall(); closeSheet(false); });
+  if (!isInstalled() && sheetEl && !snoozed(AKEY) && ((isPhone() && visits.n >= 2) || pastOrders().length)) {
+    setTimeout(function () {
+      var as = $("[data-as]");
+      if ((!drawer || drawer.hidden) && (!as || as.hidden) && !document.body.classList.contains("writing")) openSheet();
+    }, 10000);
+  }
+
+  /* notifications in the installed web app: the same messages as the Android app (order updates, the shop's
+     news), sent by the back office through Web Push. The subscription goes to the shop with this phone's last
+     order (the same proof as My orders), again only when something changed or weekly. */
+  var PKEY = "almas-webpush-v1";
+  function pushReady() { return !inApp && A.push && A.cloud && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+  function urlKey(s) {
+    var b = atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), out = new Uint8Array(b.length);
+    for (var i = 0; i < b.length; i++) out[i] = b.charCodeAt(i);
+    return out;
+  }
+  function webPushRegister(ask) {
+    if (!pushReady() || Notification.permission === "denied") return Promise.resolve(false);
+    if (Notification.permission !== "granted" && !ask) return Promise.resolve(false);
+    var perm = Notification.permission === "granted" ? Promise.resolve("granted") : Notification.requestPermission();
+    return Promise.resolve(perm).then(function (p) {
+      if (p !== "granted") return false;
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return reg.pushManager.getSubscription().then(function (s) {
+          return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlKey(A.push) });
+        });
+      }).then(function (sub) {
+        var j = sub.toJSON(), m = me(), ids = pastOrders().map(function (o) { return o.n; }).slice(0, 10);
+        var sig = [j.endpoint, A.lang, m && ids.length ? m.phone : "", ids[0] || ""].join("|"), last = load(PKEY, null);
+        if (last && last.sig === sig && Date.now() - last.at < 7 * 864e5) return true;
+        return fetch(A.cloud + "/public/webpush", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: j, lang: A.lang, phone: m && ids.length ? m.phone : "", ids: m ? ids : [] }) })
+          .then(function (r) { if (r.ok) store(PKEY, { sig: sig, at: Date.now() }); return r.ok; });
+      });
+    }).catch(function () { return false; });
+  }
+  if (pushReady() && standalone()) {
+    if (Notification.permission === "granted") webPushRegister(false);
+    else if (Notification.permission === "default" && pushEl && !snoozed("almas-push-ask")) {
+      setTimeout(function () { if (!drawer || drawer.hidden) show(pushEl); }, 6000);
     }
-  });
-  window.addEventListener("appinstalled", function () { store(AKEY, { installed: true }); hideInstall(); });
+  }
+  if (pushEl) {
+    $("[data-push-go]", pushEl).onclick = function () {
+      var b = this; b.disabled = true;
+      webPushRegister(true).then(function (ok) {
+        hide(pushEl); b.disabled = false;
+        store("almas-push-ask", { snoozed: Date.now() });
+        if (ok) { ga("webpush_on"); toastMsg(A.s.push_done); }
+      });
+    };
+    $$("[data-push-no]", pushEl).forEach(function (b) { b.onclick = function () { hide(pushEl); store("almas-push-ask", { snoozed: Date.now() }); }; });
+  }
+  function toastMsg(t) {
+    var n = document.createElement("div"); n.className = "push-toast"; n.textContent = t; n.setAttribute("role", "status");
+    document.body.appendChild(n); setTimeout(function () { n.remove(); }, 3500);
+  }
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () { navigator.serviceWorker.register((A.root || "") + "/sw.js").catch(function () {}); });
   }

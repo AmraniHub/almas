@@ -1091,6 +1091,7 @@ def page_data(lang, products, cats):
         "lang": lang, "wa": CFG["whatsapp"], "feed": CFG["catalog_url"], "api": CFG.get("order_api", ""),
         "qapi": CFG.get("quote_api", ""), "rapi": CFG.get("review_api", ""), "aapi": CFG.get("assistant_api", ""),
         "cloud": CFG.get("cloud_url", ""), "eur": round(1 / MAD_PER_EUR, 5), "pts": PTS,
+        "push": CFG.get("vapid_public", ""), "play": CFG.get("play_url", ""),
         "packs": {k["id"]: {"items": k["items"], "when": k["when"], "badge": k["badge"]} for k in PACKS["packs"]},
         "money": MONEY[lang],
         "s": {k: t[k] for k in ("order_head", "o_name", "o_phone", "o_address", "o_notes", "o_items", "o_total",
@@ -1100,7 +1101,7 @@ def page_data(lang, products, cats):
                                 "copied", "copy", "q_send", "q_fail", "sending", "rv_count", "rv_verified", "rv_none",
                                 "rv_fail", "rv_need", "as_error", "as_thinking", "as_wa", "my_orders", "cart", "mo_again",
                                 "mo_forgot", "st_new", "st_confirmed", "st_preparing", "st_delivered", "st_cancelled", "st_paid",
-                                "app_go", "app_got", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no",
+                                "app_go", "app_got", "push_done", "rep_done", "rep_7", "rep_14", "rep_30", "mic_on", "mic_no",
                                 "sh_btn", "sh_title", "sh_more", "sh_text", "sh_saved", "name", "kicker",
                                 "as_addall", "as_added", "as_checkout", "as_maps", "as_pro", "t_waze", "as_listen", "in_cart", "order_now",
                                 "pts_earn", "pts_use", "pts_bal", "pts_worth", "pts_pend", "pts_exp", "pts_short", "pts_used",
@@ -1424,13 +1425,32 @@ def widgets(lang):
               '<circle class="knob" cx="32" cy="7" r="3.6"/>'
               '<circle class="eye" cx="27.5" cy="27" r="2.1"/><circle class="eye" cx="36.5" cy="27" r="2.1"/>'
               '<path class="smile" d="M28 30.8c2.3 2.2 5.7 2.2 8 0"/></svg>')
+    # "Almas on your phone": why, then a choice between the Android app (Play; the testers' link while in early access)
+    # and the web app (installed from the browser, iPhone too). site.js decides which options show and when.
+    play = CFG.get("play_url", "")
+    early = f'<small class="app-early">{esc(t["app_early"])}</small>' if CFG.get("play_early") else ""
+    play_opt = (f'<a class="app-opt" data-app-play href="{esc(play)}" target="_blank" rel="noopener">'
+                f'<span class="app-ic app-ic-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg></span>'
+                f'<span><b>{esc(t["app_android"])}</b><small>{esc(t["app_android_sub"])}</small>{early}</span></a>') if play else ""
+    web_opt = (f'<button type="button" class="app-opt" data-app-go>'
+               f'<span class="app-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>'
+               f'<span><b>{esc(t["app_web"])}</b><small>{esc(t["app_web_sub"])}</small></span></button>')
+    why = "".join(f'<li>{esc(t[k])}</li>' for k in ("app_why1", "app_why2", "app_why3"))
     sheet = (f'<div class="app-sheet" data-app-sheet hidden role="dialog" aria-label="{esc(t["app_title"])}"><div class="app-card">'
              f'<div class="app-top"><img src="{PREFIX}/img/icon-maskable-192.png" alt="" width="52" height="52">'
              f'<div><b>{esc(t["app_title"])}</b><p>{esc(t["app_sub"])}</p></div>'
              f'<button type="button" class="x" data-app-no aria-label="×">×</button></div>'
+             f'<ul class="app-why">{why}</ul>'
+             f'<div class="app-choice">{play_opt}{web_opt}</div>'
              f'<p class="app-how" data-app-how hidden data-ios="{esc(t["app_ios"])}" data-manual="{esc(t["app_manual"])}"></p>'
-             f'<div class="app-act"><button type="button" class="btn" data-app-go>{esc(t["app_go"])}</button>'
-             f'<button type="button" class="link-btn" data-app-no>{esc(t["app_not_now"])}</button></div></div></div>')
+             f'<div class="app-act"><button type="button" class="link-btn" data-app-no>{esc(t["app_not_now"])}</button></div></div></div>'
+             # the installed web app asks once for notifications (order updates, the shop's news)
+             f'<div class="app-sheet" data-push-sheet hidden role="dialog" aria-label="{esc(t["push_title"])}"><div class="app-card">'
+             f'<div class="app-top"><img src="{PREFIX}/img/icon-maskable-192.png" alt="" width="52" height="52">'
+             f'<div><b>{esc(t["push_title"])}</b><p>{esc(t["push_sub"])}</p></div>'
+             f'<button type="button" class="x" data-push-no aria-label="×">×</button></div>'
+             f'<div class="app-act"><button type="button" class="btn" data-push-go>{esc(t["push_go"])}</button>'
+             f'<button type="button" class="link-btn" data-push-no>{esc(t["app_not_now"])}</button></div></div></div>')
     return sheet + f"""<button type="button" class="to-top" data-to-top aria-label="{esc(t['top'])}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <button type="button" class="as-fab" data-as-open aria-label="{esc(t['as_open'])}">{tagine}<span class="as-tip">{esc(t['as_open'])}</span></button>
 <div class="as" data-as hidden role="dialog" aria-modal="false" aria-label="{esc(t['as_title'])}">

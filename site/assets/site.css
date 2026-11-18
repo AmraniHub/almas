@@ -735,3 +735,20 @@ html, body { overflow-x: clip; }
 /* back to top: darker on hover and focus, like the map pin */
 .to-top:hover { background: #8a3f28; }
 .to-top:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }
+
+/* "Almas on your phone": why, then the Android app or the web app */
+.app-why { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.app-why li { position: relative; padding-inline-start: 24px; font-size: .9rem; color: var(--ink); line-height: 1.4; }
+.app-why li::before { content: ""; position: absolute; inset-inline-start: 2px; top: .32em; width: 12px; height: 7px; border-left: 2.4px solid var(--olive); border-bottom: 2.4px solid var(--olive); transform: rotate(-45deg); }
+.app-choice { display: grid; gap: 10px; margin-top: 14px; }
+.app-opt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); text-decoration: none; font: inherit; text-align: start; cursor: pointer; }
+.app-opt:hover, .app-opt:focus-visible { border-color: var(--terracotta); }
+.app-opt[hidden] { display: none; }
+.app-opt b { display: block; font-size: 1rem; }
+.app-opt small { display: block; color: var(--body); font-size: .84rem; line-height: 1.35; }
+.app-opt .app-early { margin-top: 3px; color: var(--terracotta); font-weight: 700; }
+.app-ic { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--ink); }
+.app-ic svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.app-ic-play { background: var(--terracotta); }
+.app-ic-play svg { fill: #fff; stroke: none; }
+.push-toast { position: fixed; inset-inline: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 60; margin: 0 auto; max-width: 360px; padding: 12px 16px; border-radius: 14px; background: var(--ink); color: #fff; text-align: center; font-weight: 700; box-shadow: 0 12px 30px -12px rgba(33, 26, 22, .6); }

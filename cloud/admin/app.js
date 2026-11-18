@@ -944,22 +944,32 @@ async function pushView() {
       return;
     }
     const r = await api("push/send", { audience: aud.value, phone: phone.value, title: title.value, body: msg.value, link: link.value });
-    toast(r.topic ? "Sent. Phones receive it within a few minutes." : "Sent to " + r.sent + " phone" + (r.sent === 1 ? "" : "s") + (r.failed ? ", " + r.failed + " failed" : "") + ".");
+    // the web apps of a broadcast go out 40 at a time: keep asking until none is left
+    let webSent = r.web_sent || 0, next = r.web_next, guard = 0;
+    while (next && guard++ < 500) {
+      sendBtn.textContent = "Sending… " + webSent + " web apps";
+      const m = await api("push/more", { push_id: r.push_id, after: next });
+      webSent += m.sent; next = m.next;
+    }
+    toast(r.topic ? "Sent: the Android apps within a few minutes" + (webSent ? ", and " + webSent + " web app" + (webSent === 1 ? "" : "s") : "") + "."
+      : "Sent to " + r.sent + " phone" + (r.sent === 1 ? "" : "s") + (r.failed ? ", " + r.failed + " failed" : "") + ".");
     title.value = ""; msg.value = ""; link.value = ""; disarm();
     pushView();
   });
   const deviceRow = (dev) => {
     const b = h("button", { type: "button", class: "ghost small" }, dev.mine ? "Not my phone" : "This is my phone");
-    b.onclick = busy(b, async () => { await api("push/device", { id: dev.id, mine: !dev.mine }); toast(dev.mine ? "Unmarked." : "Marked as your phone: test sends go to it."); pushView(); });
+    b.onclick = busy(b, async () => { await api("push/device", { id: dev.id, kind: dev.kind, mine: !dev.mine }); toast(dev.mine ? "Unmarked." : "Marked as your phone: test sends go to it."); pushView(); });
     return h("div", { class: "row" },
       h("div", { class: "main" }, h("div", {}, dev.name ? h("b", {}, dev.name) : h("span", { class: "muted" }, dev.phone_norm ? "+" + dev.phone_norm : "Not linked to a customer yet"),
+        " ", h("span", { class: "chip" }, dev.kind === "web" ? "web app" : "Android app"),
         " ", dev.mine ? h("span", { class: "chip delivered" }, "my phone") : null),
-        h("div", { class: "small muted" }, (PUSH_LANG[dev.lang] || dev.lang) + " · app " + (dev.app || "?") + " · first seen " + when(dev.created_at, false))),
+        h("div", { class: "small muted" }, (PUSH_LANG[dev.lang] || dev.lang) + " · " + (dev.kind === "web" ? dev.app : "app " + (dev.app || "?")) + " · first seen " + when(dev.created_at, false))),
       h("div", { class: "side" }, h("div", { class: "small muted" }, "last open " + when(dev.seen_at)), b));
   };
   clear(view(), h("h1", {}, "Notifications"),
-    d.configured ? null : h("p", { class: "err" }, "Sending is not switched on yet: the Firebase key is missing on the server."),
-    h("p", { class: "muted" }, d.devices.total + " phones have the Almas app · " + d.devices.active30 + " opened it in the last 30 days · " +
+    d.configured ? null : h("p", { class: "err" }, "Sending to the Android app is not switched on yet: the Firebase key is missing on the server."),
+    d.web_configured ? null : h("p", { class: "err" }, "Sending to the web app is not switched on yet: the web push key is missing on the server."),
+    h("p", { class: "muted" }, d.devices.total + " phones have the Almas app (" + d.devices.app + " Android app, " + d.devices.web + " web app) · " + d.devices.active30 + " opened it in the last 30 days · " +
       d.devices.linked + " linked to a customer · " + Object.entries(d.devices.by_lang || {}).map(([k, v]) => (PUSH_LANG[k] || k) + " " + v).join(", ")),
     h("div", { class: "card" }, h("h2", {}, "New message"),
       h("label", {}, "Send to", aud), phoneRow, reachNote,
@@ -978,7 +988,7 @@ async function pushView() {
         h("p", { class: "empty" }, "Nothing sent yet.")),
     h("div", { class: "card" }, h("h2", {}, "Phones with the app"),
       h("p", { class: "small muted" }, "Open the app once on your own phone, then press “This is my phone” on it here: “Only my phone (a test)” then sends to it alone."),
-      d.recent.length ? h("div", { class: "rows" }, d.recent.map(deviceRow)) : h("p", { class: "empty" }, "No phone yet: they appear here when the new app version is opened.")));
+      d.recent.length ? h("div", { class: "rows" }, d.recent.map(deviceRow)) : h("p", { class: "empty" }, "No phone yet: they appear here when a customer opens the new Android app or turns on notifications in the web app.")));
 }
 
 // ---------- router ----------

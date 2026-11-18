@@ -6,6 +6,8 @@
     python cloud/deploy.py --fcm crm/firebase_credentials.json
                                       also store the Firebase service account as the secret FCM_SA (app notifications);
                                       needed once, and again after --rotate
+    python cloud/deploy.py --vapid %USERPROFILE%/keys/almas-vapid.json
+                                      store the web app's push key as the secret VAPID (same rules)
 
 Writes cloud/.cloud.json ({url, ingest_secret, db}, gitignored) for the Vercel side, and the owner's admin key to
 %USERPROFILE%/keys/almas-admin.txt. Secrets are made on the first deploy or with --rotate; every other deploy keeps
@@ -152,6 +154,19 @@ def fcm_file():
     return p
 
 
+def vapid_file():
+    """--vapid PATH: the web push key pair (%USERPROFILE%/keys/almas-vapid.json, never in the repo)."""
+    if "--vapid" not in sys.argv:
+        return None
+    i = sys.argv.index("--vapid")
+    if i + 1 >= len(sys.argv):
+        raise SystemExit("--vapid needs the path of the key file")
+    p = Path(sys.argv[i + 1])
+    if not p.exists():
+        raise SystemExit("no such file: %s" % p)
+    return p
+
+
 def admin_key():
     return "almas-" + "-".join("".join(secrets.choice(KEY_ALPHABET) for _ in range(5)) for _ in range(4))
 
@@ -218,6 +233,16 @@ def main():
         say("notifications: Firebase key for project %s stored as the Worker secret FCM_SA" % sa["project_id"])
     elif fresh and exists:
         say("note: new secrets replace FCM_SA too; run again with --fcm <service-account.json> to switch notifications back on")
+    vap = vapid_file()
+    if vap:
+        # the web app's push key pair {"subject","public","jwk"}: only the server signs with the private half
+        v = json.loads(vap.read_text(encoding="utf-8"))
+        if not (v.get("subject") and v.get("public") and isinstance(v.get("jwk"), dict) and v["jwk"].get("d")):
+            raise SystemExit("%s is not a VAPID key file" % vap.name)
+        cf("PUT", "/accounts/%s/workers/scripts/%s/secrets" % (acc, NAME), tok,
+           {"name": "VAPID", "text": json.dumps({"subject": v["subject"], "public": v["public"], "jwk": v["jwk"]}, separators=(",", ":")),
+            "type": "secret_text"}, "VAPID secret")
+        say("web notifications: VAPID key stored as the Worker secret VAPID")
     cf("POST", "/accounts/%s/workers/scripts/%s/subdomain" % (acc, NAME), tok, {"enabled": True, "previews_enabled": False}, "subdomain")
     sub = cf("GET", "/accounts/%s/workers/subdomain" % acc, tok)["subdomain"]
     local["url"] = "https://%s.%s.workers.dev" % (NAME, sub)

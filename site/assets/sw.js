@@ -63,3 +63,37 @@ self.addEventListener("fetch", function (e) {
     }));
   }
 });
+
+/* notifications from the shop (Web Push, sent by the back office): order updates and the shop's news.
+   The message is {kind, title, body, link, id}; a tap opens its page on this site, in a window already open if any. */
+self.addEventListener("push", function (e) {
+  var d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { d = { title: e.data ? e.data.text() : "" }; }
+  var title = d.title || "Almas";
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || "", icon: "/img/logo-192.png", dir: "auto", lang: "",
+    tag: d.kind === "order" && d.id ? "order-" + d.id : undefined, renotify: d.kind === "order",
+    data: { link: d.link || "/" }
+  }));
+});
+
+function pageOf(link) {
+  // only the shop's own pages, opened on this site's address (almas5.com links work on any copy of the site)
+  try {
+    var u = new URL(link || "/", self.location.origin);
+    if (u.origin !== self.location.origin && !/(^|\.)almas5\.com$/.test(u.hostname)) return "/";
+    return u.pathname + u.search + u.hash;
+  } catch (x) { return "/"; }
+}
+
+self.addEventListener("notificationclick", function (e) {
+  e.notification.close();
+  var page = pageOf(e.notification.data && e.notification.data.link);
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if ("focus" in c && "navigate" in c) return c.navigate(page).then(function (w) { return (w || c).focus(); }).catch(function () { return self.clients.openWindow(page); });
+    }
+    return self.clients.openWindow(page);
+  }));
+});

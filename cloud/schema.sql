@@ -171,6 +171,22 @@ create table if not exists devices (
 );
 create unique index if not exists devices_token on devices (token);
 create index if not exists devices_phone on devices (phone_norm);
+-- the same for the installed web app (PWA): a browser push subscription (Web Push, VAPID). Kept apart from devices
+-- because a browser needs its own keys (p256dh, auth) to read the encrypted message.
+create table if not exists webpush (
+  id integer primary key autoincrement,
+  endpoint text not null,
+  p256dh text not null,
+  auth text not null,
+  lang text not null default 'ar',
+  phone_norm text not null default '',
+  mine integer not null default 0,
+  created_at text not null,
+  seen_at text not null
+);
+create unique index if not exists webpush_endpoint on webpush (endpoint);
+create index if not exists webpush_phone on webpush (phone_norm);
+create index if not exists webpush_lang on webpush (lang, id);
 -- what the owner sent, and to whom (audience: all, ar, fr, en, es, phone, mine; or order:<status> for the automatic ones)
 create table if not exists pushes (
   id integer primary key autoincrement,

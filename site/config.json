@@ -36,7 +36,11 @@
   "meta_domain_verification": "x9jvcw6oyof260l9f2m4komzs4k8l5",
   "google_site_verification": "",
   "indexnow_key": "c5ac5e393c4434c4d852f653b7258532",
-  "play_url": "",
+  "play_url": "https://play.google.com/apps/testing/com.almas.app",
+  "play_early": true,
+  "_play_note": "While the Android app is in closed testing, play_url is the testers' join link and play_early shows the 'Become a tester, then Install' line. After Play production: https://play.google.com/store/apps/details?id=com.almas.app and play_early false.",
+  "vapid_public": "BP8pjoEkbBWgNsbWBfVOHFCJgNZgpNoiI8bQ1_lOOuJ9iYb9QiNXXFG4nDl75BuVCehguutJkqEHVk9cZKYw-cU",
+  "_vapid_note": "The web app's push key (public half). The private half is the Worker secret VAPID, from %USERPROFILE%/keys/almas-vapid.json via cloud/deploy.py --vapid.",
   "points": {"mad_per_point": 10, "step": 100, "step_mad": 10, "min": 100, "max_share": 0.1, "life_days": 365,
     "_note": "Loyalty points, the same numbers as POINTS in cloud/worker.js (a test checks): 1 point per 10 MAD paid on a delivered order, 100 points = 10 MAD off, from 100 points, at most 10% of an order, lapse 12 months after the last earning. Set \"mad_per_point\" to 0 to hide points on the site."}
 }
