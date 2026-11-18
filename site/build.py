@@ -95,6 +95,8 @@ def return_ld(link):
     return {"@type": "MerchantReturnPolicy", "applicableCountry": ["MA"] + EU_SHIP,
             "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow", "merchantReturnDays": 2,
             "itemCondition": "https://schema.org/DamagedCondition", "returnFees": "https://schema.org/FreeReturn",
+            # nothing is sent back: the customer sends a photo on WhatsApp and gets a replacement
+            "returnMethod": "https://schema.org/KeepProduct",
             "merchantReturnLink": link}
 
 
